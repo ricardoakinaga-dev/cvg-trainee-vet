@@ -15,107 +15,36 @@ import type {
   InternalSourceRef,
   OpenResponse,
   RubricDimension,
-  TrainingAssessmentMode,
 } from "./types.js";
 
-export type DraftContentStatus =
-  | "RASCUNHO"
-  | "AUTOVERIFICADO"
-  | "EM_REVISAO_CLINICA"
-  | "AJUSTES_SOLICITADOS"
-  | "APROVADO_CLINICAMENTE"
-  | "PROJECAO_VERIFICADA"
-  | "AUTORIZADO_PARA_PUBLICACAO"
-  | "PUBLICADO"
-  | "RETIRADO"
-  | "VENCIDO";
+import type {
+  CurriculumDraftItem,
+  CurriculumDraftPack,
+  DiagnosticDraftItem,
+  DiagnosticDraftPack,
+  DiagnosticSessionId,
+  DraftItemKind,
+  ModuleLearningLoop,
+} from "./draft-contracts.js";
+import {
+  createRetentionTemplates,
+  scheduleRetentionReviews,
+} from "./retention.js";
+import { buildObjectiveResults, sameChoiceSet } from "./objective-results.js";
 
-export type DraftItemKind =
-  | "RECUPERACAO_ATIVA"
-  | "CASO_PROGRESSIVO"
-  | "SIMULACAO_DIGITAL"
-  | "DEBRIEFING"
-  | "RETENCAO_ESPACADA";
-
-export type DraftResponseMode = "CHOICE" | "TEXT";
-
-export type DiagnosticSessionId = "B07-S1" | "B07-S2" | "B07-S3";
-
-export type DraftRubric = Readonly<{
-  readonly dimensions: readonly RubricDimension[];
-  readonly passScore: number;
-  readonly criticalErrors: readonly string[];
-}>;
-
-export type CurriculumDraftItem = Readonly<{
-  readonly id: string;
-  readonly moduleId: string;
-  readonly sessionId: string;
-  readonly ordinal: number;
-  readonly objectiveId: string;
-  readonly kind: DraftItemKind;
-  readonly responseMode: DraftResponseMode;
-  readonly title: string;
-  readonly prompt: string;
-  readonly choices?: readonly Choice[];
-  readonly correctChoiceIds?: readonly string[];
-  readonly rubric?: DraftRubric;
-  readonly feedback: string;
-  readonly critical: boolean;
-  readonly remediationTargetObjectiveId: string;
-  readonly sourceRefs: readonly InternalSourceRef[];
-}>;
-
-export type RetentionTemplate = Readonly<{
-  readonly day: 7 | 30 | 90;
-  readonly objectiveIds: readonly string[];
-  readonly itemIds: readonly string[];
-  readonly equivalentForm: true;
-}>;
-
-export type ModuleLearningLoop = Readonly<{
-  readonly assessmentModes: readonly TrainingAssessmentMode[];
-  readonly baselineItemIds: readonly string[];
-  readonly microlearningObjectiveIds: readonly string[];
-  readonly caseStages: readonly Readonly<{
-    readonly stage: 1 | 2 | 3;
-    readonly itemId: string;
-    readonly consequence: string;
-  }>[];
-  readonly simulation: Readonly<{
-    readonly itemIds: readonly string[];
-    readonly criticalBehaviorIds: readonly string[];
-    readonly practicalCompetenceClaim: "PROIBIDO_MVP";
-  }>;
-  readonly debriefPrompts: readonly string[];
-  readonly retention: readonly [
-    RetentionTemplate,
-    RetentionTemplate,
-    RetentionTemplate,
-  ];
-  readonly transferMetricId: string;
-}>;
-
-export type CurriculumDraftPack = Readonly<{
-  readonly moduleId: string;
-  readonly version: "1.0.0";
-  readonly status: DraftContentStatus;
-  readonly publicationAuthorized: false;
-  readonly clinicalReview: "PENDENTE";
-  readonly publicProjectionReady: boolean;
-  readonly clinicalReviewRequired: true;
-  readonly items: readonly CurriculumDraftItem[];
-  readonly learningLoop: ModuleLearningLoop;
-}>;
-
-export type DiagnosticDraftItem = Readonly<
-  CurriculumDraftItem & {
-    readonly blueprintItemId: string;
-    readonly diagnosticSessionId: DiagnosticSessionId;
-    readonly diagnosticFormat:
-      "MELHOR_RESPOSTA" | "ASSOCIACAO" | "INTERPRETACAO";
-  }
->;
+export type {
+  CurriculumDraftItem,
+  CurriculumDraftPack,
+  DiagnosticDraftItem,
+  DiagnosticDraftPack,
+  DiagnosticSessionId,
+  DraftContentStatus,
+  DraftItemKind,
+  DraftResponseMode,
+  DraftRubric,
+  ModuleLearningLoop,
+  RetentionTemplate,
+} from "./draft-contracts.js";
 
 export type DiagnosticEvaluationCatalog = Readonly<{
   readonly items: readonly Pick<
@@ -126,18 +55,6 @@ export type DiagnosticEvaluationCatalog = Readonly<{
     | "correctChoiceIds"
     | "objectiveId"
   >[];
-}>;
-
-export type DiagnosticDraftPack = Readonly<{
-  readonly diagnosticId: "B07-DIAGNOSTIC-V1";
-  readonly blueprintId: "B07-BLUEPRINT-V1";
-  readonly version: "0.1.0";
-  readonly status: "RASCUNHO";
-  readonly publicationAuthorized: false;
-  readonly clinicalReview: "PENDENTE";
-  readonly publicProjectionReady: false;
-  readonly clinicalReviewRequired: true;
-  readonly items: readonly DiagnosticDraftItem[];
 }>;
 
 export type DiagnosticThemeResult = Readonly<{
@@ -163,52 +80,26 @@ export type CurriculumDiagnosticResult = Readonly<{
   readonly globalScorePercent?: undefined;
 }>;
 
-export type ModuleAnswer = Readonly<{
-  readonly itemId: string;
-  readonly selectedChoiceIds?: readonly string[];
-  readonly text?: string;
-}>;
-
-export type ModuleEvaluationMode = "FORMATIVE_CHOICE" | "MODULE_COMPLETION";
-
-export type ObjectiveRuntimeResult = Readonly<{
-  readonly objectiveId: string;
-  readonly earnedPoints: number;
-  readonly possiblePoints: number;
-  readonly percent: number;
-  readonly critical: boolean;
-  readonly requiredPercent: 70 | 80;
-}>;
-
-export type RetentionReviewResult = Readonly<{
-  readonly day: 7 | 30 | 90;
-  readonly dueAt: string;
-  readonly status: "PENDENTE";
-}>;
-
-export type ModuleEvaluationStatus =
-  "DOMINIO_DIGITAL" | "EM_REMEDIACAO" | "AGUARDA_CORRECAO_HUMANA";
-
-export type ModuleNextAction =
-  "REVISAR_RETENCAO" | "EXECUTAR_REMEDIACAO" | "AGUARDAR_CORRECAO_HUMANA";
-
-export type ModuleEvaluationResult = Readonly<{
-  readonly moduleId: string;
-  readonly status: ModuleEvaluationStatus;
-  readonly nextAction: ModuleNextAction;
-  readonly objectiveResults: readonly ObjectiveRuntimeResult[];
-  readonly remediationObjectiveIds: readonly string[];
-  readonly criticalErrorItemIds: readonly string[];
-  readonly invalidAnswerItemIds: readonly string[];
-  readonly unansweredChoiceItemIds: readonly string[];
-  readonly openResponseItemIds: readonly string[];
-  readonly retentionReviews: readonly RetentionReviewResult[];
-  readonly practicalCompetenceClaim: "PROIBIDO_MVP";
-  readonly scorePercent?: number;
-}>;
+export type {
+  ModuleAnswer,
+  ModuleEvaluationMode,
+  ModuleEvaluationCatalog,
+  ObjectiveRuntimeResult,
+  RetentionReviewResult,
+  ModuleEvaluationStatus,
+  ModuleNextAction,
+  ModuleEvaluationResult,
+} from "./module-evaluation-contracts.js";
+import type {
+  ModuleAnswer,
+  ModuleEvaluationMode,
+  ModuleEvaluationCatalog,
+  ModuleEvaluationResult,
+} from "./module-evaluation-contracts.js";
 
 export type PersonalizedPathInput = Readonly<{
   readonly masteredModuleIds: readonly string[];
+  readonly completedModuleIds?: readonly string[];
   readonly remediationModuleIds: readonly string[];
   readonly retentionDueModuleIds: readonly string[];
   readonly inProgressModuleIds?: readonly string[];
@@ -225,6 +116,8 @@ export type PersonalizedPathItem = Readonly<{
     | "RETENCAO_PENDENTE"
     | "CONCLUIDO"
     | "EM_ANDAMENTO"
+    | "PAUSADO"
+    | "BLOQUEADO"
     | "NAO_ATRIBUIDO";
   readonly nextAction:
     | "INICIAR_BASELINE"
@@ -233,6 +126,7 @@ export type PersonalizedPathItem = Readonly<{
     | "EXECUTAR_RETENCAO"
     | "REVISAR_PROXIMO_MODULO"
     | "RETOMAR_MODULO"
+    | "CONSULTAR_PROXIMO_PASSO"
     | "AGUARDAR_ATRIBUICAO";
 }>;
 
@@ -646,21 +540,9 @@ function createLearningLoop(
       });
     }),
   );
-  const retention = freeze(
-    ([7, 30, 90] as const).map((day, index) =>
-      freeze({
-        day,
-        objectiveIds: freeze([
-          firstObjectiveIds[index % firstObjectiveIds.length] ??
-            firstObjectiveIds[0]!,
-        ]),
-        itemIds: freeze([
-          choiceItems[index % choiceItems.length]?.id ?? choiceItems[0]!.id,
-        ]),
-        equivalentForm: true as const,
-      }),
-    ),
-  ) as readonly [RetentionTemplate, RetentionTemplate, RetentionTemplate];
+  const retention = createRetentionTemplates({
+    objectiveIds: firstObjectiveIds,
+  });
   return freeze({
     assessmentModes: module.hospitalTraining.assessmentModes,
     baselineItemIds: freeze(choiceItems.slice(0, 3).map((item) => item.id)),
@@ -814,24 +696,6 @@ function parseCompletedAt(value: string): Date {
   return date;
 }
 
-function datePlusDays(completedAt: Date, days: number): string {
-  const date = new Date(completedAt.getTime());
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString();
-}
-
-function sameChoiceSet(
-  left: readonly string[],
-  right: readonly string[],
-): boolean {
-  const leftSet = new Set(left);
-  const rightSet = new Set(right);
-  return (
-    leftSet.size === rightSet.size &&
-    [...leftSet].every((value) => rightSet.has(value))
-  );
-}
-
 function assertUniqueAnswers(answers: readonly ModuleAnswer[]): void {
   if (new Set(answers.map((answer) => answer.itemId)).size !== answers.length) {
     throw new LearningRuntimeError("an item cannot receive duplicate answers");
@@ -839,7 +703,11 @@ function assertUniqueAnswers(answers: readonly ModuleAnswer[]): void {
 }
 
 function assertPlainTextResponse(value: string): void {
-  if (value.length > 10_000 || /<[^>]*>/u.test(value)) {
+  if (
+    value.trim().length === 0 ||
+    value.length > 10_000 ||
+    /<[^>]*>/u.test(value)
+  ) {
     throw new LearningRuntimeError("text response must be plain text");
   }
 }
@@ -847,12 +715,22 @@ function assertPlainTextResponse(value: string): void {
 export function evaluateModuleAttempt(
   input: Readonly<{
     readonly moduleId: string;
+    readonly catalog: ModuleEvaluationCatalog;
     readonly answers: readonly ModuleAnswer[];
     readonly completedAt: string;
     readonly mode?: ModuleEvaluationMode;
   }>,
 ): ModuleEvaluationResult {
-  const pack = getModuleDraftPack(input.moduleId);
+  const pack = input.catalog;
+  if (
+    pack.moduleId !== input.moduleId ||
+    pack.items.length === 0 ||
+    new Set(pack.items.map((item) => item.id)).size !== pack.items.length
+  ) {
+    throw new LearningRuntimeError(
+      "evaluation catalog must match the module and contain unique items",
+    );
+  }
   const completedAt = parseCompletedAt(input.completedAt);
   assertUniqueAnswers(input.answers);
   const answerByItem = new Map(
@@ -874,9 +752,37 @@ export function evaluateModuleAttempt(
   const openResponseItems = pack.items.filter(
     (item) => item.responseMode === "TEXT",
   );
+  const unansweredMandatoryItemIds = pack.items
+    .filter((item) => {
+      const answer = answerByItem.get(item.id);
+      return item.responseMode === "TEXT"
+        ? answer?.text === undefined
+        : answer?.selectedChoiceIds === undefined;
+    })
+    .map((item) => item.id);
+  const activityProgress =
+    unansweredMandatoryItemIds.length > 0
+      ? ("ATIVIDADES_PENDENTES" as const)
+      : ("AGUARDA_CORRECAO_HUMANA" as const);
   for (const answer of input.answers) {
     if (answer.text !== undefined) assertPlainTextResponse(answer.text);
     const item = pack.items.find((candidate) => candidate.id === answer.itemId);
+    if (
+      item === undefined ||
+      (item.responseMode === "TEXT" &&
+        (answer.text === undefined ||
+          answer.selectedChoiceIds !== undefined)) ||
+      (item.responseMode === "CHOICE" &&
+        (answer.text !== undefined ||
+          answer.selectedChoiceIds === undefined ||
+          answer.selectedChoiceIds.length === 0 ||
+          new Set(answer.selectedChoiceIds).size !==
+            answer.selectedChoiceIds.length))
+    ) {
+      throw new LearningRuntimeError(
+        "answer response mode does not match the frozen item",
+      );
+    }
     if (
       item?.responseMode !== "CHOICE" ||
       answer.selectedChoiceIds === undefined
@@ -909,55 +815,7 @@ export function evaluateModuleAttempt(
     })
     .map((item) => item.id);
 
-  const objectiveResultsUnsorted = pack.items.reduce<
-    readonly ObjectiveRuntimeResult[]
-  >((results, item) => {
-    const existing = results.find(
-      (result) => result.objectiveId === item.objectiveId,
-    );
-    const itemIsChoice = item.responseMode === "CHOICE";
-    const itemAnswer = answerByItem.get(item.id)?.selectedChoiceIds;
-    const earned =
-      itemIsChoice &&
-      itemAnswer !== undefined &&
-      sameChoiceSet(itemAnswer, item.correctChoiceIds ?? [])
-        ? 1
-        : 0;
-    if (existing === undefined) {
-      return [
-        ...results,
-        freeze({
-          objectiveId: item.objectiveId,
-          earnedPoints: earned,
-          possiblePoints: itemIsChoice ? 1 : 0,
-          percent: itemIsChoice ? earned * 100 : 0,
-          critical: item.critical,
-          requiredPercent: item.critical ? 80 : 70,
-        }),
-      ];
-    }
-    const possiblePoints = existing.possiblePoints + (itemIsChoice ? 1 : 0);
-    const earnedPoints = existing.earnedPoints + earned;
-    return [
-      ...results.filter((result) => result !== existing),
-      freeze({
-        ...existing,
-        earnedPoints,
-        possiblePoints,
-        percent:
-          possiblePoints === 0
-            ? 0
-            : Math.round((earnedPoints / possiblePoints) * 100),
-        critical: existing.critical || item.critical,
-        requiredPercent: existing.critical || item.critical ? 80 : 70,
-      }),
-    ];
-  }, []);
-  const objectiveResults = freeze(
-    [...objectiveResultsUnsorted].sort((left, right) =>
-      left.objectiveId.localeCompare(right.objectiveId),
-    ),
-  );
+  const objectiveResults = buildObjectiveResults(pack.items, answerByItem);
 
   const remediationObjectiveIds = unique<string>(
     objectiveResults
@@ -986,6 +844,8 @@ export function evaluateModuleAttempt(
   if (hasHumanReview) {
     return freeze({
       moduleId: pack.moduleId,
+      activityProgress,
+      unansweredMandatoryItemIds: freeze(unansweredMandatoryItemIds),
       status: "AGUARDA_CORRECAO_HUMANA",
       nextAction: "AGUARDAR_CORRECAO_HUMANA",
       objectiveResults,
@@ -1006,18 +866,12 @@ export function evaluateModuleAttempt(
     scorePercent >= 70 &&
     remediationObjectiveIds.length === 0;
   const retentionReviews = mastered
-    ? freeze(
-        ([7, 30, 90] as const).map((day) =>
-          freeze({
-            day,
-            dueAt: datePlusDays(completedAt, day),
-            status: "PENDENTE" as const,
-          }),
-        ),
-      )
+    ? scheduleRetentionReviews(completedAt.toISOString())
     : freeze([]);
   return freeze({
     moduleId: pack.moduleId,
+    activityProgress,
+    unansweredMandatoryItemIds: freeze(unansweredMandatoryItemIds),
     status: mastered ? "DOMINIO_DIGITAL" : "EM_REMEDIACAO",
     nextAction: mastered ? "REVISAR_RETENCAO" : "EXECUTAR_REMEDIACAO",
     objectiveResults,
@@ -1036,6 +890,7 @@ export function buildPersonalizedCurriculumPath(
   input: PersonalizedPathInput,
 ): readonly PersonalizedPathItem[] {
   const mastered = new Set(input.masteredModuleIds);
+  const completed = new Set(input.completedModuleIds ?? []);
   const remediation = new Set(input.remediationModuleIds);
   const retentionDue = new Set(input.retentionDueModuleIds);
   const inProgress = new Set(input.inProgressModuleIds ?? []);
@@ -1062,6 +917,14 @@ export function buildPersonalizedCurriculumPath(
           nextAction: "EXECUTAR_REMEDIACAO" as const,
         });
       }
+      if (completed.has(module.id)) {
+        return freeze({
+          moduleId: module.id,
+          month: module.month,
+          status: "CONCLUIDO" as const,
+          nextAction: "REVISAR_PROXIMO_MODULO" as const,
+        });
+      }
       if (retentionDue.has(module.id)) {
         return freeze({
           moduleId: module.id,
@@ -1082,11 +945,11 @@ export function buildPersonalizedCurriculumPath(
         return freeze({
           moduleId: module.id,
           month: module.month,
-          status: "CONCLUIDO" as const,
-          nextAction: "REVISAR_PROXIMO_MODULO" as const,
+          status: "EM_ANDAMENTO" as const,
+          nextAction: "RETOMAR_MODULO" as const,
         });
       }
-      if (previousModule !== undefined && !mastered.has(previousModule.id)) {
+      if (previousModule !== undefined && !completed.has(previousModule.id)) {
         return freeze({
           moduleId: module.id,
           month: module.month,
@@ -1131,7 +994,9 @@ function publicBoundaryIsClean(pack: CurriculumDraftPack): boolean {
 }
 
 function publicDiagnosticBoundaryIsClean(pack: DiagnosticDraftPack): boolean {
-  const projection = toParticipantActivityFromDiagnosticDraft(pack);
+  const projection = toParticipantActivityFromDiagnosticDraft(pack, {
+    boundary: "INTERNAL_DIAGNOSTIC_CATALOG",
+  });
   const serialized = JSON.stringify(projection);
   return (
     !/source|chapter|page|answer|rubric|critical|blueprint|pdf/iu.test(

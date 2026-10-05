@@ -36,10 +36,20 @@ function outbox(
 } {
   const processed: string[] = [];
   const failures: string[] = [];
+  let remaining = [...events];
   return {
     processed,
     failures,
-    claim: vi.fn(async () => events),
+    claim: vi.fn(async (limit: number) => {
+      const batch = remaining.slice(0, limit);
+      remaining = remaining.slice(limit);
+      return batch;
+    }),
+    renewLease: vi.fn(async () => true),
+    withLeaseFence: async (_id, _token, _seconds, work) => ({
+      owned: true,
+      value: await work(),
+    }),
     markProcessed:
       markProcessedOverride ??
       vi.fn(async (eventId: string) => {
@@ -243,6 +253,11 @@ describe("outbox worker loop", () => {
     const processed: string[] = [];
     let deliveries = 0;
     const repository: OutboxRepositoryPort = {
+      renewLease: vi.fn(async () => true),
+      withLeaseFence: async (_id, _token, _seconds, work) => ({
+        owned: true,
+        value: await work(),
+      }),
       claim: vi.fn(async () =>
         [...pending.values()].map((entry) => ({ ...entry })),
       ),
@@ -260,10 +275,18 @@ describe("outbox worker loop", () => {
     });
 
     await expect(
-      processOutboxOnce(repository, { "content.published.v1": handler }),
+      processOutboxOnce(
+        repository,
+        { "content.published.v1": handler },
+        { batchSize: 1 },
+      ),
     ).resolves.toEqual({ claimed: 1, processed: 0, failed: 1 });
     await expect(
-      processOutboxOnce(repository, { "content.published.v1": handler }),
+      processOutboxOnce(
+        repository,
+        { "content.published.v1": handler },
+        { batchSize: 1 },
+      ),
     ).resolves.toEqual({ claimed: 1, processed: 1, failed: 0 });
     expect(deliveries).toBe(2);
     expect(processed).toEqual([event.id]);
@@ -273,6 +296,11 @@ describe("outbox worker loop", () => {
     const leased = new Set<string>();
     const done = new Set<string>();
     const repository: OutboxRepositoryPort = {
+      renewLease: vi.fn(async () => true),
+      withLeaseFence: async (_id, _token, _seconds, work) => ({
+        owned: true,
+        value: await work(),
+      }),
       claim: vi.fn(async () => {
         if (done.has(event.id) || leased.has(event.id)) return [];
         leased.add(event.id);
@@ -291,12 +319,16 @@ describe("outbox worker loop", () => {
     const handlers = {
       "content.published.v1": (async () => undefined) as WorkerEventHandler,
     };
-    await expect(processOutboxOnce(repository, handlers)).resolves.toEqual({
+    await expect(
+      processOutboxOnce(repository, handlers, { batchSize: 1 }),
+    ).resolves.toEqual({
       claimed: 1,
       processed: 1,
       failed: 0,
     });
-    await expect(processOutboxOnce(repository, handlers)).resolves.toEqual({
+    await expect(
+      processOutboxOnce(repository, handlers, { batchSize: 1 }),
+    ).resolves.toEqual({
       claimed: 0,
       processed: 0,
       failed: 0,

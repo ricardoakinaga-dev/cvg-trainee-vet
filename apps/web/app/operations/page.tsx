@@ -8,6 +8,11 @@ import {
   useState,
 } from "react";
 
+import {
+  operationsReportQuery,
+  useOperationsReport,
+} from "./operations-report-request";
+
 type DependencyState = Readonly<{
   readonly status: "READY" | "DEGRADED" | "NOT_READY";
   readonly dependencies: Readonly<{
@@ -1540,14 +1545,8 @@ export default function OperationsPage() {
     useState<DashboardLoadState>("loading");
   const [dashboard, setDashboard] = useState<StaffDashboard | null>(null);
   const [selectedScopeId, setSelectedScopeId] = useState("");
-  const [reportState, setReportState] = useState<ReportLoadState>("idle");
-  const [report, setReport] = useState<ContinuingEducationReport | null>(null);
   const [reportPage, setReportPage] = useState(1);
   const reportPageSize = 25;
-  const [reflectionReportState, setReflectionReportState] =
-    useState<ReportLoadState>("idle");
-  const [reflectionReport, setReflectionReport] =
-    useState<ReflectionManagementReport | null>(null);
   const [feedbackQueueState, setFeedbackQueueState] =
     useState<ReportLoadState>("idle");
   const [feedbackQueue, setFeedbackQueue] =
@@ -1770,110 +1769,42 @@ export default function OperationsPage() {
     void loadAuditTrail(managementScopeId);
   }, [loadAuditTrail, managementScopeId]);
 
-  const loadContinuingEducationReport = useCallback(
-    async (
-      scopeId: string,
-      moduleId: string,
-      accountStatus: ReportStatusFilter,
-      page: number,
-    ): Promise<void> => {
-      setReportState("loading");
-      const query = new URLSearchParams({ scopeId });
-      query.set("page", String(page));
-      query.set("pageSize", String(reportPageSize));
-      if (moduleId.length > 0) query.set("moduleId", moduleId);
-      if (accountStatus.length > 0) query.set("accountStatus", accountStatus);
-      try {
-        const response = await fetch(
-          `/api/v1/internal/reports/continuing-education?${query.toString()}`,
-          { cache: "no-store", credentials: "include" },
-        );
-        if (!response.ok) {
-          setReport(null);
-          setReportState(dashboardErrorState(response.status));
-          return;
-        }
-        const payload: unknown = await response.json().catch(() => null);
-        if (
-          !isRecord(payload) ||
-          payload.success !== true ||
-          !isContinuingEducationReport(payload.data)
-        ) {
-          throw new Error();
-        }
-        setReport(payload.data);
-        setReportState("ready");
-      } catch {
-        setReport(null);
-        setReportState("error");
-      }
-    },
-    [reportPageSize],
+  const reportScopeId =
+    dashboardState === "ready" ? managementScopeId : undefined;
+  const authorizedReportScopes = dashboard?.scopes ?? [];
+  const reportAuthority = dashboard?.generatedAt ?? "";
+  const {
+    state: reportState,
+    data: report,
+    reload: reloadContinuingReport,
+  } = useOperationsReport(
+    operationsReportQuery(
+      "continuing-education",
+      reportScopeId,
+      authorizedReportScopes,
+      reportAuthority,
+      {
+        moduleId: reportModuleFilter,
+        accountStatus: reportStatusFilter,
+        page: reportPage,
+        pageSize: reportPageSize,
+      },
+    ),
+    isContinuingEducationReport,
   );
-
-  useEffect(() => {
-    const scopeId = managementScopeId;
-    if (scopeId === undefined) {
-      setReport(null);
-      setReportState("idle");
-      return;
-    }
-    void loadContinuingEducationReport(
-      scopeId,
-      reportModuleFilter,
-      reportStatusFilter,
-      reportPage,
-    );
-  }, [
-    dashboard,
-    loadContinuingEducationReport,
-    managementScopeId,
-    reportModuleFilter,
-    reportPage,
-    reportStatusFilter,
-  ]);
-
-  const loadReflectionManagementReport = useCallback(
-    async (scopeId: string): Promise<void> => {
-      setReflectionReportState("loading");
-      try {
-        const query = new URLSearchParams({ scopeId });
-        const response = await fetch(
-          `/api/v1/internal/reports/reflections?${query.toString()}`,
-          { cache: "no-store", credentials: "include" },
-        );
-        if (!response.ok) {
-          setReflectionReport(null);
-          setReflectionReportState(dashboardErrorState(response.status));
-          return;
-        }
-        const payload: unknown = await response.json().catch(() => null);
-        if (
-          !isRecord(payload) ||
-          payload.success !== true ||
-          !isReflectionManagementReport(payload.data)
-        ) {
-          throw new Error();
-        }
-        setReflectionReport(payload.data);
-        setReflectionReportState("ready");
-      } catch {
-        setReflectionReport(null);
-        setReflectionReportState("error");
-      }
-    },
-    [],
+  const {
+    state: reflectionReportState,
+    data: reflectionReport,
+    reload: reloadReflectionReport,
+  } = useOperationsReport(
+    operationsReportQuery(
+      "reflections",
+      reportScopeId,
+      authorizedReportScopes,
+      reportAuthority,
+    ),
+    isReflectionManagementReport,
   );
-
-  useEffect(() => {
-    const scopeId = managementScopeId;
-    if (scopeId === undefined) {
-      setReflectionReport(null);
-      setReflectionReportState("idle");
-      return;
-    }
-    void loadReflectionManagementReport(scopeId);
-  }, [dashboard, loadReflectionManagementReport, managementScopeId]);
 
   const loadFeedbackTriageQueue = useCallback(
     async (
@@ -2746,6 +2677,58 @@ export default function OperationsPage() {
                     </span>
                   ) : null}
                 </div>
+                {reportState !== "error" &&
+                reportState !== "forbidden" &&
+                reportState !== "unauthenticated" ? (
+                  <div
+                    className="report-filter-row"
+                    aria-label="Filtros do relatório"
+                  >
+                    <label>
+                      Módulo
+                      <select
+                        value={reportModuleFilter}
+                        onChange={(event) => {
+                          setReportPage(1);
+                          setReportModuleFilter(event.target.value);
+                        }}
+                      >
+                        <option value="">Todos os módulos</option>
+                        {reportModuleFilter &&
+                        !report?.modules.some(
+                          (module) => module.moduleId === reportModuleFilter,
+                        ) ? (
+                          <option value={reportModuleFilter}>
+                            {reportModuleFilter}
+                          </option>
+                        ) : null}
+                        {(report?.modules ?? []).map((module) => (
+                          <option key={module.moduleId} value={module.moduleId}>
+                            {module.moduleId} · mês {module.month}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Conta
+                      <select
+                        value={reportStatusFilter}
+                        onChange={(event) => {
+                          setReportPage(1);
+                          setReportStatusFilter(
+                            event.target.value as ReportStatusFilter,
+                          );
+                        }}
+                      >
+                        <option value="">Todos os status</option>
+                        <option value="ACTIVE">Ativas</option>
+                        <option value="INVITED">Convidadas</option>
+                        <option value="SUSPENDED">Suspensas</option>
+                        <option value="DEACTIVATED">Desativadas</option>
+                      </select>
+                    </label>
+                  </div>
+                ) : null}
                 {reportState === "loading" ? (
                   <div className="experience-panel" role="status">
                     Consolidando participação digital…
@@ -2762,68 +2745,12 @@ export default function OperationsPage() {
                 ) : reportState === "error" || report === null ? (
                   <div className="experience-panel error-panel" role="alert">
                     <p>Não foi possível carregar o relatório educacional.</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const scopeId = managementScopeId;
-                        if (scopeId !== undefined) {
-                          void loadContinuingEducationReport(
-                            scopeId,
-                            reportModuleFilter,
-                            reportStatusFilter,
-                            reportPage,
-                          );
-                        }
-                      }}
-                    >
+                    <button type="button" onClick={reloadContinuingReport}>
                       Tentar novamente
                     </button>
                   </div>
                 ) : (
                   <>
-                    <div
-                      className="report-filter-row"
-                      aria-label="Filtros do relatório"
-                    >
-                      <label>
-                        Módulo
-                        <select
-                          value={reportModuleFilter}
-                          onChange={(event) => {
-                            setReportPage(1);
-                            setReportModuleFilter(event.target.value);
-                          }}
-                        >
-                          <option value="">Todos os módulos</option>
-                          {report.modules.map((module) => (
-                            <option
-                              key={module.moduleId}
-                              value={module.moduleId}
-                            >
-                              {module.moduleId} · mês {module.month}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label>
-                        Conta
-                        <select
-                          value={reportStatusFilter}
-                          onChange={(event) => {
-                            setReportPage(1);
-                            setReportStatusFilter(
-                              event.target.value as ReportStatusFilter,
-                            );
-                          }}
-                        >
-                          <option value="">Todos os status</option>
-                          <option value="ACTIVE">Ativas</option>
-                          <option value="INVITED">Convidadas</option>
-                          <option value="SUSPENDED">Suspensas</option>
-                          <option value="DEACTIVATED">Desativadas</option>
-                        </select>
-                      </label>
-                    </div>
                     <div
                       className="dashboard-metrics"
                       aria-label="Resumo de participação digital"
@@ -3448,15 +3375,7 @@ export default function OperationsPage() {
                   reflectionReport === null ? (
                   <div className="experience-panel error-panel" role="alert">
                     <p>Não foi possível carregar o agregado de reflexão.</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const scopeId = managementScopeId;
-                        if (scopeId !== undefined) {
-                          void loadReflectionManagementReport(scopeId);
-                        }
-                      }}
-                    >
+                    <button type="button" onClick={reloadReflectionReport}>
                       Tentar novamente
                     </button>
                   </div>

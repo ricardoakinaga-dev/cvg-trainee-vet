@@ -12,12 +12,7 @@ export type SessionCurrentProjection = z.infer<
 
 export const rotateSessionRequestSchema = z
   .object({
-    sessionExpiresInSeconds: z
-      .number()
-      .int()
-      .min(60)
-      .max(604_800)
-      .default(3600),
+    sessionExpiresInSeconds: z.number().int().min(60).max(43_200).default(3600),
   })
   .strict();
 

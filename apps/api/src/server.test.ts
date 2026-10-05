@@ -1,11 +1,17 @@
-import { createServer } from "node:http";
+import { createServer, request } from "node:http";
 import type { AddressInfo } from "node:net";
 import { describe, expect, it, vi } from "vitest";
 
-import { createObservability, type LogRecord } from "@cvg/observability";
+import {
+  createObservability,
+  deriveOperationalSnapshot,
+  type LogRecord,
+} from "@cvg/observability";
+import * as http from "./http.js";
 
 import { createApiServer, requestOutcome, routeTemplate } from "./server.js";
 import type { ApiHttpDependencies } from "./http.js";
+import { createApiRuntimeLifecycle } from "./composition/api-runtime-lifecycle.js";
 
 const dependencies: ApiHttpDependencies = {
   requestIdFactory: () => "request-server-test",
@@ -44,6 +50,378 @@ const dependencies: ApiHttpDependencies = {
 };
 
 describe("API node server adapter", () => {
+  it.each([true, false])(
+    "T23 drains disconnected readiness callback success=%s before resources",
+    async (success) => {
+      let release!: () => void;
+      let enter!: () => void;
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const entered = new Promise<void>((resolve) => {
+        enter = resolve;
+      });
+      const order: string[] = [];
+      const server = createApiServer(
+        {
+          ...dependencies,
+          healthcheck: async () => {
+            enter();
+            await held;
+            order.push("callback.done");
+            if (!success) throw new Error("synthetic readiness failure");
+          },
+          observability: createObservability({
+            service: "api",
+            sink: (record) => order.push(record.event),
+          }),
+        },
+        { host: "127.0.0.1", port: 0 },
+      );
+      const resources = vi.fn(async () => {
+        order.push("resources.close");
+      });
+      const runtime = createApiRuntimeLifecycle({
+        listen: server.listen,
+        beginInitialization: () => undefined,
+        cancelInitialization: () => undefined,
+        awaitInitialization: async () => undefined,
+        closeServer: server.close,
+        closeIntegrations: resources,
+      });
+      await runtime.listen();
+      const client = request({
+        host: "127.0.0.1",
+        port: (server.address() as AddressInfo).port,
+        path: "/health/ready",
+        agent: false,
+      });
+      client.on("error", () => undefined);
+      client.end();
+      await entered;
+      const disconnected = new Promise<void>((resolve) =>
+        client.once("close", resolve),
+      );
+      client.destroy();
+      await disconnected;
+      const closing = runtime.close();
+      try {
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        expect(resources).not.toHaveBeenCalled();
+        release();
+        await closing;
+        expect(order).toEqual([
+          "callback.done",
+          "http.request.completed",
+          "resources.close",
+        ]);
+        expect(resources).toHaveBeenCalledTimes(1);
+      } finally {
+        release();
+        client.destroy();
+        await closing;
+      }
+    },
+  );
+  it("T23 shares shutdown and refuses reopening the listener", async () => {
+    const api = createApiServer(dependencies, { host: "127.0.0.1", port: 0 });
+    await api.listen();
+    const first = api.close();
+    const second = api.close();
+    try {
+      expect(first).toBe(second);
+      await first;
+      await expect(api.listen()).rejects.toThrow(/closing/u);
+    } finally {
+      await api.close();
+    }
+  });
+  it("T23 exports the last admitted HTTP span after request drain", async () => {
+    const exported: unknown[] = [];
+    const collector = createServer((request, response) => {
+      let text = "";
+      request.on("data", (chunk) => {
+        text += chunk;
+      });
+      request.on("end", () => {
+        exported.push(JSON.parse(text));
+        response.end("{}");
+      });
+    });
+    await new Promise<void>((resolve) =>
+      collector.listen(0, "127.0.0.1", resolve),
+    );
+    let release!: () => void;
+    let entered!: () => void;
+    const admitted = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const blocking = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const api = createApiServer(
+      {
+        ...dependencies,
+        healthcheck: async () => {
+          entered();
+          await blocking;
+        },
+      },
+      {
+        host: "127.0.0.1",
+        port: 0,
+        tracing: {
+          enabled: true,
+          endpoint: `http://127.0.0.1:${(collector.address() as AddressInfo).port}/v1/traces`,
+          timeoutMs: 500,
+        },
+      },
+    );
+    await api.listen();
+    try {
+      const pending = fetch(
+        `http://127.0.0.1:${(api.address() as AddressInfo).port}/health/ready`,
+      );
+      await admitted;
+      const closing = api.close();
+      release();
+      const response = await pending;
+      expect(response.status).toBe(200);
+      await response.text();
+      await closing;
+      const spans = exported.flatMap((batch) =>
+        (
+          batch as {
+            resourceSpans: Array<{
+              scopeSpans: Array<{ spans: Array<{ name: string }> }>;
+            }>;
+          }
+        ).resourceSpans.flatMap((resource) =>
+          resource.scopeSpans.flatMap((scope) => scope.spans),
+        ),
+      );
+      expect(spans).toContainEqual(
+        expect.objectContaining({ name: "HTTP GET /health/ready" }),
+      );
+    } finally {
+      release();
+      await api.close();
+      await new Promise<void>((resolve) => collector.close(() => resolve()));
+    }
+  });
+  it("selects typed risk metadata from the registry and ignores client class hints and unmatched prefixes", async () => {
+    const check = vi.fn(async () => ({ allowed: true, remaining: 1 }));
+    const api = createApiServer(dependencies, {
+      host: "127.0.0.1",
+      port: 0,
+      rateLimiter: { check },
+    });
+    await api.listen();
+    try {
+      const address = api.address();
+      if (address === null || typeof address === "string")
+        throw new Error("missing listener");
+      const origin = `http://127.0.0.1:${address.port}`;
+      for (const [path, method, riskClass] of [
+        [
+          "/api/v1/invitations/accept?riskClass=public-low-risk",
+          "POST",
+          "authentication",
+        ],
+        ["/api/v1/recovery/accept", "POST", "recovery"],
+        ["/api/v1/attempts", "POST", "mutation"],
+        ["/api/v1/learning-path", "GET", "expensive-read"],
+        ["/api/v1/recovery/accept/unknown", "POST", "expensive-read"],
+      ] as const) {
+        const response = await fetch(origin + path, {
+          method,
+          headers: { "x-rate-limit-risk-class": "public-low-risk" },
+          ...(method === "POST" ? { body: "{}" } : {}),
+        });
+        await response.text();
+        expect(check).toHaveBeenLastCalledWith(
+          expect.any(String),
+          undefined,
+          riskClass,
+        );
+      }
+      const calls = check.mock.calls.length;
+      for (const path of [
+        "/health/live",
+        "/health/ready",
+        "/health/dependencies",
+      ]) {
+        const response = await fetch(origin + path);
+        await response.text();
+      }
+      expect(check.mock.calls).toHaveLength(calls);
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("connects successful HTTP reads and mutations to SLOs without changing legacy series", async () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+    let now = 1_000;
+    vi.spyOn(performance, "now").mockImplementation(() => now);
+    vi.spyOn(http, "handleApiRequest").mockImplementation(async (request) => {
+      now += request.method === "GET" ? 400 : 2_000;
+      return {
+        status: 200,
+        body: { success: true, data: {}, meta: { request_id: "slo-test" } },
+      };
+    });
+    const api = createApiServer(
+      { ...dependencies, observability },
+      {
+        host: "127.0.0.1",
+        port: 0,
+        allowedOrigins: ["http://localhost"],
+      },
+    );
+    await api.listen();
+    try {
+      const address = api.address() as AddressInfo;
+      for (const method of ["GET", "POST"]) {
+        const response = await fetch(
+          `http://127.0.0.1:${address.port}/api/v1/feedback`,
+          {
+            method,
+            headers: { origin: "http://localhost" },
+          },
+        );
+        expect(response.status).toBe(200);
+        await response.text();
+      }
+      const metrics = observability.metrics.snapshot();
+      expect(
+        metrics.histograms.filter(
+          (item) => item.name === "api.slo.duration_ms",
+        ),
+      ).toEqual([
+        expect.objectContaining({
+          count: 1,
+          sum: 400,
+          labels: { operation: "read" },
+        }),
+        expect.objectContaining({
+          count: 1,
+          sum: 2_000,
+          labels: { operation: "mutation" },
+        }),
+      ]);
+      expect(metrics.histograms).toContainEqual(
+        expect.objectContaining({
+          name: "api.request.duration_ms",
+          count: 2,
+          sum: 2_400,
+          labels: { route: "/api/v1/feedback" },
+        }),
+      );
+      expect(metrics.histograms).toContainEqual(
+        expect.objectContaining({
+          name: "http_request_duration_seconds",
+          count: 2,
+          sum: 2.4,
+          labels: { route: "/api/v1/feedback" },
+        }),
+      );
+      const slos = deriveOperationalSnapshot("READY", metrics).slos;
+      expect(slos[1]).toMatchObject({ status: "PASS", observed: 395 });
+      expect(slos[2]).toMatchObject({ status: "BREACHED", observed: 1_975 });
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("measures request duration with a monotonic clock under clock jumps", async () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+    let monotonicNow = 50_000;
+    let civilNow = Date.now();
+    vi.spyOn(performance, "now").mockImplementation(() => monotonicNow);
+    vi.spyOn(Date, "now").mockImplementation(() => civilNow);
+    vi.spyOn(http, "handleApiRequest").mockImplementation(async () => {
+      monotonicNow += 400;
+      return {
+        status: 200,
+        body: { success: true, data: {}, meta: { request_id: "jump-test" } },
+      };
+    });
+    const api = createApiServer(
+      { ...dependencies, observability },
+      { host: "127.0.0.1", port: 0 },
+    );
+    await api.listen();
+    try {
+      const address = api.address() as AddressInfo;
+      const first = await fetch(
+        `http://127.0.0.1:${address.port}/api/v1/feedback`,
+      );
+      expect(first.status).toBe(200);
+      await first.text();
+      civilNow -= 60_000;
+      const second = await fetch(
+        `http://127.0.0.1:${address.port}/api/v1/feedback`,
+      );
+      expect(second.status).toBe(200);
+      await second.text();
+      civilNow += 120_000;
+      const third = await fetch(
+        `http://127.0.0.1:${address.port}/api/v1/feedback`,
+      );
+      expect(third.status).toBe(200);
+      await third.text();
+
+      const durations = observability.metrics
+        .snapshot()
+        .histograms.filter(
+          (item) =>
+            item.name === "api.request.duration_ms" &&
+            item.labels.route === "/api/v1/feedback",
+        );
+      expect(durations).toHaveLength(1);
+      expect(durations[0]).toMatchObject({ count: 3, sum: 1_200 });
+    } finally {
+      await api.close();
+    }
+  });
+
+  it("excludes SLO observation for health, unmatched and error responses", async () => {
+    const observability = createObservability({
+      service: "api",
+      sink: () => undefined,
+    });
+    const api = createApiServer(
+      { ...dependencies, observability },
+      { host: "127.0.0.1", port: 0 },
+    );
+    await api.listen();
+    try {
+      const address = api.address() as AddressInfo;
+      const baseUrl = `http://127.0.0.1:${address.port}`;
+      await fetch(`${baseUrl}/health/live`);
+      await fetch(`${baseUrl}/unknown`);
+      const failed = await fetch(`${baseUrl}/api/v1/dashboard`);
+      expect(failed.status).toBe(401);
+      await failed.text();
+
+      expect(
+        observability.metrics
+          .snapshot()
+          .histograms.filter((item) => item.name === "api.slo.duration_ms"),
+      ).toHaveLength(0);
+    } finally {
+      await api.close();
+    }
+  });
+
   it("normalizes routes before telemetry and classifies response outcomes", () => {
     expect(requestOutcome(200)).toBe("success");
     expect(requestOutcome(404)).toBe("client_error");

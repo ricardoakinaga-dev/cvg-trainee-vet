@@ -10,6 +10,7 @@ import type {
 
 import type { WorkerEventHandler, WorkerEventHandlers } from "./loop.js";
 import { createInternalVectorPoint, vectorPointId } from "./indexing.js";
+import { checkWorkerLease, guardWorkerEffect } from "./lease-guard.js";
 
 export type WorkerIntegrationDependencies = Readonly<{
   readonly source: ContentIndexSourcePort;
@@ -85,7 +86,8 @@ function payloadVersion(event: OutboxEventRecord, field = "version"): number {
 const appealRecalculationHandler =
   (dependencies: WorkerIntegrationDependencies): WorkerEventHandler =>
   async (event): Promise<void> => {
-    if (dependencies.recalculateAppeal === undefined) {
+    const recalculateAppeal = dependencies.recalculateAppeal;
+    if (recalculateAppeal === undefined) {
       throw new Error("appeal recalculation is not configured");
     }
     const decision = payloadString(event, "decision");
@@ -101,7 +103,7 @@ const appealRecalculationHandler =
       appealVersion: payloadVersion(event, "appeal_version"),
       correlationId: event.correlationId,
     };
-    await dependencies.recalculateAppeal(command);
+    await guardWorkerEffect(() => recalculateAppeal(command));
   };
 
 const publishHandler =
@@ -113,6 +115,9 @@ const publishHandler =
 
     const contentId = payloadString(event, "content_id");
     const version = payloadVersion(event);
+    const fence = dependencies.source.withContentVersionFence;
+    if (fence === undefined)
+      throw new Error("content version effect fence is not configured");
     const content = await dependencies.source.findPublishedIndexable(
       contentId,
       version,
@@ -120,15 +125,29 @@ const publishHandler =
     if (content === null) {
       throw new Error("published content is not available for indexing");
     }
+    await checkWorkerLease();
     const vectors = await dependencies.embedding.embed([content.text]);
     const vector = vectors[0];
     if (vector === undefined) {
       throw new Error("embedding provider returned no vector");
     }
 
-    await dependencies.vectorStore.upsert([
-      createInternalVectorPoint(content, vector),
-    ]);
+    const vectorStore = dependencies.vectorStore;
+    await guardWorkerEffect(() =>
+      fence(contentId, version, async (current) => {
+        // Retired or changed work is obsolete, not a publish authority. Reject
+        // the previously computed vector if PostgreSQL text/scope changed.
+        if (current === null) return;
+        if (
+          current.contentId !== contentId ||
+          current.version !== version ||
+          current.scopeId !== content.scopeId ||
+          current.text !== content.text
+        )
+          throw new Error("published index source changed during embedding");
+        await vectorStore.upsert([createInternalVectorPoint(current, vector)]);
+      }),
+    );
   };
 
 const withdrawHandler =
@@ -137,7 +156,16 @@ const withdrawHandler =
     if (dependencies.vectorStore === null) return;
     const contentId = payloadString(event, "content_id");
     const version = payloadVersion(event);
-    await dependencies.vectorStore.delete([vectorPointId(contentId, version)]);
+    const fence = dependencies.source.withContentVersionFence;
+    if (fence === undefined)
+      throw new Error("content version effect fence is not configured");
+    const vectorStore = dependencies.vectorStore;
+    await guardWorkerEffect(() =>
+      fence(contentId, version, async (current) => {
+        if (current !== null) return; // A stale withdraw event cannot delete a published version.
+        await vectorStore.delete([vectorPointId(contentId, version)]);
+      }),
+    );
   };
 
 const workflowChangedHandler: WorkerEventHandler = async () => {
@@ -193,6 +221,7 @@ const aiSuggestionHandler =
     if (content === null) {
       throw new Error("content is not available for internal AI assistance");
     }
+    await checkWorkerLease();
     const suggestion = await dependencies.ai.generateStructured({
       input: content.text,
       instructions:
@@ -213,12 +242,15 @@ const aiSuggestionHandler =
       },
       parse: parseSuggestion,
     });
-    await dependencies.suggestionSink.saveDraftSuggestion({
-      contentId,
-      version,
-      draftText: suggestion.draftText,
-      warnings: suggestion.warnings,
-    });
+    const sink = dependencies.suggestionSink;
+    await guardWorkerEffect(() =>
+      sink.saveDraftSuggestion({
+        contentId,
+        version,
+        draftText: suggestion.draftText,
+        warnings: suggestion.warnings,
+      }),
+    );
   };
 
 export function createIntegrationHandlers(

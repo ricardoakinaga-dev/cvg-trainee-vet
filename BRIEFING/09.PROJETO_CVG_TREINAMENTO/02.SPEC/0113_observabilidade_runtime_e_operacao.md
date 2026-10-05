@@ -83,7 +83,15 @@ redigido, avaliações e códigos de alerta; o handler rejeita query/body inespe
 valida os enums em runtime e aplica allowlist explícita a `postgres`, `qdrant` e `ai`.
 Não é collector, retenção ou tracing distribuído.
 
-O runbook BRIEFING/08.RUNTIME/0804_observability_operational_contract.md define collector, retenção, dashboard agregado, alertas, correlação e limites de trace. scripts/verify-postgres-restore.mjs e tests/integration/postgres-restore.test.ts executam pg_dump/pg_restore em destino temporário isolado com marcador sintético; a execução local desta janela recuperou o marcador e mediu RTO de 2.581 ms. Essa prova é local e descartável: collector/OTel externo, retenção efetiva, dashboard, traces distribuídos, crash/failover, carga e múltiplas réplicas continuam pendentes.
+O runbook BRIEFING/08.RUNTIME/0804_observability_operational_contract.md define collector, retenção, dashboard agregado, alertas, correlação e limites de trace. `scripts/verify-postgres-restore.mjs` e `tests/integration/postgres-restore.test.ts` executam `pg_dump`/`pg_restore` em destino temporário isolado com marcador sintético. No contrato `cvg-restore-summary/v2`, `verificationDurationMs` é uma medição técnica parcial: no verificador com origem fornecida, abrange dump/criação do destino/restore/leitura do marcador; no produtor local, cobre o fixture histórico completo `0053 → restore → 0054`. A execução mais recente do fixture levou 2.172 ms. O campo legado `rtoMs` dos resumos v1 foi corrigido e não representava RTO operacional. O executor local usa somente socket Unix privado, sem listener TCP, valida e decodifica o archive antes de criar o alvo, rejeita um header sintético corrompido e confirma que o destino segue ausente. Também compara a expressão completa das policies restauradas: `content_versions` exige status publicado na linha-alvo e `ai_suggestions` exige identidade da versão e status publicado na mesma subconsulta. Para essas duas tabelas, confere paridade de tipo/default/nulabilidade, constraints validadas e índices válidos/prontos em relação à origem sintética; testes rejeitam diferenças estruturais. Uma archive sintética adicional mantém journal `0053` válido, passa no preflight e no restore, mas inclui uma coluna extra em `content_versions`; após aplicar `0054`, o comparador rejeita o catálogo divergente (`semanticSnapshotMismatchRejected=true`). A prova cobre um drift estrutural controlado, sem garantir compatibilidade de archives externos ou de schema arbitrário. Grants produtivos, constraints fora dessas tabelas, critic fresh integrado, collector/OTel externo, retenção efetiva, dashboard, traces distribuídos, crash/failover, carga e múltiplas réplicas continuam pendentes.
+
+Atualização do drill em 2026-10-02: após `0054`, a fixture também aplica a
+matriz de grants do provisionador local de CI ao app role sintético. O catálogo
+confirma permissões efetivas, `knowledge_documents` sem acesso, ausência de
+ownership/capacidades administrativas e default-deny para tabela nova. A suite
+migration/policy/governance passou 42/42; a duração direta foi 2.226 ms. Essa
+prova não valida grants ou ownership de ambiente produtivo nem aprova o
+principal operacional de migration.
 
 ## 11. Interface operacional web verificável
 

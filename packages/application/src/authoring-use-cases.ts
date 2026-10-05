@@ -1,3 +1,5 @@
+import { ContentDomainError, transitionContent } from "@cvg/domain";
+
 import {
   canAccess,
   type AccountStatus,
@@ -7,8 +9,8 @@ import {
 import { createAuditEntry, type AuditEntry } from "./audit.js";
 import { ApplicationError } from "./errors.js";
 import type {
-  AdvanceContentCommand,
   ContentRecord,
+  ContentWorkflowEvent,
 } from "./content-use-cases.js";
 import { curriculumV3 } from "@cvg/curriculum";
 
@@ -141,21 +143,25 @@ export interface AuthoringRepositoryPort {
     contentId: string,
     version: number,
     scopeId: string,
+    ownerId?: string,
   ) => Promise<AuthoringRecord | null>;
   readonly savePreflight: (
     record: AuthoringRecord,
     preflight: AuthoringPreflight,
   ) => Promise<AuthoringRecord>;
-  readonly saveReview: (
-    record: AuthoringRecord,
-    review: AuthoringReview,
-  ) => Promise<AuthoringRecord>;
-  readonly rollbackReview: (
+  readonly commitReviewTransition: (
     record: AuthoringRecord,
     preflight: AuthoringPreflight,
     review: AuthoringReview,
-  ) => Promise<void>;
+    transition: AuthoringReviewTransition,
+  ) => Promise<AuthoringRecord>;
 }
+
+export type AuthoringReviewTransition = Readonly<{
+  readonly nextStatus: ContentRecord["status"];
+  readonly event: ContentWorkflowEvent;
+  readonly audit: AuditEntry;
+}>;
 
 export type ReviewAuthoringCommand = Readonly<{
   readonly principalId: string;
@@ -173,9 +179,8 @@ export type ReviewAuthoringCommand = Readonly<{
 
 export type AuthoringWorkflowDependencies = Readonly<{
   readonly repository: AuthoringRepositoryPort;
-  readonly transition: (
-    command: AdvanceContentCommand,
-  ) => Promise<ContentRecord>;
+  readonly idFactory: () => string;
+  readonly now?: () => string;
 }>;
 
 export type AuthoringPreflightResult = AuthoringPreflight &
@@ -677,12 +682,9 @@ export async function reviewAuthoringContent(
       capability: capabilityForDecision(command.decision),
       resource: { scopeId: command.scopeId },
       scopes: command.scopes,
-      ...(command.decision === "APROVAR_CLINICAMENTE"
-        ? {
-            approvedClinicalApproverId:
-              command.approvedClinicalApproverId ?? command.principalId,
-          }
-        : {}),
+      ...(command.approvedClinicalApproverId === undefined
+        ? {}
+        : { approvedClinicalApproverId: command.approvedClinicalApproverId }),
     })
   ) {
     throw new ApplicationError("forbidden", "Reviewer is outside the scope");
@@ -705,73 +707,91 @@ export async function reviewAuthoringContent(
       "Authoring record is not reviewable in the requested scope",
     );
   }
-  if (record.authorId === command.principalId) {
+  if (
+    record.authorId === command.principalId &&
+    command.approvedClinicalApproverId !== command.principalId
+  ) {
     throw new ApplicationError(
       "forbidden",
-      "Author cannot approve the authored content",
+      "Only the configured approved clinical identity may review authored content",
     );
   }
 
   const preflight = runAuthoringPreflight(record);
-  const preflightRecord = await dependencies.repository.savePreflight(
-    record,
-    preflight,
-  );
   if (
     command.decision === "APROVAR_CLINICAMENTE" &&
     !preflight.readyForClinicalReview
   ) {
+    await dependencies.repository.savePreflight(record, preflight);
     throw new ApplicationError(
       "state_conflict",
       "Authoring preflight is incomplete",
     );
   }
 
+  const reviewedAt = (dependencies.now ?? (() => new Date().toISOString()))();
   const review = Object.freeze({
     reviewerId: command.principalId,
     decision: command.decision,
     rationale: command.rationale,
-    reviewedAt: new Date().toISOString(),
+    reviewedAt,
     correlationId: command.correlationId,
   });
-  const savedRecord = await dependencies.repository.saveReview(
-    preflightRecord,
-    review,
-  );
-  const transitionCommand: AdvanceContentCommand = {
-    principalId: command.principalId,
-    accountStatus: command.accountStatus,
-    roles: command.roles,
-    scopes: command.scopes,
-    contentId: command.contentId,
-    version: command.version,
-    scopeId: command.scopeId,
-    event: command.decision,
-    correlationId: command.correlationId,
-    ...(command.decision === "APROVAR_CLINICAMENTE"
-      ? {
-          approvedClinicalApproverId:
-            command.approvedClinicalApproverId ?? command.principalId,
-        }
-      : {}),
-  };
-  let transitioned: ContentRecord;
+  let nextStatus: ContentRecord["status"];
   try {
-    transitioned = await dependencies.transition(transitionCommand);
+    nextStatus = transitionContent(
+      {
+        contentId: record.contentId,
+        version: record.version,
+        status: record.contentStatus,
+      },
+      { type: command.decision },
+    ).status;
   } catch (error) {
-    await dependencies.repository.rollbackReview(
-      record,
-      record.preflight,
-      review,
-    );
+    if (error instanceof ContentDomainError) {
+      throw new ApplicationError("state_conflict", "Content state conflict");
+    }
     throw error;
   }
+  const event: ContentWorkflowEvent = Object.freeze({
+    eventId: dependencies.idFactory(),
+    eventType: "content.workflow.changed.v1",
+    aggregateType: "content_version",
+    aggregateId: record.contentId,
+    occurredAt: reviewedAt,
+    schemaVersion: 1,
+    correlationId: command.correlationId,
+    payload: Object.freeze({
+      content_id: record.contentId,
+      version: String(record.version),
+      status: nextStatus,
+    }),
+  });
+  const audit = createAuditEntry({
+    auditId: dependencies.idFactory(),
+    principalId: command.principalId,
+    action: `CONTENT_${command.decision}`,
+    resourceType: "content_version",
+    resourceId: record.contentId,
+    scopeId: record.scopeId,
+    outcome: "SUCCESS",
+    reasonCode: "content_workflow_transition",
+    requestId: command.correlationId,
+    correlationId: command.correlationId,
+    occurredAt: reviewedAt,
+  });
+  const savedRecord = await dependencies.repository.commitReviewTransition(
+    record,
+    preflight,
+    review,
+    { nextStatus, event, audit },
+  );
 
   return Object.freeze({
     review,
     record: Object.freeze({
       ...savedRecord,
-      contentStatus: transitioned.status,
+      contentStatus: nextStatus,
       preflight,
       latestReview: review,
     }),

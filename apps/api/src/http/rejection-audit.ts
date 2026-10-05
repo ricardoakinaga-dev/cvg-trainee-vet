@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { createAuditEntry, type AuditOutcome } from "@cvg/application";
 
 import type { ApiHttpResponse } from "./errors.js";
-import type { ApiHttpDependencies, ApiPrincipal } from "../http.js";
+import type { ApiHttpDependencies, ApiPrincipal } from "./contracts.js";
 import { isPlainRecord, isUuid } from "./validation.js";
 
 export type ApiRejectionAuditRequest = Readonly<{
@@ -49,8 +49,18 @@ export async function recordApiRejectionAudit(
     const scopeId =
       principal === undefined
         ? undefined
-        : principal.scopes.find((candidate) => candidate === requestedScopeId);
-    if (principal !== undefined && scopeId === undefined) return;
+        : (principal.scopes.find(
+            (candidate) => candidate === requestedScopeId,
+          ) ?? principal.scopes[0]);
+    if (principal !== undefined && scopeId === undefined) {
+      reportRejectionAuditFailure(
+        dependencies,
+        requestId,
+        correlationId,
+        "AUDIT_SCOPE_UNAVAILABLE",
+      );
+      return;
+    }
     const auditEntry = createAuditEntry({
       auditId: randomUUID(),
       actorKind: principal === undefined ? "ANONYMOUS" : "AUTHENTICATED",
@@ -69,6 +79,39 @@ export async function recordApiRejectionAudit(
     });
     await dependencies.audit.append(auditEntry);
   } catch {
-    // A rejection audit must never turn a safe public error into an internal error.
+    reportRejectionAuditFailure(
+      dependencies,
+      requestId,
+      correlationId,
+      "AUDIT_APPEND_FAILED",
+    );
+  }
+}
+
+function reportRejectionAuditFailure(
+  dependencies: ApiHttpDependencies,
+  requestId: string,
+  correlationId: string,
+  reason: "AUDIT_SCOPE_UNAVAILABLE" | "AUDIT_APPEND_FAILED",
+): void {
+  // Observer failures must preserve the original safe public rejection.
+  try {
+    dependencies.observability?.metrics.increment(
+      "api.rejection_audit.failures",
+      {
+        reason,
+      },
+    );
+  } catch {
+    // A broken metrics sink must not suppress the independent diagnostic.
+  }
+  try {
+    dependencies.observability?.logger.error("http.rejection.audit.failed", {
+      requestId,
+      correlationId,
+      fields: { outcome: "failure", error_code: reason },
+    });
+  } catch {
+    // Neither the original error nor request data is serialized here.
   }
 }

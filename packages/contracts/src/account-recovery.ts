@@ -16,7 +16,7 @@ export const accountRecoveryAcceptRequestSchema = z
       .number()
       .int()
       .min(60)
-      .max(604_800)
+      .max(43_200)
       .default(3_600),
   })
   .strict();

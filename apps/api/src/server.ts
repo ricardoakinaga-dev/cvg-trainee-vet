@@ -7,10 +7,12 @@ import {
 
 import { apiErrorResponse } from "@cvg/contracts";
 import {
+  API_SLO_DURATION_METRIC,
   BatchSpanProcessor,
   OtlpHttpExporter,
   createTracer,
   extractTraceParent,
+  isolateObservabilityWrites,
   sanitizeCorrelationId,
   type Observability,
   type Span,
@@ -25,14 +27,20 @@ import {
   type ApiHttpRequest,
 } from "./http.js";
 import { recordApiRejectionAudit } from "./http/rejection-audit.js";
+import { createHttpRequestDrain } from "./composition/http-request-drain.js";
+import { createHttpServerLifecycle } from "./composition/http-server-lifecycle.js";
 import {
   createRateLimiter,
   isCsrfAllowed,
   type RateLimitOptions,
+  type RateLimitDecision,
   type RequestRateLimiter,
   type RequestHeaders,
 } from "./request-security.js";
-import { matchRoute } from "./routing/route-registry.js";
+import {
+  matchRoute,
+  type RateLimitRiskClass,
+} from "./routing/route-registry.js";
 import {
   buildSecurityHeaders,
   type SecurityHeadersEnvironment,
@@ -113,6 +121,25 @@ function clientKey(
     trustedProxies,
   );
   return `${clientIp}|${route}`;
+}
+
+async function checkRateLimit(
+  request: IncomingMessage,
+  limiter: RequestRateLimiter,
+  trustedProxies: readonly string[],
+): Promise<RateLimitDecision> {
+  const definition = matchRoute(request.method ?? "GET", toPath(request));
+  const riskClass: RateLimitRiskClass =
+    definition?.riskClass ?? "expensive-read";
+  try {
+    return await limiter.check(
+      clientKey(request, definition?.template ?? "unmatched", trustedProxies),
+      undefined,
+      riskClass,
+    );
+  } catch {
+    return { allowed: false, remaining: 0, retryAfterSeconds: 1 };
+  }
 }
 
 async function readJsonBody(
@@ -230,6 +257,7 @@ function observeRequest(
   trace?: TraceContext,
 ): void {
   if (observability === undefined) return;
+  const isolated = isolateObservabilityWrites(observability);
 
   const method = request.method ?? "GET";
   const route = routeTemplate(method, toPath(request));
@@ -238,10 +266,10 @@ function observeRequest(
   const requestId = payload.body.meta.request_id;
   const correlationId =
     sanitizeCorrelationId(request.headers["x-correlation-id"]) ?? requestId;
-  const durationMs = Math.max(0, Date.now() - startedAt);
+  const durationMs = Math.max(0, performance.now() - startedAt);
   const fields = { method, route, status: payload.status, outcome };
 
-  observability.logger.info("http.request.completed", {
+  isolated.logger.info("http.request.completed", {
     requestId,
     correlationId,
     ...(trace === undefined
@@ -251,35 +279,45 @@ function observeRequest(
     fields,
   });
   // Legacy names are preserved; http_* aliases follow OTel/semconv style.
-  observability.metrics.increment("api.requests.total", {
+  isolated.metrics.increment("api.requests.total", {
     route,
     status,
     outcome,
   });
-  observability.metrics.increment("http_requests_total", {
+  isolated.metrics.increment("http_requests_total", {
     route,
     status,
     outcome,
   });
   if (payload.status >= 500) {
-    observability.metrics.increment("http_server_errors_total", {
+    isolated.metrics.increment("http_server_errors_total", {
       route,
       status,
     });
   }
   if (payload.status === 429) {
-    observability.metrics.increment("rate_limit_rejections_total", { route });
+    isolated.metrics.increment("rate_limit_rejections_total", { route });
   }
-  observability.metrics.observe("api.request.duration_ms", durationMs, {
+  const matched = matchRoute(method, toPath(request));
+  if (
+    payload.status >= 200 &&
+    payload.status < 300 &&
+    matched !== undefined &&
+    matched !== null &&
+    matched.template.startsWith("/api/v1/") &&
+    matched.riskClass !== "ai-assisted" &&
+    ["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)
+  ) {
+    isolated.metrics.observe(API_SLO_DURATION_METRIC, durationMs, {
+      operation: method === "GET" ? "read" : "mutation",
+    });
+  }
+  isolated.metrics.observe("api.request.duration_ms", durationMs, {
     route,
   });
-  observability.metrics.observe(
-    "http_request_duration_seconds",
-    durationMs / 1000,
-    {
-      route,
-    },
-  );
+  isolated.metrics.observe("http_request_duration_seconds", durationMs / 1000, {
+    route,
+  });
 }
 
 type RequestTracer = Readonly<{
@@ -315,6 +353,49 @@ function createRequestTracer(
   });
 }
 
+function finishHttpRequest(
+  payload: ApiHttpResponse,
+  request: IncomingMessage,
+  response: ServerResponse,
+  dependencies: ApiHttpDependencies,
+  startedAt: number,
+  span: Span | null,
+  environment: SecurityHeadersEnvironment,
+): void {
+  if (span !== null) {
+    span.setAttribute("status", payload.status);
+    span.setAttribute("outcome", requestOutcome(payload.status));
+    if (payload.status >= 500) span.setStatus("error");
+    span.end();
+  }
+  observeRequest(
+    dependencies.observability,
+    request,
+    payload,
+    startedAt,
+    span?.context,
+  );
+  writeResponse(response, payload, environment);
+}
+
+function writeClosingResponse(
+  request: IncomingMessage,
+  response: ServerResponse,
+  dependencies: ApiHttpDependencies,
+  environment: SecurityHeadersEnvironment,
+): void {
+  request.resume();
+  writeResponse(
+    response,
+    {
+      status: 503,
+      headers: { connection: "close" },
+      body: apiErrorResponse("internal_error", dependencies.requestIdFactory()),
+    },
+    environment,
+  );
+}
+
 export function createApiServer(
   dependencies: ApiHttpDependencies,
   options: ApiServerOptions = {},
@@ -326,8 +407,7 @@ export function createApiServer(
     `http://${host}:${port}`,
     `http://localhost:${port}`,
   ];
-  const rateLimiter =
-    options.rateLimiter ?? createRateLimiter(options.rateLimit);
+  const limiter = options.rateLimiter ?? createRateLimiter(options.rateLimit);
   const trustedProxies = options.trustedProxies ?? [];
   const requestTracer = createRequestTracer(options.tracing);
   const securityEnvironment: SecurityHeadersEnvironment =
@@ -340,144 +420,144 @@ export function createApiServer(
     throw new RangeError("maxBodyBytes must be a positive integer");
   }
 
-  const server = createServer(async (request, response) => {
-    const startedAt = Date.now();
-    const path = toPath(request);
-    const method = request.method ?? "GET";
-    const route = routeTemplate(method, path);
-    const parent = extractTraceParent(
-      typeof request.headers.traceparent === "string"
-        ? request.headers.traceparent
-        : undefined,
-    );
-    const span: Span | null =
-      requestTracer === null
-        ? null
-        : requestTracer.tracer.startSpan(`HTTP ${method} ${route}`, {
-            ...(parent === null ? {} : { parent }),
-            attributes: { method, route },
-          });
-    const finish = (payload: ApiHttpResponse): void => {
-      if (span !== null) {
-        span.setAttribute("status", payload.status);
-        span.setAttribute("outcome", requestOutcome(payload.status));
-        if (payload.status >= 500) span.setStatus("error");
-        span.end();
-      }
-      observeRequest(
-        dependencies.observability,
-        request,
-        payload,
-        startedAt,
-        span?.context,
-      );
-      writeResponse(response, payload, securityEnvironment);
-    };
-    if (!isHealthPath(path)) {
-      const rateLimit = await rateLimiter.check(
-        clientKey(request, route, trustedProxies),
-      );
-      if (!rateLimit.allowed) {
-        const payload: ApiHttpResponse = {
-          status: 429,
-          body: apiErrorResponse(
-            "rate_limited",
-            dependencies.requestIdFactory(),
-          ),
-          ...(rateLimit.retryAfterSeconds === undefined
-            ? {}
-            : {
-                headers: { "retry-after": String(rateLimit.retryAfterSeconds) },
-              }),
-        };
-        request.resume();
-        await recordApiRejectionAudit(
+  const requestDrain = createHttpRequestDrain();
+  const server = createServer((request, response) =>
+    requestDrain.track(async () => {
+      if (lifecycle.isClosing()) {
+        writeClosingResponse(
+          request,
+          response,
           dependencies,
-          { method, path, route, headers: requestHeaders(request) },
-          payload,
+          securityEnvironment,
         );
-        finish(payload);
         return;
       }
-    }
-
-    const headers = requestHeaders(request);
-    if (!isCsrfAllowed(method, headers, allowedOrigins)) {
-      const payload: ApiHttpResponse = {
-        status: 403,
-        body: apiErrorResponse("forbidden", dependencies.requestIdFactory()),
-      };
-      request.resume();
-      await recordApiRejectionAudit(
-        dependencies,
-        { method, path, route, headers },
-        payload,
+      const startedAt = performance.now();
+      const path = toPath(request);
+      const method = request.method ?? "GET";
+      const route = routeTemplate(method, path);
+      const parent = extractTraceParent(
+        typeof request.headers.traceparent === "string"
+          ? request.headers.traceparent
+          : undefined,
       );
-      finish(payload);
-      return;
-    }
-
-    let body: unknown;
-    try {
-      body = await readJsonBody(request, maxBodyBytes);
-    } catch {
-      const payload: ApiHttpResponse = {
-        status: 422,
-        body: apiErrorResponse(
-          "validation_error",
-          dependencies.requestIdFactory(),
-        ),
-      };
-      await recordApiRejectionAudit(
-        dependencies,
-        { method, path, route, headers },
-        payload,
-      );
-      finish(payload);
-      return;
-    }
-
-    const parsedQuery = toQuery(request);
-    const apiRequest: ApiHttpRequest = {
-      method,
-      path,
-      route,
-      body,
-      query: parsedQuery.values,
-      queryDuplicateKeys: parsedQuery.duplicateKeys,
-      headers,
-    };
-    const payload = await handleApiRequest(apiRequest, dependencies);
-    finish(payload);
-  });
-
-  return Object.freeze({
-    listen: () =>
-      new Promise<void>((resolve, reject) => {
-        server.once("error", reject);
-        server.listen(port, host, () => {
-          server.off("error", reject);
-          resolve();
-        });
-      }),
-    close: () =>
-      new Promise<void>((resolve, reject) => {
-        const flushTelemetry = (async (): Promise<void> => {
-          if (requestTracer === null) return;
-          await Promise.race([
-            requestTracer.processor.flush(),
-            new Promise((done) => setTimeout(done, 2_000)),
-          ]);
-        })();
-        const closeServer = (): void => {
-          if (!server.listening) {
-            resolve();
+      const span: Span | null =
+        requestTracer === null
+          ? null
+          : requestTracer.tracer.startSpan(`HTTP ${method} ${route}`, {
+              ...(parent === null ? {} : { parent }),
+              attributes: { method, route },
+            });
+      try {
+        const finish = (payload: ApiHttpResponse): void =>
+          finishHttpRequest(
+            payload,
+            request,
+            response,
+            dependencies,
+            startedAt,
+            span,
+            securityEnvironment,
+          );
+        if (!isHealthPath(path)) {
+          const rateLimit = await checkRateLimit(
+            request,
+            limiter,
+            trustedProxies,
+          );
+          if (!rateLimit.allowed) {
+            const payload: ApiHttpResponse = {
+              status: 429,
+              body: apiErrorResponse(
+                "rate_limited",
+                dependencies.requestIdFactory(),
+              ),
+              ...(rateLimit.retryAfterSeconds === undefined
+                ? {}
+                : {
+                    headers: {
+                      "retry-after": String(rateLimit.retryAfterSeconds),
+                    },
+                  }),
+            };
+            request.resume();
+            await recordApiRejectionAudit(
+              dependencies,
+              { method, path, route, headers: requestHeaders(request) },
+              payload,
+            );
+            finish(payload);
             return;
           }
-          server.close((error) => (error ? reject(error) : resolve()));
+        }
+
+        const headers = requestHeaders(request);
+        if (!isCsrfAllowed(method, headers, allowedOrigins)) {
+          const payload: ApiHttpResponse = {
+            status: 403,
+            body: apiErrorResponse(
+              "forbidden",
+              dependencies.requestIdFactory(),
+            ),
+          };
+          request.resume();
+          await recordApiRejectionAudit(
+            dependencies,
+            { method, path, route, headers },
+            payload,
+          );
+          finish(payload);
+          return;
+        }
+
+        let body: unknown;
+        try {
+          body = await readJsonBody(request, maxBodyBytes);
+        } catch {
+          const payload: ApiHttpResponse = {
+            status: 422,
+            body: apiErrorResponse(
+              "validation_error",
+              dependencies.requestIdFactory(),
+            ),
+          };
+          await recordApiRejectionAudit(
+            dependencies,
+            { method, path, route, headers },
+            payload,
+          );
+          finish(payload);
+          return;
+        }
+
+        const parsedQuery = toQuery(request);
+        const apiRequest: ApiHttpRequest = {
+          method,
+          path,
+          route,
+          body,
+          query: parsedQuery.values,
+          queryDuplicateKeys: parsedQuery.duplicateKeys,
+          headers,
         };
-        void flushTelemetry.finally(closeServer);
-      }),
+        const payload = await handleApiRequest(apiRequest, dependencies);
+        finish(payload);
+      } finally {
+        span?.end();
+      }
+    }),
+  );
+
+  const lifecycle = createHttpServerLifecycle(
+    server,
+    host,
+    port,
+    () => requestTracer?.processor.close() ?? Promise.resolve(),
+    requestDrain.drain,
+  );
+  return Object.freeze({
+    listen: lifecycle.listen,
+    close: lifecycle.close,
     address: () => server.address(),
   });
 }

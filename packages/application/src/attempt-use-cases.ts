@@ -13,6 +13,7 @@ import {
   toApplicationError,
 } from "./errors.js";
 import type { TransactionSecurityContext } from "./transaction-context.js";
+import { matchesIdempotencyFingerprint } from "./idempotency-fingerprint.js";
 
 export type StartAttemptCommand = Readonly<{
   readonly participantId: string;
@@ -107,9 +108,20 @@ function fingerprint(
 function replayOrThrow(
   record: IdempotencyRecord | null,
   expectedFingerprint: string,
+  allowLegacySubmission = false,
 ): AttemptState | null {
   if (record === null) return null;
-  if (record.fingerprint !== expectedFingerprint) {
+  const persistedTime =
+    allowLegacySubmission && record.attempt.submittedAt !== undefined
+      ? { field: "submittedAt" as const, value: record.attempt.submittedAt }
+      : undefined;
+  if (
+    !matchesIdempotencyFingerprint(
+      record.fingerprint,
+      expectedFingerprint,
+      persistedTime,
+    )
+  ) {
     throw new ApplicationError(
       "idempotency_conflict",
       "Idempotency key was already used with another command",
@@ -227,7 +239,6 @@ export async function submitAttempt(
     attemptId: command.attemptId,
     participantId: command.participantId,
     scopeId: command.scopeId,
-    submittedAt: command.submittedAt,
   });
 
   try {
@@ -237,6 +248,7 @@ export async function submitAttempt(
         const replay = replayOrThrow(
           await operations.idempotency.find(command.idempotencyKey),
           expectedFingerprint,
+          true,
         );
         if (replay !== null) return replay;
 

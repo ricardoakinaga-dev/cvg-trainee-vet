@@ -174,11 +174,12 @@ export function canAccess(request: AuthorizationRequest): boolean {
     case "AUTHOR_CONTENT":
       return hasRole(request, "AUTHOR") && hasScope(request);
     case "APPROVE_CLINICAL_CONTENT":
+      return hasRole(request, "CLINICAL_APPROVER") && hasScope(request);
     case "PUBLISH_CONTENT":
       return isApprovedClinicalIdentity(request) && hasScope(request);
     case "VIEW_INTERNAL_SOURCE":
       return (
-        (hasRole(request, "AUTHOR") || isApprovedClinicalIdentity(request)) &&
+        (hasRole(request, "AUTHOR") || hasRole(request, "CLINICAL_APPROVER")) &&
         hasScope(request)
       );
     case "VIEW_INTERNAL_AUDIT":
@@ -196,7 +197,10 @@ export function canAccess(request: AuthorizationRequest): boolean {
       return hasScopedStaffRole(request) && hasScope(request);
     case "VIEW_CONTENT_REVIEW_QUEUE":
       return (
-        (hasRole(request, "AUTHOR") || hasScopedStaffRole(request)) &&
+        (hasRole(request, "AUTHOR") ||
+          hasRole(request, "MODERATOR") ||
+          hasRole(request, "ADMIN") ||
+          hasRole(request, "CLINICAL_APPROVER")) &&
         hasScope(request)
       );
     case "VIEW_INTERNAL_SCOPES":
@@ -204,7 +208,7 @@ export function canAccess(request: AuthorizationRequest): boolean {
         hasRole(request, "AUTHOR") ||
         hasRole(request, "MODERATOR") ||
         hasRole(request, "ADMIN") ||
-        isApprovedClinicalIdentity(request)
+        hasRole(request, "CLINICAL_APPROVER")
       );
     case "MANAGE_ROLES":
       return hasRole(request, "ADMIN");

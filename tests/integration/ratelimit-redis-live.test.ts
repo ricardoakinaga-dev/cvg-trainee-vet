@@ -7,6 +7,7 @@ import {
 } from "../../apps/api/src/security/rate-limit-store.js";
 import { createApiServer } from "../../apps/api/src/server.js";
 import type { ApiHttpDependencies } from "../../apps/api/src/http.js";
+import { createHttpRateLimiter } from "../../apps/api/src/composition/http-rate-limiter.js";
 
 import {
   liveRedisEnabled,
@@ -79,7 +80,7 @@ async function redisBackedLimiter(
   namespace = `rl:live:${Date.now().toString(36)}:${Math.floor(Math.random() * 1e6).toString(36)}`,
 ): Promise<{
   store: RateLimitStore;
-  check: (key: string) => Promise<{ allowed: boolean }>;
+  check: (key: string) => ReturnType<RateLimitStore["increment"]>;
   close: () => Promise<void>;
 }> {
   const client = await TestRespClient.connect(liveRedisUrl as string);
@@ -97,6 +98,95 @@ async function redisBackedLimiter(
 describe.skipIf(!liveRedisEnabled)(
   "redis multi-instance rate limiting on real Redis",
   () => {
+    it("enforces auth20/recovery10/general120 shared class budgets through two production HTTP limiters", async () => {
+      await flushAll();
+      const environment = {
+        CVG_RATE_LIMIT_BACKEND: "redis",
+        CVG_RATE_LIMIT_REDIS_URL: liveRedisUrl,
+      };
+      const servers = Array.from({ length: 2 }, () =>
+        createApiServer(apiDependencies(), {
+          host: "127.0.0.1",
+          port: 0,
+          // The Redis branch never reads this placeholder database.
+          rateLimiter: createHttpRateLimiter(
+            environment,
+            {} as Parameters<typeof createHttpRateLimiter>[1],
+            () => undefined,
+          ),
+        }),
+      );
+      try {
+        const origins: string[] = [];
+        for (const server of servers) {
+          await server.listen();
+          const address = server.address();
+          if (address === null || typeof address === "string")
+            throw new Error("missing HTTP listener");
+          origins.push(`http://127.0.0.1:${address.port}`);
+        }
+        for (const { path, method, limit, status } of [
+          {
+            path: "/api/v1/invitations/accept",
+            method: "POST",
+            limit: 20,
+            status: 404,
+          },
+          {
+            path: "/api/v1/recovery/accept",
+            method: "POST",
+            limit: 10,
+            status: 404,
+          },
+          {
+            path: "/api/v1/learning-path",
+            method: "GET",
+            limit: 120,
+            status: 401,
+          },
+        ]) {
+          for (let index = 0; index < limit; index++) {
+            const response = await fetch(`${origins[index % 2]}${path}`, {
+              method,
+              headers: { "x-rate-limit-risk-class": "public-low-risk" },
+              ...(method === "POST" ? { body: "{}" } : {}),
+            });
+            expect(response.status).toBe(status);
+            await response.text();
+          }
+          for (const origin of origins) {
+            const denied = await fetch(origin + path, {
+              method,
+              ...(method === "POST" ? { body: "{}" } : {}),
+            });
+            expect(denied.status).toBe(429);
+            expect(Number(denied.headers.get("retry-after"))).toBeGreaterThan(
+              0,
+            );
+            expect(await denied.json()).toMatchObject({
+              success: false,
+              error: { code: "rate_limited" },
+            });
+          }
+        }
+        const client = await TestRespClient.connect(liveRedisUrl as string);
+        try {
+          const keys = await client.command(["KEYS", "rl:v1:risk:*"]);
+          expect(keys).toEqual(
+            expect.arrayContaining([
+              expect.stringContaining("risk:authentication|"),
+              expect.stringContaining("risk:recovery|"),
+              expect.stringContaining("risk:expensive-read|"),
+            ]),
+          );
+        } finally {
+          await client.close();
+        }
+      } finally {
+        for (const server of servers) await server.close();
+      }
+    }, 60000);
+
     it("shares one budget across two instances: 5+5 pass, 11th denied", async () => {
       await flushAll();
       // One shared namespace = one shared budget, like two API replicas

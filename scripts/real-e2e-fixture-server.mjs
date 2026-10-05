@@ -1,18 +1,12 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { unlink, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { URL } from "node:url";
 
 import { and, eq, inArray } from "drizzle-orm";
 
+import { createInvitation } from "../packages/application/dist/index.js";
 import {
-  advanceContent,
-  createInvitation,
-  reviewAuthoringContent,
-} from "../packages/application/dist/index.js";
-import {
-  createAuthoringRepository,
-  createContentUseCaseDependencies,
   createInvitationUseCaseDependencies,
   createPostgresDatabase,
 } from "../packages/persistence/dist/index.js";
@@ -25,8 +19,6 @@ import {
   attemptIdempotency,
   attempts,
   auditEntries,
-  contentEditorialRecords,
-  contentReviewDecisions,
   contentVersions,
   learningActivities,
   learningActivityItems,
@@ -54,15 +46,19 @@ if (!Number.isInteger(port) || port < 1 || port > 65_535) {
 
 const database = createPostgresDatabase(fixtureDatabaseUrl);
 const adminId = randomUUID();
-const reviewerId = randomUUID();
 const scopeId = randomUUID();
 const contentId = randomUUID();
 const contentVersionId = randomUUID();
-const editorialRecordId = randomUUID();
+const activitySlug = `synthetic-real-e2e-${randomUUID().replaceAll("-", "")}`;
 const learningAssignmentId = randomUUID();
 const token = randomBytes(32).toString("base64url");
+const staffToken = randomBytes(32).toString("base64url");
+const forbiddenParticipantToken = randomBytes(32).toString("base64url");
+const foreignScopeId = randomUUID();
 const expectedAnswer = "Resposta sintética persistida.";
 let participantId;
+let staffId;
+let forbiddenParticipantId;
 let activityId;
 let attemptIds = [];
 let closed = false;
@@ -72,11 +68,6 @@ async function seed() {
     {
       id: adminId,
       professionalEmail: `real-e2e-admin-${adminId}@cvg.example`,
-      status: "ACTIVE",
-    },
-    {
-      id: reviewerId,
-      professionalEmail: `real-e2e-reviewer-${reviewerId}@cvg.example`,
       status: "ACTIVE",
     },
   ]);
@@ -97,188 +88,38 @@ async function seed() {
     createInvitationUseCaseDependencies(database.db, randomUUID),
   );
   participantId = invitation.accountId;
-
-  const bankItem = {
-    title: "Resposta sintética",
-    prompt: "Descreva a próxima ação segura.",
-    responseMode: "TEXT",
-    rubric: {
-      dimensions: [
-        {
-          id: "safe-next-step",
-          label: "Próxima ação segura",
-          description: "Explicita uma ação verificável e uma reavaliação.",
-          maxPoints: 1,
-        },
-      ],
-      passScore: 1,
-      criticalErrors: ["Não definir uma ação ou reavaliação."],
-    },
-    feedback: "Defina uma ação segura, uma meta e o momento de reavaliar.",
-    critical: false,
-    remediationTargetObjectiveId: "M02-OBJ-01",
-    sourceRefs: [
-      {
-        code: "CVG-E2E-SYNTHETIC",
-        locator: "fixture-internal://authoring/publication",
-        updateRequired: false,
-      },
-    ],
-    participant: {
-      id: contentId,
-      ordinal: 1,
-      kind: "QUESTAO",
-      title: "Resposta sintética",
-      prompt: "Descreva a próxima ação segura.",
-      responseMode: "TEXT",
-    },
-  };
-  const preflight = {
-    ruleVersion: "authoring-preflight-v1",
-    technicalChecksPassed: true,
-    readyForClinicalReview: true,
-    readyForPublication: false,
-    checks: {
-      requiredFields: true,
-      correctionMetadata: true,
-      publicBoundary: true,
-      sourceTraceability: true,
-      publicationBlocked: true,
-    },
-    checkedAt: new Date().toISOString(),
-  };
+  staffId = await inviteSyntheticAccount("MODERATOR", staffToken);
+  forbiddenParticipantId = await inviteSyntheticAccount(
+    "PARTICIPANT",
+    forbiddenParticipantToken,
+  );
 
   await database.db.insert(contentVersions).values({
     id: contentVersionId,
     contentId,
     scopeId,
     version: 1,
-    status: "EM_REVISAO_CLINICA",
+    status: "PUBLICADO",
     kind: "QUESTAO",
-    title: "Atividade real sintética",
-    participantText: bankItem.prompt,
+    title: "Atividade sintética do fixture",
+    participantText: "Descreva uma próxima etapa em um exemplo fictício.",
     responseMode: "TEXT",
   });
-  await database.db.insert(contentEditorialRecords).values({
-    id: editorialRecordId,
-    contentVersionId,
-    contentId,
+  activityId = randomUUID();
+  await database.db.insert(learningActivities).values({
+    id: activityId,
     scopeId,
-    version: 1,
+    slug: activitySlug,
     moduleId: "M02",
     sessionId: "M02-S1",
-    objectiveId: "M02-OBJ-01",
-    authorId: adminId,
-    item: bankItem,
-    preflight,
+    title: "Atividade sintética do fixture",
+    status: "PUBLISHED",
   });
-
-  const authoringRepository = createAuthoringRepository(database.db);
-  const contentDependencies = createContentUseCaseDependencies(
-    database.db,
-    randomUUID,
-  );
-  await reviewAuthoringContent(
-    {
-      principalId: reviewerId,
-      accountStatus: "ACTIVE",
-      roles: ["AUTHOR", "CLINICAL_APPROVER"],
-      scopes: [scopeId],
-      approvedClinicalApproverId: reviewerId,
-      contentId,
-      version: 1,
-      scopeId,
-      decision: "APROVAR_CLINICAMENTE",
-      rationale: "Revisão sintética do fixture concluída.",
-      correlationId: randomUUID(),
-    },
-    {
-      repository: authoringRepository,
-      transition: (command) => advanceContent(command, contentDependencies),
-    },
-  );
-  await advanceContent(
-    {
-      principalId: reviewerId,
-      accountStatus: "ACTIVE",
-      roles: ["AUTHOR", "CLINICAL_APPROVER"],
-      scopes: [scopeId],
-      approvedClinicalApproverId: reviewerId,
-      contentId,
-      version: 1,
-      scopeId,
-      event: "VERIFICAR_PROJECAO",
-      correlationId: randomUUID(),
-    },
-    contentDependencies,
-  );
-  await advanceContent(
-    {
-      principalId: reviewerId,
-      accountStatus: "ACTIVE",
-      roles: ["CLINICAL_APPROVER"],
-      scopes: [scopeId],
-      approvedClinicalApproverId: reviewerId,
-      contentId,
-      version: 1,
-      scopeId,
-      event: "AUTORIZAR_PUBLICACAO",
-      correlationId: randomUUID(),
-    },
-    contentDependencies,
-  );
-  await advanceContent(
-    {
-      principalId: reviewerId,
-      accountStatus: "ACTIVE",
-      roles: ["CLINICAL_APPROVER"],
-      scopes: [scopeId],
-      approvedClinicalApproverId: reviewerId,
-      contentId,
-      version: 1,
-      scopeId,
-      event: "PUBLICAR",
-      correlationId: randomUUID(),
-    },
-    contentDependencies,
-  );
-
-  const materializedActivities = await database.db
-    .select({
-      id: learningActivities.id,
-      slug: learningActivities.slug,
-      status: learningActivities.status,
-    })
-    .from(learningActivities)
-    .where(
-      and(
-        eq(learningActivities.scopeId, scopeId),
-        eq(learningActivities.moduleId, "M02"),
-        eq(learningActivities.sessionId, "M02-S1"),
-      ),
-    )
-    .limit(1);
-  const materializedActivity = materializedActivities[0];
-  if (
-    materializedActivity === undefined ||
-    materializedActivity.status !== "PUBLISHED"
-  ) {
-    throw new Error("authoring publication did not materialize an activity");
-  }
-  activityId = materializedActivity.id;
-
-  const materializedItems = await database.db
-    .select({ contentVersionId: learningActivityItems.contentVersionId })
-    .from(learningActivityItems)
-    .where(eq(learningActivityItems.activityId, activityId));
-  if (
-    materializedItems.length !== 1 ||
-    materializedItems[0]?.contentVersionId !== contentVersionId
-  ) {
-    throw new Error(
-      "authoring publication did not materialize the fixture item",
-    );
-  }
+  await database.db.insert(learningActivityItems).values({
+    activityId,
+    contentVersionId,
+    ordinal: 1,
+  });
 
   await database.db.insert(learningAssignments).values({
     id: learningAssignmentId,
@@ -302,13 +143,99 @@ async function seed() {
       token,
       activityId,
       itemId: contentVersionId,
-      activitySlug: materializedActivity.slug,
+      activitySlug,
       expectedAnswer,
-      source: "authoring-publication-v1",
+      source: "pre-provisioned-synthetic-activity-v1",
       assignmentSource: "pre-provisioned-learning-assignment-v1",
+      staff: {
+        token: staffToken,
+        participantToken: forbiddenParticipantToken,
+        scopeId,
+        foreignScopeId,
+      },
     }),
     "utf8",
   );
+}
+
+async function inviteSyntheticAccount(role, invitationToken) {
+  const invitation = await createInvitation(
+    {
+      principalId: adminId,
+      accountStatus: "ACTIVE",
+      roles: ["ADMIN"],
+      scopes: [scopeId],
+      professionalEmail: `real-e2e-${role.toLowerCase()}-${randomUUID()}@cvg.example`,
+      invitedRoles: [role],
+      invitedScopes: [scopeId],
+      expiresInSeconds: 3600,
+      correlationId: randomUUID(),
+      tokenFactory: () => invitationToken,
+    },
+    createInvitationUseCaseDependencies(database.db, randomUUID),
+  );
+  return invitation.accountId;
+}
+
+function fixtureAccountIds() {
+  return [adminId, participantId, staffId, forbiddenParticipantId].filter(
+    (id) => id !== undefined,
+  );
+}
+
+async function readStaffEvidence() {
+  if (staffId === undefined || forbiddenParticipantId === undefined) {
+    return { verified: false };
+  }
+  const rows = await database.db
+    .select({
+      accountId: sessions.accountId,
+      roles: sessions.roles,
+      scopes: sessions.scopes,
+      revokedAt: sessions.revokedAt,
+    })
+    .from(sessions)
+    .where(inArray(sessions.accountId, [staffId, forbiddenParticipantId]));
+  const invitations = await database.db
+    .select({ acceptedAt: accountInvitations.acceptedAt })
+    .from(accountInvitations)
+    .where(
+      inArray(accountInvitations.accountId, [staffId, forbiddenParticipantId]),
+    );
+  const moderator = rows.find((row) => row.accountId === staffId);
+  const participant = rows.find(
+    (row) => row.accountId === forbiddenParticipantId,
+  );
+  const matches = (row, role) =>
+    row !== undefined &&
+    JSON.stringify(row.roles) === JSON.stringify([role]) &&
+    JSON.stringify(row.scopes) === JSON.stringify([scopeId]);
+  const verified =
+    rows.length === 2 &&
+    invitations.length === 2 &&
+    invitations.every((row) => row.acceptedAt !== null) &&
+    matches(moderator, "MODERATOR") &&
+    moderator.revokedAt !== null &&
+    matches(participant, "PARTICIPANT") &&
+    participant.revokedAt === null;
+  return {
+    verified,
+    moderator:
+      moderator === undefined
+        ? null
+        : {
+            roles: moderator.roles,
+            scopes: moderator.scopes,
+            revoked: moderator.revokedAt !== null,
+          },
+    participant:
+      participant === undefined
+        ? null
+        : {
+            roles: participant.roles,
+            scopes: participant.scopes,
+          },
+  };
 }
 
 async function readPersistenceEvidence(attemptId) {
@@ -399,41 +326,33 @@ async function readPersistenceEvidence(attemptId) {
       count: outboxRows.length,
       eventTypes: [...new Set(outboxRows.map((row) => row.eventType))].sort(),
     },
-    audit: { actions: auditActions },
+    audit: { actions: auditActions, count: auditRows.length },
   };
 }
 
 async function assertCleanupComplete() {
-  const fixtureAccountIds = [
-    adminId,
-    reviewerId,
-    ...(participantId === undefined ? [] : [participantId]),
-  ];
+  const accountIds = fixtureAccountIds();
   const checks = [
     [
       "accounts",
       await database.db
         .select({ id: accounts.id })
         .from(accounts)
-        .where(inArray(accounts.id, fixtureAccountIds)),
+        .where(inArray(accounts.id, accountIds)),
     ],
     [
       "invitations",
-      participantId === undefined
-        ? []
-        : await database.db
-            .select({ id: accountInvitations.id })
-            .from(accountInvitations)
-            .where(eq(accountInvitations.accountId, participantId)),
+      await database.db
+        .select({ id: accountInvitations.id })
+        .from(accountInvitations)
+        .where(inArray(accountInvitations.accountId, accountIds)),
     ],
     [
       "sessions",
-      participantId === undefined
-        ? []
-        : await database.db
-            .select({ id: sessions.id })
-            .from(sessions)
-            .where(eq(sessions.accountId, participantId)),
+      await database.db
+        .select({ id: sessions.id })
+        .from(sessions)
+        .where(inArray(sessions.accountId, accountIds)),
     ],
     [
       "learning_assignments",
@@ -507,20 +426,6 @@ async function assertCleanupComplete() {
             .where(eq(learningActivities.id, activityId)),
     ],
     [
-      "review_decisions",
-      await database.db
-        .select({ id: contentReviewDecisions.id })
-        .from(contentReviewDecisions)
-        .where(eq(contentReviewDecisions.contentVersionId, contentVersionId)),
-    ],
-    [
-      "editorial_records",
-      await database.db
-        .select({ id: contentEditorialRecords.id })
-        .from(contentEditorialRecords)
-        .where(eq(contentEditorialRecords.id, editorialRecordId)),
-    ],
-    [
       "content_versions",
       await database.db
         .select({ id: contentVersions.id })
@@ -550,6 +455,7 @@ async function assertCleanupComplete() {
   if (residual.length > 0) {
     throw new Error(`fixture cleanup left rows: ${residual.join(", ")}`);
   }
+  return Object.fromEntries(checks.map(([name, rows]) => [name, rows.length]));
 }
 
 async function cleanup() {
@@ -624,20 +530,48 @@ async function cleanup() {
       .delete(outboxEvents)
       .where(eq(outboxEvents.aggregateId, contentId));
     await database.db
-      .delete(contentReviewDecisions)
-      .where(eq(contentReviewDecisions.contentVersionId, contentVersionId));
-    await database.db
-      .delete(contentEditorialRecords)
-      .where(eq(contentEditorialRecords.contentVersionId, contentVersionId));
-    await database.db
       .delete(contentVersions)
       .where(eq(contentVersions.id, contentVersionId));
-    if (participantId !== undefined) {
-      await database.db.delete(accounts).where(eq(accounts.id, participantId));
+    const accountIds = fixtureAccountIds();
+    await database.db
+      .delete(sessions)
+      .where(inArray(sessions.accountId, accountIds));
+    await database.db
+      .delete(accountInvitations)
+      .where(inArray(accountInvitations.accountId, accountIds));
+    await database.db.delete(accounts).where(inArray(accounts.id, accountIds));
+    const deletableEntities = await assertCleanupComplete();
+    const retainedAuditRows = await database.db
+      .select({
+        id: auditEntries.id,
+        principalId: auditEntries.principalId,
+        action: auditEntries.action,
+        resourceId: auditEntries.resourceId,
+        scopeId: auditEntries.scopeId,
+        requestId: auditEntries.requestId,
+      })
+      .from(auditEntries)
+      .where(inArray(auditEntries.principalId, accountIds))
+      .orderBy(auditEntries.id);
+    const evidence = {
+      verified: true,
+      deletableEntities,
+      retainedAudit: {
+        count: retainedAuditRows.length,
+        sha256: createHash("sha256")
+          .update(JSON.stringify(retainedAuditRows))
+          .digest("hex"),
+        lifecycle: "append-only until disposable cluster destruction",
+      },
+    };
+    console.log(JSON.stringify({ fixtureCleanup: evidence }));
+    if (process.env.CVG_REAL_E2E_ARTIFACT_PREFIX !== undefined) {
+      await writeFile(
+        `${process.env.CVG_REAL_E2E_ARTIFACT_PREFIX}-fixture-cleanup.json`,
+        JSON.stringify(evidence, null, 2) + "\n",
+        { flag: "wx" },
+      );
     }
-    await database.db.delete(accounts).where(eq(accounts.id, reviewerId));
-    await database.db.delete(accounts).where(eq(accounts.id, adminId));
-    await assertCleanupComplete();
   } finally {
     await database.close();
     await unlink(fixtureFile).catch(() => undefined);
@@ -652,6 +586,20 @@ try {
 }
 
 const server = createServer((request, response) => {
+  if (request.method === "GET" && request.url === "/staff-evidence") {
+    void (async () => {
+      try {
+        const evidence = await readStaffEvidence();
+        response.statusCode = evidence.verified ? 200 : 500;
+        response.setHeader("content-type", "application/json; charset=utf-8");
+        response.end(JSON.stringify(evidence));
+      } catch {
+        response.statusCode = 500;
+        response.end(JSON.stringify({ verified: false }));
+      }
+    })();
+    return;
+  }
   if (request.method === "GET" && request.url === "/ready") {
     response.statusCode = 200;
     response.setHeader("content-type", "application/json; charset=utf-8");

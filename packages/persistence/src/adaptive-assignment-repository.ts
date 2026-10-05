@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 
 import { and, asc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   createLearningAssignment,
   transitionLearningAssignment,
@@ -22,18 +21,18 @@ import {
   learningActivityItems,
   learningAssignments,
 } from "./schema.js";
-import type * as schema from "./schema.js";
 import {
   learningAssignmentRowToState,
   learningAssignmentStateToRow,
   type LearningAssignmentRowShape,
 } from "./learning-state-repository.js";
 import { setDatabaseSecurityContext } from "./security-context.js";
+import type {
+  DatabaseExecutor,
+  DatabaseTransaction,
+} from "./database-executor.js";
 
-export type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
-export type DatabaseTransaction = Parameters<
-  Parameters<DatabaseExecutor["transaction"]>[0]
->[0];
+export type { DatabaseExecutor, DatabaseTransaction };
 
 export class AdaptiveAssignmentPersistenceError extends Error {
   public constructor(message: string) {

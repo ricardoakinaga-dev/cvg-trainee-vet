@@ -1,6 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-import { expect, test, type Response } from "@playwright/test";
+import {
+  expect,
+  test,
+  type Page,
+  type Response as PlaywrightResponse,
+} from "@playwright/test";
 
 type RealFixture = Readonly<{
   readonly token: string;
@@ -8,8 +14,14 @@ type RealFixture = Readonly<{
   readonly itemId: string;
   readonly activitySlug: string;
   readonly expectedAnswer: string;
-  readonly source: "authoring-publication-v1";
+  readonly source: "pre-provisioned-synthetic-activity-v1";
   readonly assignmentSource: "pre-provisioned-learning-assignment-v1";
+  readonly staff: Readonly<{
+    token: string;
+    participantToken: string;
+    scopeId: string;
+    foreignScopeId: string;
+  }>;
 }>;
 
 const fixtureFile =
@@ -17,6 +29,9 @@ const fixtureFile =
 const webOrigin = new URL(process.env.BASE_URL ?? "http://127.0.0.1:3100")
   .origin;
 const fixtureOrigin = `http://127.0.0.1:${process.env.CVG_REAL_E2E_FIXTURE_PORT ?? "3102"}`;
+const artifactPrefix =
+  process.env.CVG_REAL_E2E_ARTIFACT_PREFIX ??
+  `.agent/artifacts/remediation-20261003/r5-runtime-unmanaged-${Date.now()}`;
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
@@ -33,7 +48,7 @@ function isRecord(value: unknown): value is ApiRecord {
 }
 
 function isProxyApiResponse(
-  response: Response,
+  response: PlaywrightResponse,
   method: string,
   path: string,
 ): boolean {
@@ -50,7 +65,7 @@ function isProxyApiResponse(
 }
 
 async function assertApiSuccess(
-  response: Response,
+  response: PlaywrightResponse,
   expectedStatus: number,
   observations: RuntimeObservation[],
 ): Promise<unknown> {
@@ -63,6 +78,7 @@ async function assertApiSuccess(
   expect(url.origin).toBe(webOrigin);
   const requestId = response.headers()["x-request-id"];
   expect(requestId).toMatch(uuidPattern);
+  if (requestId === undefined) throw new Error("API request ID is required");
   const payload: unknown = await response.json();
   expect(payload).toMatchObject({
     success: true,
@@ -85,6 +101,134 @@ function asRecord(value: unknown, label: string): ApiRecord {
   return value;
 }
 
+async function assertHttpEnvelope(
+  response: PlaywrightResponse,
+  status: number,
+  observations: RuntimeObservation[],
+): Promise<ApiRecord> {
+  expect(response.status(), await response.text()).toBe(status);
+  const url = new URL(response.url());
+  expect(url.origin).toBe(webOrigin);
+  const requestId = response.headers()["x-request-id"];
+  if (requestId === undefined) throw new Error("API request ID is required");
+  expect(requestId).toMatch(uuidPattern);
+  const payload = asRecord(await response.json(), "API envelope");
+  expect(payload).toMatchObject({
+    success: status < 400,
+    meta: { request_id: requestId },
+  });
+  if (status >= 400) expect(payload).not.toHaveProperty("data");
+  observations.push({
+    method: response.request().method(),
+    path: url.pathname,
+    status,
+    requestId,
+  });
+  return payload;
+}
+
+async function browserRequest(
+  page: Page,
+  method: "GET" | "POST",
+  path: string,
+  data?: ApiRecord,
+): Promise<PlaywrightResponse> {
+  const requestId = randomUUID();
+  const target = new URL(path, webOrigin);
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (candidate) =>
+        isProxyApiResponse(candidate, method, target.pathname) &&
+        new URL(candidate.url()).search === target.search &&
+        candidate.request().headers()["x-request-id"] === requestId,
+    ),
+    page.evaluate(
+      async (command) => {
+        const response = await fetch(command.path, {
+          method: command.method,
+          credentials: "include",
+          headers: {
+            "x-request-id": command.requestId,
+            ...(command.data === undefined
+              ? {}
+              : { "content-type": "application/json" }),
+          },
+          ...(command.data === undefined
+            ? {}
+            : {
+                body: JSON.stringify(command.data),
+              }),
+        });
+        await response.text();
+      },
+      { method, path, data, requestId },
+    ),
+  ]);
+  return response;
+}
+
+async function paintedScreenshot(page: Page, name: string): Promise<void> {
+  await expect(page.locator("main")).toHaveAttribute("aria-busy", "false");
+  await page.waitForLoadState("domcontentloaded");
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await Promise.all(
+      [...document.images].map((image) =>
+        image.decode().catch(() => undefined),
+      ),
+    );
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+  });
+  await page.screenshot({
+    path: `${artifactPrefix}-${name}.png`,
+    fullPage: true,
+    animations: "disabled",
+  });
+}
+
+test.beforeAll(async () => {
+  if (process.env.CVG_RUN_REAL_E2E !== "true") {
+    throw new Error("real-runtime tests require CVG_RUN_REAL_E2E=true");
+  }
+
+  let fixtureResponse: Response;
+  try {
+    fixtureResponse = await fetch(`${fixtureOrigin}/ready`);
+  } catch (error) {
+    throw new Error("real E2E fixture runtime is unavailable", {
+      cause: error,
+    });
+  }
+  const fixturePayload: unknown = await fixtureResponse.json();
+  if (
+    !fixtureResponse.ok ||
+    !isRecord(fixturePayload) ||
+    fixturePayload.ready !== true
+  ) {
+    throw new Error("real E2E fixture runtime is not ready");
+  }
+
+  let dependencyResponse: Response;
+  try {
+    dependencyResponse = await fetch(`${webOrigin}/health/dependencies`);
+  } catch (error) {
+    throw new Error("real API runtime is unavailable", { cause: error });
+  }
+  const dependencyPayload: unknown = await dependencyResponse.json();
+  if (
+    !dependencyResponse.ok ||
+    !isRecord(dependencyPayload) ||
+    !isRecord(dependencyPayload.data) ||
+    dependencyPayload.data.status !== "READY" ||
+    !isRecord(dependencyPayload.data.dependencies) ||
+    dependencyPayload.data.dependencies.postgres !== "UP"
+  ) {
+    throw new Error("real API runtime or PostgreSQL is not ready");
+  }
+});
+
 test.afterAll(async () => {
   if (process.env.CVG_RUN_REAL_E2E !== "true") return;
   const response = await fetch(`${fixtureOrigin}/shutdown`);
@@ -92,36 +236,6 @@ test.afterAll(async () => {
   if (!response.ok || payload.cleaned !== true) {
     throw new Error("real E2E fixture cleanup did not complete");
   }
-});
-
-test("browser reaches the real API through the web proxy", async ({ page }) => {
-  const observations: RuntimeObservation[] = [];
-  const dependencyResponse = page.waitForResponse(
-    (response) =>
-      isProxyApiResponse(response, "GET", "/health/dependencies") &&
-      response.request().resourceType() === "fetch",
-  );
-
-  await page.goto("/operations");
-  const response = await dependencyResponse;
-
-  const dependencyData = asRecord(
-    await assertApiSuccess(response, 200, observations),
-    "dependency",
-  );
-  expect(dependencyData).toMatchObject({
-    status: "READY",
-    dependencies: {
-      postgres: "UP",
-      qdrant: "DISABLED",
-      ai: "DISABLED",
-    },
-  });
-  await expect(page.getByTestId("operations-ready")).toBeVisible();
-  await expect(page.getByText(/Estado geral:/u)).toBeVisible();
-  await expect(page.locator("body")).not.toContainText("password");
-  await expect(page.locator("body")).not.toContainText("api_key");
-  await expect(page.locator("body")).not.toContainText("postgresql://");
 });
 
 test("participant completes a persisted synthetic activity through the real API", async ({
@@ -132,11 +246,11 @@ test("participant completes a persisted synthetic activity through the real API"
     await readFile(fixtureFile, "utf8"),
   ) as RealFixture;
 
-  expect(fixture.source).toBe("authoring-publication-v1");
+  expect(fixture.source).toBe("pre-provisioned-synthetic-activity-v1");
   expect(fixture.assignmentSource).toBe(
     "pre-provisioned-learning-assignment-v1",
   );
-  expect(fixture.activitySlug).toMatch(/^authoring-[a-f0-9]{32}$/u);
+  expect(fixture.activitySlug).toMatch(/^synthetic-real-e2e-[a-f0-9]{32}$/u);
   expect(fixture.expectedAnswer).toBe("Resposta sintética persistida.");
 
   const observations: RuntimeObservation[] = [];
@@ -201,7 +315,7 @@ test("participant completes a persisted synthetic activity through the real API"
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Atividade real sintética",
+      name: "Atividade sintética do fixture",
     }),
   ).toBeVisible();
 
@@ -218,6 +332,7 @@ test("participant completes a persisted synthetic activity through the real API"
   expect(started.version).toBe(1);
   const attemptId = started.attemptId;
   expect(attemptId).toMatch(uuidPattern);
+  if (typeof attemptId !== "string") throw new Error("Attempt ID is required");
   await expect(page.getByText("Tentativa iniciada.")).toBeVisible();
 
   const answerInput = page.locator(`#answer-${fixture.itemId}`);
@@ -226,6 +341,70 @@ test("participant completes a persisted synthetic activity through the real API"
   await answerInput.fill(fixture.expectedAnswer);
   await expect(answerInput).toHaveValue(fixture.expectedAnswer);
 
+  await expect(
+    page.getByRole("button", { name: "Enviar tentativa" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText(
+      "Salve as alterações nas respostas antes de enviar a tentativa.",
+    ),
+  ).toBeVisible();
+  const sidebarHeadingLines = async () =>
+    page
+      .locator(".privacy-card .section-heading h2")
+      .evaluateAll((headings) =>
+        headings.map(
+          (heading) =>
+            heading.getBoundingClientRect().height /
+            Number.parseFloat(getComputedStyle(heading).lineHeight),
+        ),
+      );
+  expect((await sidebarHeadingLines()).every((lines) => lines <= 3.1)).toBe(
+    true,
+  );
+  await paintedScreenshot(page, "participant-pending-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect((await sidebarHeadingLines()).every((lines) => lines <= 3.1)).toBe(
+    true,
+  );
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth + 1,
+    ),
+  ).toBe(true);
+  await paintedScreenshot(page, "participant-pending-mobile");
+  await page.setViewportSize({ width: 1280, height: 720 });
+
+  const replayedOperations = new Map<string, string>();
+  await page.route(
+    /\/api\/v1\/attempts\/[^/]+\/(?:answers|submit)$/u,
+    async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      const body = route.request().postData();
+      expect(body).not.toBeNull();
+      if (replayedOperations.has(path)) {
+        expect(body).toBe(replayedOperations.get(path));
+        await route.continue();
+        return;
+      }
+      replayedOperations.set(path, body!);
+      // Both requests reach the real API/PG concurrently. Lose their response
+      // only after confirming the committed projections agree.
+      const [first, concurrent] = await Promise.all([
+        route.fetch(),
+        route.fetch(),
+      ]);
+      expect(first.status()).toBe(200);
+      expect(concurrent.status()).toBe(200);
+      const firstPayload = (await first.json()) as { data: unknown };
+      const concurrentPayload = (await concurrent.json()) as { data: unknown };
+      expect(concurrentPayload.data).toEqual(firstPayload.data);
+      await route.abort("failed");
+    },
+  );
+
   const answerResponse = page.waitForResponse((response) =>
     isProxyApiResponse(
       response,
@@ -233,6 +412,13 @@ test("participant completes a persisted synthetic activity through the real API"
       `/api/v1/attempts/${attemptId}/answers`,
     ),
   );
+  await page.getByRole("button", { name: "Salvar resposta" }).click();
+  await expect(
+    page
+      .getByRole("alert")
+      .filter({ hasText: "Não foi possível concluir a operação." }),
+  ).toHaveText("Não foi possível concluir a operação. Tente novamente.");
+  await expect(answerInput).toHaveValue(fixture.expectedAnswer);
   await page.getByRole("button", { name: "Salvar resposta" }).click();
   const saved = asRecord(
     await assertApiSuccess(await answerResponse, 200, observations),
@@ -252,6 +438,16 @@ test("participant completes a persisted synthetic activity through the real API"
   });
   await expect(page.getByText("Resposta salva.")).toBeVisible();
 
+  await page.reload();
+  await expect(answerInput).toHaveValue(fixture.expectedAnswer);
+  await expect(
+    page.getByRole("button", { name: "Enviar tentativa" }),
+  ).toBeEnabled();
+  await paintedScreenshot(page, "participant-restored-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await paintedScreenshot(page, "participant-restored-mobile");
+  await page.setViewportSize({ width: 1280, height: 720 });
+
   const submitResponse = page.waitForResponse((response) =>
     isProxyApiResponse(
       response,
@@ -259,6 +455,12 @@ test("participant completes a persisted synthetic activity through the real API"
       `/api/v1/attempts/${attemptId}/submit`,
     ),
   );
+  await page.getByRole("button", { name: "Enviar tentativa" }).click();
+  await expect(
+    page
+      .getByRole("alert")
+      .filter({ hasText: "Não foi possível concluir a operação." }),
+  ).toHaveText("Não foi possível concluir a operação. Tente novamente.");
   await page.getByRole("button", { name: "Enviar tentativa" }).click();
   const submitted = asRecord(
     await assertApiSuccess(await submitResponse, 200, observations),
@@ -275,7 +477,7 @@ test("participant completes a persisted synthetic activity through the real API"
   const persistedCookies = await page.context().cookies();
   const resumedContext = await browser.newContext({
     baseURL: webOrigin,
-    storageState: { cookies: persistedCookies },
+    storageState: { cookies: persistedCookies, origins: [] },
   });
   try {
     const resumedPage = await resumedContext.newPage();
@@ -292,6 +494,8 @@ test("participant completes a persisted synthetic activity through the real API"
     });
     expect(resumed.status).toBe(200);
     expect(resumed.requestId).toMatch(uuidPattern);
+    if (resumed.requestId === null)
+      throw new Error("API request ID is required");
     expect(resumed.payload).toMatchObject({
       success: true,
       meta: { request_id: resumed.requestId },
@@ -328,12 +532,14 @@ test("participant completes a persisted synthetic activity through the real API"
     answer: { itemId: fixture.itemId, response: fixture.expectedAnswer },
     idempotency: { attempt: 2, answer: 1 },
     outbox: {
+      count: 2,
       eventTypes: expect.arrayContaining([
         "answer.saved.v1",
         "attempt.submitted.v1",
       ]),
     },
     audit: {
+      count: 3,
       actions: expect.arrayContaining([
         "ATTEMPT_STARTED",
         "ANSWER_SAVED",
@@ -342,6 +548,7 @@ test("participant completes a persisted synthetic activity through the real API"
     },
   });
   expect(persistenceResponse.status).toBe(200);
+  expect(replayedOperations.size).toBe(2);
 
   expect(observations).toEqual(
     expect.arrayContaining([
@@ -380,4 +587,237 @@ test("participant completes a persisted synthetic activity through the real API"
   await expect(page.locator("body")).not.toContainText("participantId");
   await expect(page.locator("body")).not.toContainText("participantText");
   await expect(page.locator("body")).not.toContainText("tokenHash");
+});
+
+test("moderator uses a real invitation/session and protected staff data denies unauthorized access", async ({
+  page,
+  browser,
+}) => {
+  const fixture = JSON.parse(
+    await readFile(fixtureFile, "utf8"),
+  ) as RealFixture;
+  expect(
+    fixture.staff,
+    "fixture must provision a real moderator invitation",
+  ).toBeDefined();
+  const observations: RuntimeObservation[] = [];
+  const protectedPaths = [
+    "/api/v1/session/current",
+    "/api/v1/dashboard",
+    "/api/v1/internal/session/scopes",
+  ];
+  await page.goto("/");
+  for (const path of protectedPaths) {
+    await assertHttpEnvelope(
+      await browserRequest(page, "GET", path),
+      401,
+      observations,
+    );
+  }
+  await page.goto("/operations");
+  await expect(page).toHaveURL(`${webOrigin}/?access=required`);
+  await expect(page.getByLabel("Token de convite")).toBeVisible();
+  await expect(page.getByTestId("staff-dashboard")).toHaveCount(0);
+
+  const accepted = await browserRequest(
+    page,
+    "POST",
+    "/api/v1/invitations/accept",
+    { token: fixture.staff.token, sessionExpiresInSeconds: 3600 },
+  );
+  await assertHttpEnvelope(accepted, 200, observations);
+  const setCookie = (await accepted.allHeaders())["set-cookie"];
+  expect(setCookie).toMatch(/^__Host-cvg_session=[A-Za-z0-9_-]{32,256};/u);
+  expect(setCookie).toContain("HttpOnly");
+  expect(setCookie).toContain("Secure");
+  expect(setCookie).toContain("SameSite=Lax");
+  const cookies = await page.context().cookies();
+  const sessionCookie = cookies.find(
+    (cookie) => cookie.name === "__Host-cvg_session",
+  );
+  expect(sessionCookie).toMatchObject({
+    httpOnly: true,
+    secure: true,
+    path: "/",
+    sameSite: "Lax",
+  });
+  expect(setCookie).toContain(`__Host-cvg_session=${sessionCookie?.value};`);
+  expect(sessionCookie?.value).not.toBe("synthetic-e2e-session");
+  const current = await assertHttpEnvelope(
+    await browserRequest(page, "GET", "/api/v1/session/current"),
+    200,
+    observations,
+  );
+  expect(current.data).toEqual({ status: "active" });
+  const scopes = await assertHttpEnvelope(
+    await browserRequest(page, "GET", "/api/v1/internal/session/scopes"),
+    200,
+    observations,
+  );
+  expect(scopes.data).toMatchObject({
+    kind: "internal_session_scopes",
+    scopes: [fixture.staff.scopeId],
+  });
+
+  const dashboardResponse = page.waitForResponse((response) =>
+    isProxyApiResponse(response, "GET", "/api/v1/dashboard"),
+  );
+  await page.goto("/operations");
+  const dashboard = asRecord(
+    await assertApiSuccess(await dashboardResponse, 200, observations),
+    "staff dashboard",
+  );
+  expect(dashboard).toMatchObject({
+    kind: "staff",
+    scopes: [fixture.staff.scopeId],
+  });
+  await expect(
+    page.getByRole("heading", { name: "Saúde do ambiente" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Acompanhar evolução" }),
+  ).toBeVisible();
+  await expect(page.getByTestId("staff-dashboard")).toBeVisible();
+  await expect(page.getByTestId("operations-ready")).toContainText(
+    "PostgreSQL",
+  );
+  await paintedScreenshot(page, "staff-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth + 1,
+    ),
+  ).toBe(true);
+  await paintedScreenshot(page, "staff-mobile");
+
+  const reportPath = "/api/v1/internal/reports/continuing-education";
+  const ownReport = await assertHttpEnvelope(
+    await browserRequest(
+      page,
+      "GET",
+      `${reportPath}?scopeId=${fixture.staff.scopeId}`,
+    ),
+    200,
+    observations,
+  );
+  expect(ownReport.data).toMatchObject({ scopeId: fixture.staff.scopeId });
+  await assertHttpEnvelope(
+    await browserRequest(
+      page,
+      "GET",
+      `${reportPath}?scopeId=${fixture.staff.foreignScopeId}`,
+    ),
+    403,
+    observations,
+  );
+  expect(JSON.stringify(dashboard)).not.toContain(fixture.staff.foreignScopeId);
+
+  const participantContext = await browser.newContext({ baseURL: webOrigin });
+  try {
+    const participantPage = await participantContext.newPage();
+    await participantPage.goto("/");
+    const participantAccepted = await browserRequest(
+      participantPage,
+      "POST",
+      "/api/v1/invitations/accept",
+      {
+        token: fixture.staff.participantToken,
+        sessionExpiresInSeconds: 3600,
+      },
+    );
+    await assertHttpEnvelope(participantAccepted, 200, observations);
+    await assertHttpEnvelope(
+      await browserRequest(
+        participantPage,
+        "GET",
+        "/api/v1/internal/session/scopes",
+      ),
+      403,
+      observations,
+    );
+    await assertHttpEnvelope(
+      await browserRequest(
+        participantPage,
+        "GET",
+        `${reportPath}?scopeId=${fixture.staff.scopeId}`,
+      ),
+      403,
+      observations,
+    );
+    const participantDashboard = await assertHttpEnvelope(
+      await browserRequest(participantPage, "GET", "/api/v1/dashboard"),
+      200,
+      observations,
+    );
+    expect(
+      asRecord(participantDashboard.data, "participant dashboard").kind,
+    ).toBe("participant");
+    await participantPage.goto("/operations");
+    await expect(participantPage).toHaveURL(`${webOrigin}/?access=required`);
+    await expect(participantPage.locator("main")).toHaveAttribute(
+      "aria-busy",
+      "false",
+    );
+    await expect(
+      participantPage.getByText("Sessão ativa", { exact: true }),
+    ).toBeVisible();
+    await expect(participantPage.getByLabel("Token de convite")).toHaveCount(0);
+    await expect(participantPage.getByTestId("staff-dashboard")).toHaveCount(0);
+    await assertHttpEnvelope(
+      await browserRequest(participantPage, "GET", "/api/v1/session/current"),
+      200,
+      observations,
+    );
+  } finally {
+    await participantContext.close();
+  }
+
+  // Retain the actual issued cookie in a separate context before revocation;
+  // replay must fail server-side even though this context still holds it.
+  const revokedContext = await browser.newContext({
+    baseURL: webOrigin,
+    storageState: { cookies, origins: [] },
+  });
+  try {
+    const revoked = await browserRequest(
+      page,
+      "POST",
+      "/api/v1/session/revoke",
+      {},
+    );
+    await assertHttpEnvelope(revoked, 200, observations);
+    expect((await revoked.allHeaders())["set-cookie"]).toContain("Max-Age=0");
+    const revokedPage = await revokedContext.newPage();
+    await revokedPage.goto("/");
+    for (const path of protectedPaths) {
+      await assertHttpEnvelope(
+        await browserRequest(revokedPage, "GET", path),
+        401,
+        observations,
+      );
+    }
+    await revokedPage.goto("/operations");
+    await expect(revokedPage).toHaveURL(`${webOrigin}/?access=required`);
+    await expect(revokedPage.getByLabel("Token de convite")).toBeVisible();
+    await expect(revokedPage.getByTestId("staff-dashboard")).toHaveCount(0);
+  } finally {
+    await revokedContext.close();
+  }
+  const evidence = await fetch(`${fixtureOrigin}/staff-evidence`);
+  expect(evidence.status).toBe(200);
+  expect(await evidence.json()).toMatchObject({
+    verified: true,
+    moderator: {
+      roles: ["MODERATOR"],
+      scopes: [fixture.staff.scopeId],
+      revoked: true,
+    },
+    participant: { roles: ["PARTICIPANT"], scopes: [fixture.staff.scopeId] },
+  });
+  await test.info().attach("real-staff-access-observations", {
+    body: JSON.stringify(observations, null, 2),
+    contentType: "application/json",
+  });
 });

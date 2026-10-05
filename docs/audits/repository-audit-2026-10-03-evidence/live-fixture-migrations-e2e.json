@@ -1,0 +1,12 @@
+{
+  "name": "live-fixture-migrations-e2e",
+  "command": [
+    "pnpm",
+    "db:migrate"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "durationSeconds": 1.626,
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/live-fixture-migrations-e2e.log",
+  "sha256": "4aa9beb0dce9b3c76db6d3e9c6f2ffb16ecdec49deb890f4c32f973c8ca2f2b7"
+}

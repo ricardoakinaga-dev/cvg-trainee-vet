@@ -324,40 +324,26 @@ function retryAfterMilliseconds(error: unknown): number | undefined {
   return undefined;
 }
 
-function nestedErrorName(error: unknown): string | undefined {
+function errorCauseChain(error: unknown): readonly Record<string, unknown>[] {
+  const chain: Record<string, unknown>[] = [];
+  const visited = new Set<unknown>();
   let current: unknown = error;
   for (let depth = 0; depth < 4; depth += 1) {
-    const name = errorName(current);
-    if (name !== undefined) return name;
-    current = isRecord(current) ? current.cause : undefined;
+    if (!isRecord(current) || visited.has(current)) break;
+    visited.add(current);
+    chain.push(current);
+    current = current.cause;
   }
-  return undefined;
-}
-
-function nestedErrorCode(error: unknown): string | undefined {
-  let current: unknown = error;
-  for (let depth = 0; depth < 4; depth += 1) {
-    const code = errorCode(current);
-    if (code !== undefined) return code;
-    current = isRecord(current) ? current.cause : undefined;
-  }
-  return undefined;
-}
-
-function nestedErrorStatusCode(error: unknown): number | undefined {
-  let current: unknown = error;
-  for (let depth = 0; depth < 4; depth += 1) {
-    const statusCode = errorStatusCode(current);
-    if (statusCode !== undefined) return statusCode;
-    current = isRecord(current) ? current.cause : undefined;
-  }
-  return undefined;
+  return chain;
 }
 
 export function classifyAiError(error: unknown): AiFailure {
-  const name = nestedErrorName(error)?.toLowerCase() ?? "";
-  const code = nestedErrorCode(error)?.toUpperCase();
-  const statusCode = nestedErrorStatusCode(error);
+  const chain = errorCauseChain(error);
+  const names = chain.map((cause) => errorName(cause)?.toLowerCase() ?? "");
+  const codes = new Set(chain.map((cause) => errorCode(cause)?.toUpperCase()));
+  const statusCode = chain
+    .map(errorStatusCode)
+    .find((status) => status !== undefined);
   const networkCodes = new Set([
     "EAI_AGAIN",
     "ECONNABORTED",
@@ -371,7 +357,7 @@ export function classifyAiError(error: unknown): AiFailure {
     "UND_ERR_SOCKET",
   ]);
 
-  if (name.includes("abort") || code === "ABORT_ERR") {
+  if (names.some((name) => name.includes("abort")) || codes.has("ABORT_ERR")) {
     return Object.freeze({ classification: "aborted", retryable: false });
   }
   if (statusCode === 429) {
@@ -409,10 +395,16 @@ export function classifyAiError(error: unknown): AiFailure {
       statusCode,
     });
   }
-  if (name.includes("timeout") || code === "ETIMEDOUT") {
+  if (
+    names.some((name) => name.includes("timeout")) ||
+    codes.has("ETIMEDOUT")
+  ) {
     return Object.freeze({ classification: "timeout", retryable: true });
   }
-  if (name.includes("connection") || networkCodes.has(code ?? "")) {
+  if (
+    names.some((name) => name.includes("connection")) ||
+    [...networkCodes].some((code) => codes.has(code))
+  ) {
     return Object.freeze({ classification: "network", retryable: true });
   }
   return Object.freeze({ classification: "unknown", retryable: false });

@@ -1,0 +1,33 @@
+{
+  "format": "cvg-continuity-index/v1",
+  "origin": "AUDIT-20261003-T11",
+  "generatedAt": "2026-10-03T13:30:00.000Z",
+  "continuity": {
+    "state": "docs/99_runtime_state.md",
+    "checkpointHeading": "CHECKPOINT PREVALENTE",
+    "log": "docs/20_master_execution_log.md",
+    "backlog": "docs/30_backlog_master.md",
+    "roadmap": "docs/60_roadmap_repository_remediation_2026-10-03.md",
+    "taskBacklog": "docs/61_backlog_repository_remediation_2026-10-03.md",
+    "executionPlan": ".agent/plans/2026-10-03-remediation-execution.md",
+    "traceability": "traceability.yml"
+  },
+  "auditSnapshot": {
+    "head": "3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff",
+    "report": "docs/audits/repository-audit-2026-10-03.md",
+    "manifest": "docs/audits/repository-audit-2026-10-03-evidence/audit-manifest.json",
+    "manifestSha256": "f90b8e0f95202ae67a692be7c3153fbae15e31ee46aab3cd7caaa3203f8c6a6f",
+    "verdict": "REVISE"
+  },
+  "qualityBar": {
+    "path": ".agent/plans/2026-10-03-remediation-quality-bar.json",
+    "sha256": "e25e519e0273267ae17004c7bd7209cc54b8e7cee9054ed6980578417ea37c40"
+  },
+  "historicalReferences": [
+    "BRIEFING/04.AUDIT/0491_full_construction_audit.md",
+    "docs/quality/scorecard.md",
+    "docs/41_executive_plan_triple_aaa.md",
+    "docs/55_executive_plan_state_of_art.md"
+  ],
+  "policy": "Mutable continuity pointers resolve current work; auditSnapshot pins the historical audit, not current runtime acceptance. Historical reports and their measured identities remain immutable."
+}

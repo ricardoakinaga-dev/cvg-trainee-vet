@@ -4,6 +4,48 @@ import { handleApiRequest } from "../http.js";
 import { attempt, dependencies } from "./fixtures.js";
 
 describe("API HTTP boundary — session boundary", () => {
+  it("binds internal draft recovery to the authenticated principal and session", async () => {
+    const principalId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const sessionId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const scopes = ["11111111-1111-4111-8111-111111111111"];
+    const api = dependencies({
+      authenticate: async () => ({
+        principalId,
+        sessionId,
+        accountStatus: "ACTIVE",
+        roles: ["AUTHOR"],
+        scopes,
+      }),
+    });
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/session/scopes",
+        body: undefined,
+      },
+      api,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "internal_session_scopes",
+        scopes,
+        recoveryContext: { principalId, sessionBinding: sessionId },
+      },
+    });
+    const publicSession = await handleApiRequest(
+      { method: "GET", path: "/api/v1/session/current", body: undefined },
+      api,
+    );
+    expect(publicSession.body).toMatchObject({
+      success: true,
+      data: { status: "active" },
+    });
+    expect(JSON.stringify(publicSession.body)).not.toMatch(
+      /principalId|sessionBinding|sessionId/u,
+    );
+  });
   it("revokes a session without revealing whether the cookie was active", async () => {
     const revokeSession = vi.fn(async () => undefined);
     const response = await handleApiRequest(
@@ -129,6 +171,31 @@ describe("API HTTP boundary — session boundary", () => {
           "11111111-1111-4111-8111-111111111111",
           "22222222-2222-4222-8222-222222222222",
         ],
+      },
+    });
+
+    const clinicalReviewerScopes = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/internal/session/scopes",
+        body: undefined,
+      },
+      dependencies({
+        approvedClinicalApproverId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        authenticate: async () => ({
+          principalId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: ["11111111-1111-4111-8111-111111111111"],
+        }),
+      }),
+    );
+    expect(clinicalReviewerScopes.status).toBe(200);
+    expect(clinicalReviewerScopes.body).toMatchObject({
+      success: true,
+      data: {
+        kind: "internal_session_scopes",
+        scopes: ["11111111-1111-4111-8111-111111111111"],
       },
     });
 

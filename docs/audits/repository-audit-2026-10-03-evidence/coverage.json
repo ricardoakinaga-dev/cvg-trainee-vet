@@ -1,0 +1,13 @@
+{
+  "name": "coverage",
+  "command": [
+    "pnpm",
+    "test:coverage"
+  ],
+  "startedAt": "2026-10-03T04:54:27.911399+00:00",
+  "durationSeconds": 96.72,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/coverage.log",
+  "sha256": "5a76987f020c241a873a1e27f91d29fd05159f15713c4a03bd131902ed034662"
+}

@@ -286,7 +286,9 @@ export function createB07DiagnosticSessionCatalog(): DiagnosticSessionCatalog {
   ) {
     throw new Error("B-07 technical catalog gate is invalid");
   }
-  const activity = toParticipantActivityFromDiagnosticDraft(draft);
+  const activity = toParticipantActivityFromDiagnosticDraft(draft, {
+    boundary: "INTERNAL_DIAGNOSTIC_CATALOG",
+  });
   if (activity.items.length !== draft.items.length) {
     throw new Error("B-07 public item projection is incomplete");
   }

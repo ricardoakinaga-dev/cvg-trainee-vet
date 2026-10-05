@@ -15,7 +15,7 @@ import type {
   ApiHttpDependencies,
   ApiHttpRequest,
   ApiPrincipal,
-} from "../../http.js";
+} from "../../http/contracts.js";
 import { isAllowed } from "../../http/authorization.js";
 import { isUuid } from "../../http/validation.js";
 

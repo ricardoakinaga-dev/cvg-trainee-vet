@@ -30,7 +30,21 @@ export interface OutboxRepositoryPort {
     limit: number,
     now: Date,
     leaseSeconds: number,
+    maxAttempts?: number,
   ) => Promise<readonly OutboxEventRecord[]>;
+  readonly renewLease?: (
+    eventId: string,
+    leaseToken: string,
+    leaseSeconds: number,
+  ) => Promise<boolean>;
+  readonly withLeaseFence?: <Result>(
+    eventId: string,
+    leaseToken: string,
+    leaseSeconds: number,
+    work: () => Promise<Result>,
+  ) => Promise<
+    { readonly owned: false } | { readonly owned: true; readonly value: Result }
+  >;
   readonly markProcessed: (
     eventId: string,
     leaseToken: string,
@@ -175,6 +189,56 @@ function assertPositiveInteger(value: number, field: string): void {
   }
 }
 
+type LeaseOperations = Pick<
+  OutboxRepositoryPort,
+  "renewLease" | "withLeaseFence"
+>;
+
+function createLeaseOperations(db: DatabaseExecutor): LeaseOperations {
+  return {
+    renewLease: async (eventId, leaseToken, leaseSeconds) => {
+      if (eventId.trim().length === 0 || leaseToken.trim().length === 0)
+        throw new TypeError("eventId and leaseToken required");
+      assertPositiveInteger(leaseSeconds, "leaseSeconds");
+      const result = await db.execute(sql`
+        update outbox_events set locked_until = clock_timestamp() + (${leaseSeconds} * interval '1 second')
+        where id = ${eventId} and status = 'PROCESSING' and lease_token = ${leaseToken}
+          and locked_until > clock_timestamp()
+        returning id
+      `);
+      return result.length > 0;
+    },
+    withLeaseFence: async (eventId, leaseToken, leaseSeconds, work) => {
+      if (eventId.trim().length === 0 || leaseToken.trim().length === 0)
+        throw new TypeError("eventId and leaseToken required");
+      assertPositiveInteger(leaseSeconds, "leaseSeconds");
+      return db.transaction(async (transaction) => {
+        // Retain the row lock through the bounded effect. Reclaim uses SKIP
+        // LOCKED; a second instance cannot execute this event simultaneously.
+        const result = await transaction.execute(sql`
+          update outbox_events set locked_until = clock_timestamp() + (${leaseSeconds} * interval '1 second')
+          where id = ${eventId} and status = 'PROCESSING' and lease_token = ${leaseToken}
+            and locked_until > clock_timestamp()
+          returning id
+        `);
+        if (result.length === 0) return { owned: false } as const;
+        const value = await work();
+        // The lease was live when this transaction acquired the row. Reclaim
+        // cannot pass its retained lock; an independent heartbeat may be
+        // waiting on that same lock. Extend from the database clock before
+        // releasing it so finalization has a live lease after a slow effect.
+        // This never revives an expired token at fence admission.
+        await transaction.execute(sql`
+          update outbox_events
+          set locked_until = clock_timestamp() + (${leaseSeconds} * interval '1 second')
+          where id = ${eventId} and status = 'PROCESSING' and lease_token = ${leaseToken}
+        `);
+        return { owned: true, value } as const;
+      });
+    },
+  };
+}
+
 export function createOutboxRepository(
   db: DatabaseExecutor,
 ): OutboxRepositoryPort {
@@ -183,9 +247,11 @@ export function createOutboxRepository(
       limit: number,
       now: Date,
       leaseSeconds: number,
+      maxAttempts = 5,
     ): Promise<readonly OutboxEventRecord[]> => {
       assertPositiveInteger(limit, "limit");
       assertPositiveInteger(leaseSeconds, "leaseSeconds");
+      assertPositiveInteger(maxAttempts, "maxAttempts");
       assertDate(now, "now");
       const result = await db.execute(sql`
         with candidates as (
@@ -203,18 +269,23 @@ export function createOutboxRepository(
           limit ${limit}
         )
         update outbox_events as event
-        set status = 'PROCESSING',
-            attempts = event.attempts + 1,
-            locked_until = statement_timestamp() +
-              (${leaseSeconds} * interval '1 second'),
-            lease_token = gen_random_uuid()::text,
-            last_error_code = null
+        set status = case when event.attempts >= ${maxAttempts} then 'FAILED' else 'PROCESSING' end,
+            attempts = case when event.attempts >= ${maxAttempts} then event.attempts else event.attempts + 1 end,
+            locked_until = case when event.attempts >= ${maxAttempts} then null else
+              statement_timestamp() + (${leaseSeconds} * interval '1 second') end,
+            lease_token = case when event.attempts >= ${maxAttempts} then null else gen_random_uuid()::text end,
+            last_error_code = case when event.attempts >= ${maxAttempts} then 'worker_attempts_exhausted' else null end
         from candidates
         where event.id = candidates.id
         returning event.*
       `);
-      return (result as unknown[]).map(outboxRowToRecord);
+      // FAILED is the existing durable dead-letter/manual recovery state.
+      // Exhausted rows are terminalized within the bounded claim statement.
+      return (result as unknown[])
+        .map(outboxRowToRecord)
+        .filter((event) => event.status === "PROCESSING");
     },
+    ...createLeaseOperations(db),
     markProcessed: async (
       eventId: string,
       leaseToken: string,

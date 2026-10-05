@@ -165,6 +165,23 @@ export const diagnosticSessionProjectionSchema = z
       });
     }
     const itemsById = new Map(value.items.map((item) => [item.itemId, item]));
+    if (itemsById.size !== value.items.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["items"],
+        message: "published item identities must be unique",
+      });
+    }
+    if (
+      new Set(value.items.map((item) => item.ordinal)).size !==
+      value.items.length
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["items"],
+        message: "published item ordinals must be unique",
+      });
+    }
     const answerIds = new Set<string>();
     for (const answer of value.answers) {
       if (answerIds.has(answer.itemId)) {

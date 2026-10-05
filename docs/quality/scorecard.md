@@ -1,11 +1,18 @@
-# Quality Scorecard — FINAL CERTIFICATION v6 (2026-09-11, HEAD `14b97a8`)
+# Quality Scorecard — HISTORICAL FINAL CERTIFICATION v7 (2026-09-11, HEAD `3cd7bc3`, evidence `14b97a8`)
+
+> Registro histórico da rodada de 2026-09-11. Descreve somente o candidato
+> `3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff` e a evidência
+> `14b97a8b7e257b49ffc6fbf97ea3e46a9b842e39`; não certifica o worktree atual,
+> que contém alterações posteriores sem freeze de candidato.
 
 Evidência: local + PG/Redis/Qdrant descartáveis reais + staging reproduzível
-com browser + k6 (Node v24.20.0 local; contrato CI Node 22.22.0).
+com browser + k6 (esta rodada: Node v22.23.2 canônico + pnpm 10.33.0).
 Escala 0–100; sem 100 sem evidência extraordinária (§72). Metas:
 Engineering ≥ 97, Security ≥ 95, Operations ≥ 95, P0 = P1 = 0.
-Fonte: `docs/audits/state-of-art-final-audit-v6.md` +
-`docs/audits/state-of-art-final-audit-v6.json` (autoridade; este arquivo
+Thresholds normativos em `config/triple-aaa-gates.json` (matriz G01–G73,
+única fonte; mutation G10 ≥ 95%).
+Fonte: `docs/audits/state-of-art-final-audit-v7.md` +
+`docs/audits/state-of-art-final-audit-v7.json` (autoridade; este arquivo
 apenas espelha os agregados — gate `verify:evidence-consistency` amarra
 os dois mecanicamente).
 
@@ -68,7 +75,8 @@ os dois mecanicamente).
 
 ## Veredito
 
-**TRIPLE AAA — REVISE.** `P0 = 0`, `P1 = 0`, `P2 = 5` (2 materiais abertos:
-RF-02, RF-09), `P3 = 1`. Gates §125 passam exceto `Same-SHA PASS` (RF-02),
-`Remote CI PASS`, `Engineering >= 97` e `Operations >= 95`.
+**TRIPLE AAA — REVISE.** `P0 = 0`, `P1 = 0`, `P2 = 9` (2 materiais abertos:
+RF-02, RF-09; RF-13 remediado), `P3 = 1`. Gates G01–G73: 21 PASS / 52 REVISE /
+0 FAIL. Review independente v2: PASS (P0/P1 0). Bloqueiam promoção: remote
+CI + same-SHA (sem token), `Engineering >= 97` e `Operations >= 95`.
 Prontidão: `STAGING VERIFIED`.

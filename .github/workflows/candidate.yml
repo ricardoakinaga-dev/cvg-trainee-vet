@@ -4,6 +4,21 @@ name: candidate
 # push workflow. Manual dispatch, scheduled load profile, or release tags.
 on:
   workflow_dispatch:
+    inputs:
+      stage:
+        description: Preflight produces evidence; promotion validates an already completed producer
+        type: choice
+        options: [preflight, promotion]
+        default: preflight
+      candidate_run_id:
+        description: Completed preflight run ID, required for promotion
+        type: string
+      candidate_sha:
+        description: Full measured SHA, required for promotion
+        type: string
+      candidate_run_attempt:
+        description: Producer run attempt, required for mutation provenance on promotion
+        type: string
   schedule:
     - cron: "23 4 * * 0"
   push:
@@ -16,6 +31,7 @@ permissions:
 
 jobs:
   candidate:
+    if: github.event_name != 'workflow_dispatch' || inputs.stage != 'promotion'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     services:
@@ -50,7 +66,10 @@ jobs:
       QDRANT_ENABLED: "false"
       QDRANT_URL: http://127.0.0.1:6333
       CVG_TEST_QDRANT_URL: http://127.0.0.1:6333
+      CVG_STAGING_QDRANT_URL: http://127.0.0.1:6333
       AI_ENABLED: "false"
+      EXPECTED_SHA: ${{ github.sha }}
+      CVG_MUTATION_CANDIDATE_ID: ${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -75,6 +94,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium for Vitest browser coverage
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Install PostgreSQL client tools
         run: sudo apt-get update && sudo apt-get install --yes postgresql-client redis-server
@@ -124,17 +146,38 @@ jobs:
           CVG_RUN_LIVE_REDIS_TESTS="true"
           pnpm test:ratelimit:restart
 
-      - name: Verify mutation closure (adjusted critical score)
-        run: node scripts/verify-mutation-closure.mjs --write-summary
+      - name: Discover current-candidate mutation reports and isolated suite
+        continue-on-error: true
+        run: node scripts/discover-candidate-mutation.mjs
 
-      - name: Run critical mutation discovery (Stryker report)
-        run: pnpm mutation:critical
+      - name: Verify authorization mutation closure
+        if: always()
+        continue-on-error: true
+        run: >
+          node scripts/verify-mutation-closure.mjs
+          --bounded-manifest "reports/mutation-bounded/${CVG_MUTATION_CANDIDATE_ID}/manifest.json"
+          --scope authorization
+          --result-out "reports/mutation-bounded/${CVG_MUTATION_CANDIDATE_ID}/authorization-closure.json"
 
-      - name: Verify expanded critical mutation closure
-        run: node scripts/verify-mutation-critical.mjs --write-summary
+      - name: Verify critical and worker mutation closure
+        if: always()
+        continue-on-error: true
+        run: >
+          node scripts/verify-mutation-critical.mjs
+          --bounded-manifest "reports/mutation-bounded/${CVG_MUTATION_CANDIDATE_ID}/manifest.json"
+          --scope critical
+          --scope worker
+          --result-out "reports/mutation-bounded/${CVG_MUTATION_CANDIDATE_ID}/critical-worker-closure.json"
 
+      - name: Write candidate-bound mutation summary
+        if: always()
+        run: node scripts/write-mutation-summary.mjs
+
+      # Test measurement runs inside the managed staging lifetime below.
       - name: Record test and security summaries
-        run: node scripts/write-test-summary.mjs && node scripts/write-security-summary.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/write-security-summary.mjs
 
       - name: Verify synthetic backup and restore
         run: pnpm test:integration:restore
@@ -142,17 +185,41 @@ jobs:
       - name: Build all workspaces
         run: pnpm build
 
-      - name: Install Chromium for browser tests
-        run: pnpm exec playwright install --with-deps chromium
-
       - name: Run browser E2E tests
         run: pnpm test:e2e
 
       - name: Run browser E2E tests against real API and PostgreSQL
         run: CVG_RUN_REAL_E2E=true pnpm test:e2e
 
+      - name: Install pinned staging measurement tools
+        env:
+          CVG_OTEL_COLLECTOR_BIN: ${{ runner.temp }}/cvg-measurement-tools/otelcol-contrib
+          CVG_K6_BIN: ${{ runner.temp }}/cvg-measurement-tools/k6
+          K6_RELEASE_URL: ${{ vars.CVG_K6_RELEASE_URL }}
+          K6_ARCHIVE_SHA256: ${{ vars.CVG_K6_ARCHIVE_SHA256 }}
+          OTEL_RELEASE_URL: ${{ vars.CVG_OTEL_RELEASE_URL }}
+          OTEL_ARCHIVE_SHA256: ${{ vars.CVG_OTEL_ARCHIVE_SHA256 }}
+        run: |
+          set -euo pipefail
+          [[ "$K6_RELEASE_URL" =~ ^https://github\.com/grafana/k6/releases/download/v[0-9]+\.[0-9]+\.[0-9]+/k6-v[0-9]+\.[0-9]+\.[0-9]+-linux-amd64\.tar\.gz$ ]]
+          [[ "$OTEL_RELEASE_URL" =~ ^https://github\.com/open-telemetry/opentelemetry-collector-releases/releases/download/v[0-9]+\.[0-9]+\.[0-9]+/otelcol-contrib_[0-9]+\.[0-9]+\.[0-9]+_linux_amd64\.tar\.gz$ ]]
+          [[ "$K6_ARCHIVE_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          [[ "$OTEL_ARCHIVE_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          mkdir -p "$RUNNER_TEMP/cvg-measurement-tools"
+          curl --fail --location --retry 2 --max-time 120 "$K6_RELEASE_URL" -o "$RUNNER_TEMP/k6.tar.gz"
+          curl --fail --location --retry 2 --max-time 120 "$OTEL_RELEASE_URL" -o "$RUNNER_TEMP/otel.tar.gz"
+          printf '%s  %s\n' "$K6_ARCHIVE_SHA256" "$RUNNER_TEMP/k6.tar.gz" | sha256sum --check
+          printf '%s  %s\n' "$OTEL_ARCHIVE_SHA256" "$RUNNER_TEMP/otel.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/k6.tar.gz" --wildcards --strip-components=1 -C "$RUNNER_TEMP/cvg-measurement-tools" '*/k6'
+          tar -xzf "$RUNNER_TEMP/otel.tar.gz" -C "$RUNNER_TEMP/cvg-measurement-tools" otelcol-contrib
+          test -x "$CVG_K6_BIN"
+          test -x "$CVG_OTEL_COLLECTOR_BIN"
+
       - name: Verify staging-like stack (browser, drills, OTel collector)
-        run: pnpm staging:verify
+        env:
+          CVG_OTEL_COLLECTOR_BIN: ${{ runner.temp }}/cvg-measurement-tools/otelcol-contrib
+          CVG_K6_BIN: ${{ runner.temp }}/cvg-measurement-tools/k6
+        run: pnpm staging:verify --browser --record-test-summary
 
       - name: Audit dependencies
         run: pnpm audit --audit-level=high
@@ -170,7 +237,9 @@ jobs:
           node scripts/verify-same-sha.mjs
           --require-auth
           --require-candidate
+          --preflight
           --self-candidate-run-id "${{ github.run_id }}"
+          --out staging-evidence/ci-runs.json
           --summary-out release-evidence/remote-ci-summary.json
 
       - name: Record durable Redis candidate summary
@@ -189,12 +258,16 @@ jobs:
           --out-dir release-evidence
           --sbom sbom.cyclonedx.json
           --coverage-summary coverage/coverage-summary.json
+          --coverage-provenance coverage/coverage-provenance.json
           --test-summary staging-evidence/test-summary.json
           --security-summary staging-evidence/security-summary.json
           --rls-live-summary staging-evidence/rls-live-summary.json
           --multi-instance-summary staging-evidence/multi-instance-summary.json
+          --multi-instance-report staging-evidence/ratelimit-live-results.json
           --load-summary staging-evidence/load-summary.json
+          --load-raw staging-evidence/k6-summary.json
           --otel-summary staging-evidence/otel-summary.json
+          --otel-raw staging-evidence/otel-spans.json
           --mutation-summary reports/mutation-summary.json
           --redis-candidate-summary release-evidence/redis-candidate-summary.json
           --staging-summary staging-evidence/staging-summary.json
@@ -202,17 +275,42 @@ jobs:
           --remote-ci-summary release-evidence/remote-ci-summary.json
           --ci-runs staging-evidence/ci-runs.json
 
-      - name: Run AAA candidate promotion gate
+      - name: Archive declared current audit, independent review and risk inputs
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CVG_SELF_CANDIDATE_RUN_ID: ${{ github.run_id }}
-        run: pnpm verify:aaa-candidate
+          CVG_AAA_AUDIT_INPUT: ${{ vars.CVG_AAA_AUDIT_INPUT }}
+          CVG_AAA_REVIEW_INPUT: ${{ vars.CVG_AAA_REVIEW_INPUT }}
+          CVG_AAA_RISK_INPUT: ${{ vars.CVG_AAA_RISK_INPUT }}
+        run: |
+          set -euo pipefail
+          test -n "$CVG_AAA_AUDIT_INPUT"
+          test -n "$CVG_AAA_REVIEW_INPUT"
+          test -n "$CVG_AAA_RISK_INPUT"
+          test -s "$CVG_AAA_AUDIT_INPUT"
+          test -s "$CVG_AAA_REVIEW_INPUT"
+          test -s "$CVG_AAA_RISK_INPUT"
+          cp -- "$CVG_AAA_AUDIT_INPUT" release-evidence/candidate-audit.json
+          cp -- "$CVG_AAA_REVIEW_INPUT" release-evidence/candidate-independent-review.json
+          cp -- "$CVG_AAA_RISK_INPUT" release-evidence/candidate-risk-register.json
 
-      - name: Verify Triple AAA promotion gate
+      - name: Run AAA candidate preflight gate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CVG_SELF_CANDIDATE_RUN_ID: ${{ github.run_id }}
-        run: pnpm verify:triple-aaa
+        run: >
+          pnpm verify:aaa-candidate --preflight --self-candidate-run-id "${{ github.run_id }}"
+          --audit release-evidence/candidate-audit.json
+          --review release-evidence/candidate-independent-review.json
+          --register release-evidence/candidate-risk-register.json
+
+      - name: Verify Triple AAA preflight gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CVG_SELF_CANDIDATE_RUN_ID: ${{ github.run_id }}
+        run: >
+          pnpm verify:triple-aaa --preflight --self-candidate-run-id "${{ github.run_id }}"
+          --audit release-evidence/candidate-audit.json
+          --review release-evidence/candidate-independent-review.json
+          --register release-evidence/candidate-risk-register.json
 
       - name: Publish candidate artifacts
         if: always()
@@ -227,5 +325,108 @@ jobs:
             test-results/
             ci-artifacts/
             release-evidence/
+            reports/mutation-runs/
+            reports/mutation-bounded/
+            reports/mutation/
+            reports/mutation-critical/
+            reports/mutation-worker/
             reports/mutation-summary.json
             sbom.cyclonedx.json
+
+  promotion:
+    # A separate explicit dispatch references a completed producer.
+    # This job never validates itself or triggers another workflow run.
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.stage == 'promotion'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      EXPECTED_SHA: ${{ inputs.candidate_sha }}
+      CVG_MUTATION_CANDIDATE_ID: ${{ inputs.candidate_run_id }}-${{ inputs.candidate_run_attempt }}
+      CANDIDATE_RUN_ID: ${{ inputs.candidate_run_id }}
+      CANDIDATE_RUN_ATTEMPT: ${{ inputs.candidate_run_attempt }}
+    steps:
+      - name: Checkout completed candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 0
+      - name: Verify completed checkout SHA
+        run: |
+          test -n "$EXPECTED_SHA"
+          test "$EXPECTED_SHA" = "$(git rev-parse HEAD)"
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@10.33.0 --activate
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.22.0
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Query completed candidate and external runs
+        run: >
+          node scripts/verify-same-sha.mjs --require-auth --require-candidate
+          --candidate-run-id "$CANDIDATE_RUN_ID"
+          --candidate-run-attempt "$CANDIDATE_RUN_ATTEMPT"
+          --out .agent/completed-ci-runs.json
+          --summary-out .agent/completed-remote-ci-summary.json
+      - name: Download producer evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: candidate-artifacts-${{ inputs.candidate_sha }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.candidate_run_id }}
+          path: .agent/candidate-producer
+      - name: Restore generated evidence only
+        run: |
+          cp -R .agent/candidate-producer/coverage .
+          cp -R .agent/candidate-producer/reports .
+          cp -R .agent/candidate-producer/release-evidence .
+          cp .agent/candidate-producer/sbom.cyclonedx.json .
+          mkdir -p staging-evidence
+          cp .agent/completed-ci-runs.json staging-evidence/ci-runs.json
+          cp .agent/completed-remote-ci-summary.json release-evidence/remote-ci-summary.json
+      - name: Rebuild bundle with completed remote evidence
+        run: >
+          node scripts/release-evidence.mjs --out-dir release-evidence
+          --producer-provenance .agent/candidate-producer/release-evidence/provenance.json
+          --sbom sbom.cyclonedx.json
+          --coverage-summary coverage/coverage-summary.json
+          --coverage-provenance coverage/coverage-provenance.json
+          --test-summary release-evidence/test-summary.json
+          --security-summary release-evidence/security-summary.json
+          --rls-live-summary release-evidence/rls-live-summary.json
+          --multi-instance-summary release-evidence/multi-instance-summary.json
+          --multi-instance-report release-evidence/ratelimit-live-results.json
+          --load-summary release-evidence/load-summary.json
+          --load-raw release-evidence/k6-summary.json
+          --otel-summary release-evidence/otel-summary.json
+          --otel-raw release-evidence/otel-spans.json
+          --mutation-summary release-evidence/mutation-summary.json
+          --redis-candidate-summary release-evidence/redis-candidate-summary.json
+          --staging-summary release-evidence/staging-summary.json
+          --restore-summary release-evidence/restore-summary.json
+          --remote-ci-summary release-evidence/remote-ci-summary.json
+          --ci-runs staging-evidence/ci-runs.json
+      - name: Verify completed candidate promotion
+        run: >
+          pnpm verify:aaa-candidate --candidate-run-id "$CANDIDATE_RUN_ID"
+          --audit release-evidence/candidate-audit.json
+          --review release-evidence/candidate-independent-review.json
+          --register release-evidence/candidate-risk-register.json
+      - name: Verify final Triple AAA promotion
+        run: >
+          pnpm verify:triple-aaa
+          --audit release-evidence/candidate-audit.json
+          --review release-evidence/candidate-independent-review.json
+          --register release-evidence/candidate-risk-register.json
+      - name: Publish completed promotion evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: promotion-artifacts-${{ inputs.candidate_sha }}
+          if-no-files-found: error
+          retention-days: 30
+          path: release-evidence/

@@ -8,6 +8,50 @@ import {
 } from "./observability.js";
 
 describe("observability", () => {
+  it("emits fixed cumulative millisecond buckets for the SLO metric", () => {
+    const metrics = createObservability({
+      service: "api",
+      sink: () => undefined,
+    }).metrics;
+    for (const value of [0, 800, 801, 1_500, 60_001]) {
+      metrics.observe("api.slo.duration_ms", value, { operation: "read" });
+    }
+    const histogram = metrics.snapshot().histograms[0];
+    expect(histogram).toMatchObject({
+      count: 5,
+      buckets: expect.arrayContaining([
+        { upperBound: 0, count: 1 },
+        { upperBound: 800, count: 2 },
+        { upperBound: 1_500, count: 4 },
+        { upperBound: 60_000, count: 4 },
+        { upperBound: null, count: 5 },
+      ]),
+    });
+    const before = JSON.stringify(histogram);
+    for (let index = 0; index < 10_001; index += 1) {
+      metrics.observe("api.slo.duration_ms", 1, { operation: "read" });
+    }
+    for (const value of [-1, Number.NaN, Infinity]) {
+      metrics.observe("api.slo.duration_ms", value, { operation: "read" });
+    }
+    expect(JSON.stringify(histogram)).toBe(before);
+    expect(metrics.snapshot().histograms).toHaveLength(1);
+    expect(metrics.snapshot().histograms[0]).toMatchObject({ count: 10_006 });
+    const buckets = Reflect.get(
+      metrics.snapshot().histograms[0] ?? {},
+      "buckets",
+    ) as readonly unknown[];
+    expect(buckets).toHaveLength(18);
+    expect(Object.isFrozen(buckets)).toBe(true);
+    expect(buckets.every(Object.isFrozen)).toBe(true);
+    expect(metrics.prometheus()).toContain(
+      'api_slo_duration_ms_bucket{operation="read",le="800"} 10003',
+    );
+    expect(metrics.prometheus()).toContain(
+      'api_slo_duration_ms_bucket{operation="read",le="+Inf"} 10006',
+    );
+  });
+
   it("emits only bounded, redacted structured fields", () => {
     const records: LogRecord[] = [];
     const observability = createObservability({

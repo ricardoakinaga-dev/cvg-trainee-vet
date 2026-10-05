@@ -406,7 +406,7 @@ describe("answer use case dependencies", () => {
   });
 
   it("publishes outbox events and runs transactions", async () => {
-    const db = createFakeDatabase({ rows: [[], [], [attemptRow]] });
+    const db = createFakeDatabase({ rows: [[], [], [], [attemptRow]] });
     const instance = deps(db);
     await expect(
       instance.eventPublisher.publish({

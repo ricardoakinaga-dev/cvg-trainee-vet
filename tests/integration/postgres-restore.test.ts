@@ -12,7 +12,7 @@ function runRestoreVerification(): Promise<{
   readonly status: string;
   readonly markerVerified: boolean;
   readonly targetIsolated: boolean;
-  readonly rtoMs: number;
+  readonly verificationDurationMs: number;
 }> {
   return new Promise((resolve, reject) => {
     if (databaseUrl === undefined) {
@@ -50,7 +50,7 @@ function runRestoreVerification(): Promise<{
             readonly status: string;
             readonly markerVerified: boolean;
             readonly targetIsolated: boolean;
-            readonly rtoMs: number;
+            readonly verificationDurationMs: number;
           },
         );
       } catch {
@@ -71,7 +71,7 @@ describe.skipIf(!runLiveRestoreTest || databaseUrl === undefined)(
         markerVerified: true,
         targetIsolated: true,
       });
-      expect(result.rtoMs).toBeGreaterThanOrEqual(0);
+      expect(result.verificationDurationMs).toBeGreaterThanOrEqual(0);
     });
   },
 );

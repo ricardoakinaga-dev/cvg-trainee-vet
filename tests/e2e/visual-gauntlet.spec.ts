@@ -1572,7 +1572,7 @@ test("keeps interaction targets and reflow healthy under frontend stress", async
       __cvgLargestContentfulPaint?: number;
     };
     state.__cvgCumulativeLayoutShift = 0;
-    state.__cvgLargestContentfulPaint = undefined;
+    delete state.__cvgLargestContentfulPaint;
     if ("PerformanceObserver" in window) {
       try {
         new PerformanceObserver((list) => {

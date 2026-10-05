@@ -67,6 +67,32 @@ function freezeEvaluation(
 ): ModuleEvaluationResult {
   return Object.freeze({
     ...evaluation,
+    ...(evaluation.unansweredMandatoryItemIds === undefined
+      ? {}
+      : {
+          unansweredMandatoryItemIds: Object.freeze([
+            ...evaluation.unansweredMandatoryItemIds,
+          ]),
+        }),
+    ...(evaluation.evaluationAnchor === undefined
+      ? {}
+      : {
+          evaluationAnchor: Object.freeze({
+            ...evaluation.evaluationAnchor,
+            contentVersions: Object.freeze(
+              evaluation.evaluationAnchor.contentVersions.map((binding) =>
+                Object.freeze({
+                  ...binding,
+                  sourceRefs: Object.freeze(
+                    binding.sourceRefs.map((source) =>
+                      Object.freeze({ ...source }),
+                    ),
+                  ),
+                }),
+              ),
+            ),
+          }),
+        }),
     objectiveResults: Object.freeze(
       evaluation.objectiveResults.map((item) => Object.freeze({ ...item })),
     ),

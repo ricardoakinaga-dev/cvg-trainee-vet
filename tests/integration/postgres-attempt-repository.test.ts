@@ -128,7 +128,16 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           submittedAt: "2026-08-09T17:00:00.000Z",
         } as const;
         const submitted = await submitAttempt(command, dependencies);
-        const replay = await submitAttempt(command, dependencies);
+        const [replay, concurrentReplay] = await Promise.all([
+          submitAttempt(
+            { ...command, submittedAt: "2026-08-09T17:05:00.000Z" },
+            dependencies,
+          ),
+          submitAttempt(
+            { ...command, submittedAt: "2026-08-09T17:10:00.000Z" },
+            dependencies,
+          ),
+        ]);
         const storedOutbox = await admin.db
           .select()
           .from(outboxEvents)
@@ -140,6 +149,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
 
         expect(submitted.status).toBe("SUBMETIDA");
         expect(replay).toEqual(submitted);
+        expect(concurrentReplay).toEqual(submitted);
         expect(storedOutbox).toHaveLength(1);
         expect(storedOutbox[0]?.eventType).toBe("attempt.submitted.v1");
         expect(storedIdempotency).toHaveLength(1);

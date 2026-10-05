@@ -170,6 +170,22 @@ export async function createInvitation(
   ) {
     throw new ApplicationError("forbidden", "Invitation is not authorized");
   }
+  if (
+    command.invitedRoles.includes("CLINICAL_APPROVER") &&
+    !canAccess({
+      principalId: command.principalId,
+      accountStatus: command.accountStatus,
+      roles: command.roles,
+      capability: "GRANT_CLINICAL_APPROVER",
+      resource: { scopeId: invitedScopeId },
+      scopes: command.scopes,
+    })
+  ) {
+    throw new ApplicationError(
+      "forbidden",
+      "Clinical approver assignment requires controlled provisioning",
+    );
+  }
 
   const token = (command.tokenFactory ?? defaultTokenFactory)();
   if (!/^[A-Za-z0-9_-]{32,256}$/u.test(token)) {

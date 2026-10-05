@@ -130,6 +130,9 @@ test("clinical reviewer can inspect and decide an internal authoring item", asyn
   ).toBeVisible();
   await expect(page.getByText("F-02 · interno")).toBeVisible();
   await expect(page.getByText("gabarito")).toBeVisible();
+  await page
+    .getByLabel("Justificativa da decisão")
+    .fill("Revisão clínica sintética aprovada no e2e.");
   await page.getByRole("button", { name: "Aprovar clinicamente" }).click();
   await expect(page.getByRole("status")).toHaveText(
     "Revisão clínica registrada.",

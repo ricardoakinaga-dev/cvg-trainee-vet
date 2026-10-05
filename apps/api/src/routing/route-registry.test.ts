@@ -295,6 +295,11 @@ const CORPUS: readonly CorpusRow[] = [
     path: "/api/v1/attempts",
     template: "unmatched",
   },
+  {
+    method: "GET",
+    path: "/api/v1/attempts/11111111-1111-4111-8111-111111111111",
+    template: "/api/v1/attempts/:attemptId",
+  },
 ];
 
 describe("route registry", () => {

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type {
   ContentRecord,
@@ -25,6 +25,7 @@ import {
   outboxEvents,
 } from "./schema.js";
 import type * as schema from "./schema.js";
+import { CLINICAL_PUBLICATION_HOLD_ACTIVE } from "./clinical-publication-hold.js";
 import {
   setDatabaseSecurityContext,
   setDatabaseServiceContext,
@@ -54,6 +55,11 @@ export type IndexableContentRecord = Readonly<{
 }>;
 
 export type ContentIndexSourcePort = Readonly<{
+  readonly withContentVersionFence?: (
+    contentId: string,
+    version: number,
+    work: (current: IndexableContentRecord | null) => Promise<void>,
+  ) => Promise<void>;
   readonly findPublishedIndexable: (
     contentId: string,
     version: number,
@@ -119,19 +125,48 @@ export function contentRowToRecord(row: ContentRowShape): ContentRecord {
 function publicationGate(
   preflight: unknown,
   latestReviewDecision: string | undefined,
+  latestReviewerId: string | undefined,
+  approvedClinicalApproverId: string | undefined,
 ): Readonly<{ readonly ready: boolean; readonly reasons: readonly string[] }> {
   const reasons: string[] = [];
+  if (CLINICAL_PUBLICATION_HOLD_ACTIVE) {
+    reasons.push("CLINICAL_PUBLICATION_HOLD_ACTIVE");
+  }
+  const preflightRecord =
+    preflight !== null &&
+    typeof preflight === "object" &&
+    !Array.isArray(preflight)
+      ? (preflight as {
+          technicalChecksPassed?: unknown;
+          readyForPublication?: unknown;
+          checks?: unknown;
+        })
+      : undefined;
   if (
-    preflight === null ||
-    typeof preflight !== "object" ||
-    Array.isArray(preflight) ||
-    (preflight as { technicalChecksPassed?: unknown }).technicalChecksPassed !==
-      true
+    preflightRecord === undefined ||
+    preflightRecord.technicalChecksPassed !== true
   ) {
     reasons.push("TECHNICAL_PREFLIGHT_INCOMPLETE");
   }
+  const checks =
+    preflightRecord?.checks !== null &&
+    typeof preflightRecord?.checks === "object" &&
+    !Array.isArray(preflightRecord.checks)
+      ? (preflightRecord.checks as { publicationBlocked?: unknown })
+      : undefined;
+  if (
+    preflightRecord?.readyForPublication !== true ||
+    checks?.publicationBlocked !== false
+  ) {
+    reasons.push("PUBLICATION_PREFLIGHT_NOT_READY");
+  }
   if (latestReviewDecision !== "APROVAR_CLINICAMENTE") {
     reasons.push("CLINICAL_APPROVAL_MISSING");
+  } else if (
+    approvedClinicalApproverId === undefined ||
+    latestReviewerId !== approvedClinicalApproverId
+  ) {
+    reasons.push("CONFIGURED_CLINICAL_APPROVAL_MISSING");
   }
   return Object.freeze({
     ready: reasons.length === 0,
@@ -177,6 +212,46 @@ function authoringActivitySlug(
   return `authoring-${key}`;
 }
 
+type PublishedAuthoringIdentity = Readonly<{
+  readonly moduleId: string;
+  readonly sessionId: string;
+  readonly editorialContentId: string;
+  readonly editorialVersion: number;
+  readonly versionContentId: string;
+  readonly versionNumber: number;
+  readonly versionScopeId: string;
+}>;
+
+function assertPublishedAuthoringIdentity(
+  editorial: PublishedAuthoringIdentity,
+  contentId: string,
+  version: number,
+  scopeId: string,
+): void {
+  if (
+    editorial.editorialContentId !== contentId ||
+    editorial.editorialVersion !== version ||
+    editorial.versionContentId !== contentId ||
+    editorial.versionNumber !== version ||
+    editorial.versionScopeId !== scopeId
+  ) {
+    throw new ContentMappingError(
+      "published authoring identity does not match content version",
+    );
+  }
+  if (!moduleIdPattern.test(editorial.moduleId)) {
+    throw new ContentMappingError("published authoring moduleId is invalid");
+  }
+  assertNonEmpty(editorial.sessionId, "authoring sessionId");
+  if (
+    !new RegExp(`^${editorial.moduleId}-S[1-4]$`, "u").test(editorial.sessionId)
+  ) {
+    throw new ContentMappingError(
+      "published authoring sessionId does not match moduleId",
+    );
+  }
+}
+
 async function materializePublishedAuthoringActivity(
   db: DatabaseExecutor,
   contentVersionId: string,
@@ -184,6 +259,9 @@ async function materializePublishedAuthoringActivity(
   version: number,
   scopeId: string,
 ): Promise<void> {
+  if (CLINICAL_PUBLICATION_HOLD_ACTIVE) {
+    throw new ContentMappingError("clinical publication hold is active");
+  }
   const editorialRows = await db
     .select({
       moduleId: contentEditorialRecords.moduleId,
@@ -212,28 +290,7 @@ async function materializePublishedAuthoringActivity(
       "published content requires an authoring record",
     );
   }
-  if (
-    editorial.editorialContentId !== contentId ||
-    editorial.editorialVersion !== version ||
-    editorial.versionContentId !== contentId ||
-    editorial.versionNumber !== version ||
-    editorial.versionScopeId !== scopeId
-  ) {
-    throw new ContentMappingError(
-      "published authoring identity does not match content version",
-    );
-  }
-  if (!moduleIdPattern.test(editorial.moduleId)) {
-    throw new ContentMappingError("published authoring moduleId is invalid");
-  }
-  assertNonEmpty(editorial.sessionId, "authoring sessionId");
-  if (
-    !new RegExp(`^${editorial.moduleId}-S[1-4]$`, "u").test(editorial.sessionId)
-  ) {
-    throw new ContentMappingError(
-      "published authoring sessionId does not match moduleId",
-    );
-  }
+  assertPublishedAuthoringIdentity(editorial, contentId, version, scopeId);
 
   const publishedRows = await db
     .select({
@@ -431,6 +488,7 @@ export function createContentRepository(
     find: async (
       contentId: string,
       version: number,
+      approvedClinicalApproverId?: string,
     ): Promise<ContentRecord | null> => {
       const rows = await db
         .select({
@@ -471,7 +529,10 @@ export function createContentRepository(
         });
       }
       const reviewRows = await db
-        .select({ decision: contentReviewDecisions.decision })
+        .select({
+          decision: contentReviewDecisions.decision,
+          reviewerId: contentReviewDecisions.reviewerId,
+        })
         .from(contentReviewDecisions)
         .where(
           eq(
@@ -488,6 +549,8 @@ export function createContentRepository(
       const gate = publicationGate(
         editorial.preflight,
         reviewRows[0]?.decision,
+        reviewRows[0]?.reviewerId,
+        approvedClinicalApproverId,
       );
       return contentRowToRecord({
         ...row,
@@ -507,6 +570,12 @@ export function createContentRepository(
         throw new ContentMappingError(
           "content identity cannot change during a transition",
         );
+      }
+      if (next.status === "PUBLICADO" && CLINICAL_PUBLICATION_HOLD_ACTIVE) {
+        throw new ContentMappingError("clinical publication hold is active");
+      }
+      if (next.status === "PUBLICADO" && current.publicationReady !== true) {
+        throw new ContentMappingError("content publication gate is incomplete");
       }
 
       const rows = await db
@@ -563,6 +632,25 @@ export function createContentIndexSourceRepository(
     });
   };
   const source: ContentIndexSourcePort = {
+    withContentVersionFence: async (contentId, version, work) => {
+      assertNonEmpty(contentId, "contentId");
+      if (!Number.isSafeInteger(version) || version < 1)
+        throw new ContentMappingError("version is invalid");
+      await db.transaction(async (transaction) => {
+        const rows = await transaction.execute<{ locked: boolean }>(sql`
+          select pg_try_advisory_xact_lock(hashtextextended(${`content-index:${contentId}:${version}`}, 0)) as locked
+        `);
+        if (rows[0]?.locked !== true)
+          throw new ContentMappingError("content version effect fence busy");
+        // Publish/delete share the same database lock across worker instances.
+        // The PostgreSQL status is rehydrated AFTER acquiring the lock; the
+        // external write remains serialized until its bounded promise settles.
+        const current = await createContentIndexSourceRepository(
+          transaction as unknown as DatabaseExecutor,
+        ).findPublishedIndexable(contentId, version);
+        await work(current);
+      });
+    },
     findPublishedIndexable: async (
       contentId: string,
       version: number,

@@ -1,12 +1,18 @@
 import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
 import { COVERAGE_EXCLUSIONS } from "./coverage-exclusions.mjs";
-import { isEvidenceFresh } from "./evidence-freshness.mjs";
+import { isEvidenceFresh, latestAuditPath } from "./evidence-freshness.mjs";
+import { loadGateConfig } from "./gate-config.mjs";
 import { validateBundle, validateSbom } from "./release-evidence.mjs";
+import { validateCurrentMutationSummary } from "./mutation-summary-contract.mjs";
+import {
+  findingsCounterFailures,
+  riskRegisterFailures,
+} from "./ci-proof-contract.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
@@ -23,7 +29,7 @@ function check(name, ok, detail = "") {
 }
 
 function pctOf(covered, total) {
-  if (total === 0) return 100;
+  if (total === 0) return 0;
   return (covered / total) * 100;
 }
 
@@ -86,25 +92,95 @@ async function coverageTotals() {
 }
 
 async function main() {
-  // 1. Coverage gate (§64, §87): run from `pnpm test:coverage` output.
+  const preflight = process.argv.includes("--preflight");
+  const flagValue = (name) => {
+    const index = process.argv.indexOf(name);
+    return index < 0 ? null : process.argv[index + 1];
+  };
+  const { stdout: checkoutSha } = await execFileAsync(
+    "git",
+    ["rev-parse", "HEAD"],
+    { cwd: root },
+  );
+  const checkoutFresh = await isEvidenceFresh(
+    root,
+    checkoutSha.trim(),
+    checkoutSha.trim(),
+  );
+  check("candidate checkout fresh", checkoutFresh.fresh, checkoutFresh.detail);
+  // Declared archived claims must be coherent before any expensive gate.
+  // Passing this local semantic check is never remote certification.
+  const claimPaths = ["--audit", "--review", "--register"].map(flagValue);
+  if (claimPaths.some((path) => path !== null)) {
+    try {
+      if (claimPaths.some((path) => !path))
+        throw new Error(
+          "all declared audit/review/register paths are required",
+        );
+      const [audit, review, register] = await Promise.all(
+        claimPaths.map(async (path) =>
+          JSON.parse(await readFile(path, "utf8")),
+        ),
+      );
+      const claimFailures = riskRegisterFailures(
+        audit,
+        register,
+        checkoutSha.trim(),
+      );
+      if (
+        audit.candidate_sha !== checkoutSha.trim() ||
+        review?.format !== "cvg-independent-review/v1" ||
+        review.verdict !== "PASS" ||
+        review.candidate_sha !== checkoutSha.trim()
+      )
+        claimFailures.push(
+          "declared audit/review candidate identity/verdict differs",
+        );
+      check(
+        "declared audit/review/register semantics",
+        claimFailures.length === 0,
+        claimFailures.join("; "),
+      );
+    } catch (error) {
+      check("declared audit/review/register semantics", false, error.message);
+    }
+    if (failures.length > 0) {
+      process.exitCode = 1;
+      return;
+    }
+  }
+  // Gate thresholds come from config/triple-aaa-gates.json (matrix G01–G73);
+  // missing config fails every threshold check below (fail-closed).
+  const gates = await loadGateConfig().catch(() => null);
+  const covMin = gates?.coverage ?? null;
+  const mutMin = gates?.mutation?.adjusted_critical_min ?? null;
+  const mutSurvMax = gates?.mutation?.real_critical_survivors_max ?? null;
+  if (gates === null) {
+    check("gate config present (config/triple-aaa-gates.json)", false);
+  }
+  // 1. Coverage gate (§64, §87; floors G06–G09): run from `pnpm test:coverage` output.
   try {
     const totals = await coverageTotals();
     check(
-      "coverage statements >= 90",
-      totals.statements >= 90,
+      `coverage statements >= ${covMin?.statements_min ?? "?"}`,
+      covMin !== null && totals.statements >= covMin.statements_min,
       totals.statements.toFixed(2),
     );
     check(
-      "coverage branches >= 85",
-      totals.branches >= 85,
+      `coverage branches >= ${covMin?.branches_min ?? "?"}`,
+      covMin !== null && totals.branches >= covMin.branches_min,
       totals.branches.toFixed(2),
     );
     check(
-      "coverage functions >= 90",
-      totals.functions >= 90,
+      `coverage functions >= ${covMin?.functions_min ?? "?"}`,
+      covMin !== null && totals.functions >= covMin.functions_min,
       totals.functions.toFixed(2),
     );
-    check("coverage lines >= 90", totals.lines >= 90, totals.lines.toFixed(2));
+    check(
+      `coverage lines >= ${covMin?.lines_min ?? "?"}`,
+      covMin !== null && totals.lines >= covMin.lines_min,
+      totals.lines.toFixed(2),
+    );
   } catch {
     check("coverage present (run pnpm test:coverage first)", false);
   }
@@ -114,20 +190,34 @@ async function main() {
     const summary = JSON.parse(
       await readFile(join(root, "reports/mutation-summary.json"), "utf8"),
     );
+    const mutationProof = await validateCurrentMutationSummary(summary, {
+      repositoryRoot: root,
+      expectedRunId: process.env.CVG_MUTATION_CANDIDATE_ID,
+      expectedSha: process.env.EXPECTED_SHA,
+      requireExpectedRunId: true,
+    });
+    check(
+      "mutation evidence matches the current candidate run",
+      mutationProof.candidateRunId === process.env.CVG_MUTATION_CANDIDATE_ID,
+      mutationProof.candidateRunId,
+    );
     check(
       "mutation summary fresh (cvg-mutation-summary/v1)",
       summary.format === "cvg-mutation-summary/v1",
       summary.format ?? "unknown",
     );
     check(
-      "mutation adjusted >= 90",
-      typeof summary.adjusted_score === "number" &&
-        summary.adjusted_score >= 0.9,
+      `mutation adjusted >= ${mutMin ?? "?"}`,
+      mutMin !== null &&
+        typeof summary.adjusted_score === "number" &&
+        summary.adjusted_score >= mutMin,
       String(summary.adjusted_score ?? "missing"),
     );
     check(
-      "mutation critical real survivors = 0",
-      summary.critical_real_survivors === 0,
+      `mutation critical real survivors <= ${mutSurvMax ?? "?"}`,
+      mutSurvMax !== null &&
+        typeof summary.critical_real_survivors === "number" &&
+        summary.critical_real_survivors <= mutSurvMax,
       String(summary.critical_real_survivors ?? "missing"),
     );
     check(
@@ -135,10 +225,11 @@ async function main() {
       summary.status === "PASS",
       summary.status ?? "unknown",
     );
-  } catch {
+  } catch (error) {
     check(
-      "mutation summary present (run node scripts/verify-mutation-closure.mjs --write-summary)",
+      "mutation summary present and bound to current reports and closures",
       false,
+      error.message,
     );
   }
 
@@ -162,17 +253,32 @@ async function main() {
     check("route registry bidirectional consistency", false, error.message);
   }
 
-  // 3. RLS live evidence (§64, §89): the matrix summary must be PASS.
+  // 3. Promotion restores the canonical digest-pinned bundle, not staging
+  // scratch. Require its measured SHA and complete RLS matrix here too.
   try {
     const evidence = await readFile(
-      join(root, "staging-evidence", "rls-live-summary.json"),
+      join(root, "release-evidence", "rls-live-summary.json"),
       "utf8",
     );
     const parsed = JSON.parse(evidence);
+    const fresh = await isEvidenceFresh(root, parsed.sha, checkoutSha.trim());
+    const matrix = [
+      "cross_scope_read_denied",
+      "cross_scope_write_denied",
+      "anonymous_denied",
+      "service_identity_constrained",
+      "pool_context_isolated",
+      "force_rls_verified",
+      "bypassrls_absent",
+      "superuser_absent",
+    ];
     check(
       "RLS live matrix PASS",
-      parsed.status === "PASS",
-      parsed.status ?? "unknown",
+      parsed.status === "PASS" &&
+        fresh.fresh &&
+        parsed.failed === 0 &&
+        matrix.every((field) => parsed[field] === true),
+      fresh.fresh ? (parsed.status ?? "unknown") : fresh.detail,
     );
   } catch {
     check("RLS live matrix PASS", false, "run pnpm test:rls:live first");
@@ -198,13 +304,20 @@ async function main() {
       "--require-auth",
       "--require-candidate",
     ];
-    const selfRunId =
-      process.env.CVG_SELF_CANDIDATE_RUN_ID?.trim() ||
-      process.env.GITHUB_RUN_ID?.trim() ||
-      "";
-    if (selfRunId !== "") {
-      args.push("--self-candidate-run-id", selfRunId);
+    const selfRunId = flagValue("--self-candidate-run-id");
+    if (preflight) {
+      args.push("--preflight", "--self-candidate-run-id", selfRunId ?? "");
     }
+    const candidateRunId = flagValue("--candidate-run-id");
+    if (candidateRunId !== null)
+      args.push(
+        "--candidate-run-id",
+        candidateRunId,
+        "--candidate-run-attempt",
+        flagValue("--candidate-run-attempt") ??
+          process.env.CANDIDATE_RUN_ATTEMPT ??
+          "",
+      );
     const sameSha = await execFileAsync("node", args, {
       cwd: root,
       timeout: 300000,
@@ -307,6 +420,14 @@ async function main() {
       {
         strict: true,
         head: headStdout.trim(),
+        phase: preflight ? "preflight" : "promotion",
+        derivedArtifacts: claimPaths.filter((path) => path !== null),
+        trustedClaims: claimPaths
+          .filter((path) => path !== null)
+          .map((path) => ({
+            path,
+            archivePath: `release-evidence/${basename(path)}`,
+          })),
       },
     );
     check(
@@ -367,21 +488,28 @@ async function main() {
   // Freshness follows the shared evidence rule (ancestor + no runtime
   // diff): a tracked file can never contain its own future commit SHA.
   try {
-    const { readdir } = await import("node:fs/promises");
-    const audits = (await readdir(join(root, "docs/audits"))).filter((file) =>
-      /^state-of-art-final-audit-v\d+\.json$/u.test(file),
-    );
-    if (audits.length === 0) throw new Error("no final audit JSON found");
-    const latest = audits.sort().at(-1);
-    const audit = JSON.parse(
-      await readFile(join(root, "docs/audits", latest), "utf8"),
+    const latest = flagValue("--audit") ?? (await latestAuditPath(root));
+    const audit = JSON.parse(await readFile(latest, "utf8"));
+    const counterFailures = findingsCounterFailures(audit);
+    check(
+      "audit counters finite nonnegative safe integers",
+      counterFailures.length === 0,
+      counterFailures.join("; "),
     );
     const { stdout: head } = await execFileAsync("git", ["rev-parse", "HEAD"], {
       cwd: root,
     });
     check(`no open P0 (${latest})`, audit.p0 === 0, `p0=${audit.p0}`);
     check(`no open P1 (${latest})`, audit.p1 === 0, `p1=${audit.p1}`);
-    const fresh = await isEvidenceFresh(root, audit.sha, head.trim());
+    // Audit schema carries candidate_sha/evidence_sha (§44); accept the
+    // legacy `sha` alias but never undefined (fail-closed).
+    const auditSha = audit.evidence_sha ?? audit.sha ?? undefined;
+    check(
+      "latest audit candidate identity",
+      audit.candidate_sha === head.trim(),
+      `candidate=${audit.candidate_sha}`,
+    );
+    const fresh = await isEvidenceFresh(root, auditSha, head.trim());
     check(
       "latest audit fresh (ancestor + no runtime diff)",
       fresh.fresh,
@@ -400,7 +528,11 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  console.log("\naaa-candidate: PASS");
+  console.log(
+    preflight
+      ? "\naaa-candidate: PREFLIGHT_PASS (promotion pending)"
+      : "\naaa-candidate: PASS",
+  );
 }
 
 await main();

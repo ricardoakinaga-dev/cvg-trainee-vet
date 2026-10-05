@@ -35,7 +35,7 @@ it("materializes the 24-month curriculum and its session cadence", () => {
   expect(
     curriculumV3.modules.every(
       (module) =>
-        module.hospitalTraining.spacedReviewDays.join(",") === "7,30,90" &&
+        module.hospitalTraining.spacedReviewDays.join(",") === "30,60,90" &&
         module.hospitalTraining.assessmentModes.includes("SIMULACAO_DIGITAL") &&
         module.hospitalTraining.assessmentModes.includes("RETENCAO_ESPACADA") &&
         module.hospitalTraining.transferMetric.id.length > 0 &&

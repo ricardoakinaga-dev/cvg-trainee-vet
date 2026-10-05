@@ -1,0 +1,13 @@
+{
+  "name": "verify-product-definition",
+  "command": [
+    "pnpm",
+    "verify:product-definition"
+  ],
+  "startedAt": "2026-10-03T04:54:31.651973+00:00",
+  "durationSeconds": 0.52,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-product-definition.log",
+  "sha256": "6e5fc4694563826dac293e2c2eb474860908a67809b9679f27f394d99896d0c6"
+}

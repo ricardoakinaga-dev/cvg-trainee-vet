@@ -15,6 +15,7 @@ import {
   toApplicationError,
 } from "./errors.js";
 import type { TransactionSecurityContext } from "./transaction-context.js";
+import { matchesIdempotencyFingerprint } from "./idempotency-fingerprint.js";
 
 export type SaveAnswerCommand = Readonly<{
   readonly attemptId: string;
@@ -118,7 +119,6 @@ function fingerprint(command: SaveAnswerCommand): string {
     scopeId: command.scopeId,
     itemId: command.itemId,
     response: command.response,
-    savedAt: command.savedAt,
   });
 }
 
@@ -127,7 +127,12 @@ function replayOrThrow(
   expectedFingerprint: string,
 ): SaveAnswerResult | null {
   if (record === null) return null;
-  if (record.fingerprint !== expectedFingerprint) {
+  if (
+    !matchesIdempotencyFingerprint(record.fingerprint, expectedFingerprint, {
+      field: "savedAt",
+      value: record.result.answer.savedAt,
+    })
+  ) {
     throw new ApplicationError(
       "idempotency_conflict",
       "Idempotency key was already used with another command",

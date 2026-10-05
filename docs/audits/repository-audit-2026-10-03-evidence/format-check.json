@@ -1,0 +1,13 @@
+{
+  "name": "format-check",
+  "command": [
+    "pnpm",
+    "format:check"
+  ],
+  "startedAt": "2026-10-03T04:54:26.795327+00:00",
+  "durationSeconds": 22.59,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/format-check.log",
+  "sha256": "824d63340ffabc44910de634e8f2755895bc982c23af9b6e51d0e40b5ad4108f"
+}

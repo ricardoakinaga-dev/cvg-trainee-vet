@@ -1,8 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  CONTINUITY_INDEX_FILES,
+  validateContinuityIndex,
+} from "./current-continuity.mjs";
 
 const defaultRequiredFiles = Object.freeze([
+  ...CONTINUITY_INDEX_FILES,
   "AGENTS.md",
   "docs/99_runtime_state.md",
   "docs/20_master_execution_log.md",
@@ -147,6 +152,12 @@ function validateTraceability(manifest, errors) {
 export function validateDocumentationSnapshot(snapshot, options = {}) {
   const errors = [];
   const requiredFiles = options.requiredFiles ?? defaultRequiredFiles;
+  if (
+    requiredFiles.includes("docs/current-index.json") ||
+    snapshot.has("docs/current-index.json")
+  ) {
+    errors.push(...validateContinuityIndex(snapshot));
+  }
 
   for (const path of requiredFiles) {
     const content = readSnapshotValue(snapshot, path);
@@ -176,7 +187,7 @@ export function validateDocumentationSnapshot(snapshot, options = {}) {
     executionLog !== null &&
     !executionLog.includes("AUD-0491-FULL-CONSTRUCTION-AUDIT")
   ) {
-    errors.push("execution log has no current audit entry");
+    errors.push("execution log has no historical AUD-0491 entry");
   }
 
   const backlog = readSnapshotValue(snapshot, "docs/30_backlog_master.md");

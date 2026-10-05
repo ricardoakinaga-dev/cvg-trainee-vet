@@ -7,6 +7,7 @@ import {
   type DashboardReadPort,
   type StaffDashboardState,
 } from "./dashboard-use-cases.js";
+import { evaluateModuleAttempt, getModuleDraftPack } from "@cvg/curriculum";
 import type { ParticipantLearningJourneyState } from "./journey-use-cases.js";
 
 const scopeId = "11111111-1111-4111-8111-111111111111";
@@ -150,6 +151,263 @@ describe("staff dashboard use case", () => {
     ).rejects.toMatchObject({ code: "forbidden" });
   });
 
+  it("keeps M02 quiz mastery separate from missing cases and requires authoritative completion to unlock M03", () => {
+    const pack = getModuleDraftPack("M02");
+    const answers = pack.items
+      .filter((item) => item.responseMode === "CHOICE")
+      .map((item) => ({
+        itemId: item.id,
+        selectedChoiceIds: item.correctChoiceIds ?? [],
+      }));
+    const evaluation = evaluateModuleAttempt({
+      moduleId: "M02",
+      catalog: pack,
+      answers,
+      completedAt: "2026-08-10T12:00:00.000Z",
+      mode: "FORMATIVE_CHOICE",
+    });
+    const participantId = "33333333-3333-4333-8333-333333333333";
+    const journey: ParticipantLearningJourneyState = {
+      participantId,
+      assignments: ["M01", "M02", "M03"].map((moduleId) => ({
+        scopeId,
+        state: {
+          assignmentId: `synthetic-${moduleId}`,
+          participantId,
+          moduleId,
+          availableAt: "2026-08-10T12:00:00.000Z",
+          status:
+            moduleId === "M01"
+              ? ("CONCLUIDO" as const)
+              : ("EM_ANDAMENTO" as const),
+          version: 1,
+        },
+      })),
+      activities: [],
+      results: [],
+      runtimes: [
+        {
+          participantId,
+          scopeId,
+          version: 1,
+          updatedAt: "2026-08-10T12:00:00.000Z",
+          evaluation,
+        },
+      ],
+    };
+    expect(evaluation.status).toBe("DOMINIO_DIGITAL");
+    expect(evaluation.unansweredMandatoryItemIds).toHaveLength(2);
+    const partial = deriveParticipantDashboard(journey);
+    expect(partial.path.find((item) => item.moduleId === "M02")?.status).toBe(
+      "EM_ANDAMENTO",
+    );
+    expect(partial.path.find((item) => item.moduleId === "M03")?.status).toBe(
+      "EM_ANDAMENTO",
+    );
+    const assigned = {
+      ...journey,
+      assignments: journey.assignments.map((assignment) =>
+        assignment.state.moduleId === "M03"
+          ? {
+              ...assignment,
+              state: { ...assignment.state, status: "ATRIBUIDO" as const },
+            }
+          : assignment,
+      ),
+    };
+    expect(
+      deriveParticipantDashboard(assigned).path.find(
+        (item) => item.moduleId === "M03",
+      )?.status,
+    ).toBe("BLOQUEADO_PRE_REQUISITO");
+    const pendingCase = evaluateModuleAttempt({
+      moduleId: "M02",
+      catalog: pack,
+      answers: [
+        ...answers,
+        ...pack.items
+          .filter((item) => item.responseMode === "TEXT")
+          .map((item) => ({
+            itemId: item.id,
+            text: "Caso sintético aguardando correção.",
+          })),
+      ],
+      completedAt: "2026-08-10T12:00:00.000Z",
+      mode: "MODULE_COMPLETION",
+    });
+    expect(pendingCase.activityProgress).toBe("AGUARDA_CORRECAO_HUMANA");
+    expect(pendingCase.status).toBe("AGUARDA_CORRECAO_HUMANA");
+    const completed = {
+      ...assigned,
+      assignments: assigned.assignments.map((assignment) =>
+        assignment.state.moduleId === "M02"
+          ? {
+              ...assignment,
+              state: {
+                ...assignment.state,
+                status: "CONCLUIDO_COM_RETENCAO_PENDENTE" as const,
+              },
+            }
+          : assignment,
+      ),
+      completionReceipts: [
+        {
+          participantId,
+          scopeId,
+          moduleId: "M02",
+          assignmentId: "synthetic-M02",
+          completedAt: "2026-08-10T12:00:00.000Z",
+          completedAssignmentVersion: 1,
+        },
+      ],
+    };
+    const final = deriveParticipantDashboard(completed);
+    expect(final.path.find((item) => item.moduleId === "M02")?.status).toBe(
+      "CONCLUIDO",
+    );
+    expect(final.path.find((item) => item.moduleId === "M03")?.status).toBe(
+      "DISPONIVEL",
+    );
+    expect(
+      final.profile.find((item) => item.moduleId === "M02")?.scorePercent,
+    ).toBe(100);
+  });
+
+  it.each(["SALVA", "AGUARDA_CORRECAO_HUMANA"] as const)(
+    "keeps M03 blocked when a completed M02 assignment still has a %s activity",
+    (attemptStatus) => {
+      const participantId = "33333333-3333-4333-8333-333333333333";
+      const journey: ParticipantLearningJourneyState = {
+        participantId,
+        assignments: ["M01", "M02", "M03"].map((moduleId) => ({
+          scopeId,
+          state: {
+            participantId,
+            assignmentId: `synthetic-${moduleId}`,
+            moduleId,
+            availableAt: "2026-08-10T12:00:00.000Z",
+            status:
+              moduleId === "M03"
+                ? "ATRIBUIDO"
+                : "CONCLUIDO_COM_RETENCAO_PENDENTE",
+            version: 1,
+          },
+        })),
+        activities: [
+          {
+            scopeId,
+            activityId: "44444444-4444-4444-8444-444444444444",
+            moduleId: "M02",
+            learningAssignmentId: "synthetic-M02",
+            slug: "synthetic-pending-case",
+            title: "Caso sintético pendente",
+            status: "EM_ANDAMENTO",
+            attemptStatus,
+            nextAction:
+              attemptStatus === "SALVA"
+                ? "RETOMAR_ATIVIDADE"
+                : "AGUARDAR_CORRECAO",
+          },
+        ],
+        results: [],
+        runtimes: [],
+      };
+      const result = deriveParticipantDashboard(journey);
+      expect(result.path.find((item) => item.moduleId === "M02")?.status).toBe(
+        "EM_ANDAMENTO",
+      );
+      expect(result.path.find((item) => item.moduleId === "M03")?.status).toBe(
+        "BLOQUEADO_PRE_REQUISITO",
+      );
+      expect(result.progress.pendingCorrections).toBe(
+        attemptStatus === "SALVA" ? 0 : 1,
+      );
+    },
+  );
+
+  it.each([false, true])(
+    "resolves prerequisites in each assigned scope, reverse=%s",
+    (reverse) => {
+      const participantId = "33333333-3333-4333-8333-333333333333";
+      const secondScope = "55555555-5555-4555-8555-555555555555";
+      const assignments: ParticipantLearningJourneyState["assignments"] = [
+        {
+          scopeId,
+          state: {
+            participantId,
+            assignmentId: "synthetic-active-M02",
+            moduleId: "M02",
+            status: "EM_ANDAMENTO",
+            availableAt: "2026-08-10T12:00:00.000Z",
+            version: 1,
+          },
+        },
+        {
+          scopeId,
+          state: {
+            participantId,
+            assignmentId: "synthetic-active-M03",
+            moduleId: "M03",
+            status: "ATRIBUIDO",
+            availableAt: "2026-08-10T12:00:00.000Z",
+            version: 1,
+          },
+        },
+        {
+          scopeId: secondScope,
+          state: {
+            participantId,
+            assignmentId: "synthetic-complete-M02",
+            moduleId: "M02",
+            status: "CONCLUIDO",
+            availableAt: "2026-08-10T12:00:00.000Z",
+            version: 1,
+          },
+        },
+      ];
+      const journey: ParticipantLearningJourneyState = {
+        participantId,
+        assignments: reverse ? [...assignments].reverse() : assignments,
+        activities: [],
+        runtimes: [],
+        results: [],
+        completionReceipts: [
+          {
+            participantId,
+            scopeId: secondScope,
+            moduleId: "M02",
+            assignmentId: "synthetic-complete-M02",
+            completedAt: "2026-08-10T12:00:00.000Z",
+            completedAssignmentVersion: 1,
+          },
+        ],
+      };
+      expect(
+        deriveParticipantDashboard(journey).path.find(
+          (item) => item.moduleId === "M02",
+        )?.status,
+      ).toBe("EM_ANDAMENTO");
+      expect(
+        deriveParticipantDashboard(journey).path.find(
+          (item) => item.moduleId === "M03",
+        )?.status,
+      ).toBe("BLOQUEADO_PRE_REQUISITO");
+      const ownScopeTarget = {
+        ...journey,
+        assignments: journey.assignments.map((assignment) =>
+          assignment.state.moduleId === "M03"
+            ? { ...assignment, scopeId: secondScope }
+            : assignment,
+        ),
+      };
+      expect(
+        deriveParticipantDashboard(ownScopeTarget).path.find(
+          (item) => item.moduleId === "M03",
+        )?.status,
+      ).toBe("DISPONIVEL");
+    },
+  );
+
   it("derives participant progress, corrections, remediation and retention", () => {
     const journey: ParticipantLearningJourneyState = {
       participantId: "33333333-3333-4333-8333-333333333333",
@@ -192,7 +450,7 @@ describe("staff dashboard use case", () => {
             openResponseItemIds: [],
             retentionReviews: [
               {
-                day: 7,
+                day: 30,
                 dueAt: "2026-08-30T12:00:00.000Z",
                 status: "PENDENTE",
               },

@@ -12,7 +12,11 @@ import {
   type Role,
 } from "./authorization.js";
 import { createAuditEntry, type AuditPort } from "./audit.js";
-import { ApplicationError, toApplicationError } from "./errors.js";
+import {
+  ApplicationError,
+  isPersistenceConflict,
+  toApplicationError,
+} from "./errors.js";
 
 export type ContentRecord = Readonly<{
   readonly contentId: string;
@@ -40,6 +44,7 @@ export interface ContentRepositoryPort {
   readonly find: (
     contentId: string,
     version: number,
+    approvedClinicalApproverId?: string,
   ) => Promise<ContentRecord | null>;
   readonly save: (current: ContentRecord, next: ContentRecord) => Promise<void>;
 }
@@ -118,7 +123,7 @@ function eventTypeForStatus(
 
 function normalizeContentError(error: unknown): ApplicationError {
   if (error instanceof ApplicationError) return error;
-  if (error instanceof ContentDomainError) {
+  if (error instanceof ContentDomainError || isPersistenceConflict(error)) {
     return new ApplicationError("state_conflict", "Content state conflict");
   }
   return toApplicationError(error);
@@ -166,6 +171,7 @@ export async function advanceContent(
         const current = await operations.content.find(
           command.contentId,
           command.version,
+          command.approvedClinicalApproverId,
         );
         if (current === null) {
           throw new ApplicationError(

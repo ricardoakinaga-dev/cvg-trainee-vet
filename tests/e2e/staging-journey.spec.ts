@@ -70,6 +70,7 @@ async function assertApiSuccess(
   expect(url.origin).toBe(webOrigin);
   const requestId = response.headers()["x-request-id"];
   expect(requestId).toMatch(uuidPattern);
+  if (requestId === undefined) throw new Error("API request ID required");
   const payload: unknown = await response.json();
   expect(payload).toMatchObject({
     success: true,

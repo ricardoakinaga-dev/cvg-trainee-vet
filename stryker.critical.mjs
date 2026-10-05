@@ -1,3 +1,5 @@
+import { mutationReportPath } from "./scripts/mutation-report-path.mjs";
+
 /**
  * StrykerJS — mutation testing seletivo expandido (AAA-FINAL-002 §5).
  *
@@ -18,7 +20,7 @@ export default {
   ],
   testRunner: "vitest",
   reporters: ["clear-text", "json"],
-  jsonReporter: { fileName: "reports/mutation-critical/mutation.json" },
+  jsonReporter: { fileName: mutationReportPath("critical") },
   coverageAnalysis: "perTest",
   thresholds: { high: 90, low: 75, break: 0 },
   timeoutMS: 20000,

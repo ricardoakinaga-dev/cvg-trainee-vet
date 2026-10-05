@@ -1,14 +1,12 @@
+import { buildParticipantCurriculumPath } from "./participant-curriculum-path.js";
 import { ApplicationError } from "./errors.js";
-import {
-  buildPersonalizedCurriculumPath,
-  curriculumV3,
-  type PersonalizedPathItem,
-} from "@cvg/curriculum";
+import { curriculumV3, type PersonalizedPathItem } from "@cvg/curriculum";
 import type {
   JourneyNextAction,
   ParticipantLearningJourneyState,
 } from "./journey-use-cases.js";
 import { deriveJourneyNextAction } from "./journey-use-cases.js";
+import { selectCurrentJourneyRuntimes } from "./journey-runtime-selection.js";
 import type { AccountStatus } from "./authorization.js";
 import {
   deriveParticipantDiagnosticProfile,
@@ -221,12 +219,22 @@ function latestRuntimeByModule(
     string,
     ParticipantLearningJourneyState["runtimes"][number]
   >();
-  for (const runtime of journey.runtimes) {
+  const priority = {
+    EM_REMEDIACAO: 0,
+    AGUARDA_CORRECAO_HUMANA: 1,
+    EM_DESENVOLVIMENTO_DIGITAL: 2,
+    RETENCAO_PENDENTE: 3,
+    DOMINIO_DIGITAL: 4,
+    SEM_EVIDENCIA_DIGITAL: 5,
+  } as const;
+  for (const runtime of selectCurrentJourneyRuntimes(
+    journey.participantId,
+    journey.runtimes,
+  )) {
     const previous = latest.get(runtime.evaluation.moduleId);
     if (
       previous === undefined ||
-      new Date(runtime.updatedAt).getTime() >=
-        new Date(previous.updatedAt).getTime()
+      priority[competencyStatus(runtime)] < priority[competencyStatus(previous)]
     ) {
       latest.set(runtime.evaluation.moduleId, runtime);
     }
@@ -284,15 +292,19 @@ export function deriveParticipantDashboard(
   journey: ParticipantLearningJourneyState,
 ): ParticipantDashboardState {
   const assignedActivities = journey.activities.length;
-  const completedActivities = journey.activities.filter(
-    (activity) => activity.status === "CONCLUIDO",
+  const completedActivities = journey.activities.filter((activity) =>
+    ["CONCLUIDO", "CONCLUIDO_COM_RETENCAO_PENDENTE"].includes(activity.status),
   ).length;
-  const remediationObjectives = journey.runtimes.reduce(
+  const runtimes = selectCurrentJourneyRuntimes(
+    journey.participantId,
+    journey.runtimes,
+  );
+  const remediationObjectives = runtimes.reduce(
     (total, runtime) =>
       total + runtime.evaluation.remediationObjectiveIds.length,
     0,
   );
-  const retentionReviewsPending = journey.runtimes.reduce(
+  const retentionReviewsPending = runtimes.reduce(
     (total, runtime) =>
       total +
       runtime.evaluation.retentionReviews.filter(
@@ -310,64 +322,7 @@ export function deriveParticipantDashboard(
       ({ state }) => state.status === "RESULTADO_EM_PROCESSAMENTO",
     ).length;
 
-  const assignedModuleIds = journey.assignments.map(
-    ({ state: assignment }) => assignment.moduleId,
-  );
-  const masteredModuleIds = journey.assignments
-    .filter(({ state: assignment }) =>
-      ["CONCLUIDO", "CONCLUIDO_COM_RETENCAO_PENDENTE"].includes(
-        assignment.status,
-      ),
-    )
-    .map(({ state: assignment }) => assignment.moduleId);
-  const remediationModuleIds = journey.assignments
-    .filter(
-      ({ state: assignment }) =>
-        assignment.status === "EM_REFORCO" ||
-        (assignment.status === "BLOQUEADO" &&
-          assignment.blockReason === "OBJETIVO_EM_REMEDIACAO"),
-    )
-    .map(({ state: assignment }) => assignment.moduleId);
-  const retentionDueModuleIds = journey.assignments
-    .filter(
-      ({ state: assignment }) =>
-        assignment.status === "CONCLUIDO_COM_RETENCAO_PENDENTE",
-    )
-    .map(({ state: assignment }) => assignment.moduleId);
-  const inProgressModuleIds = journey.assignments
-    .filter(({ state: assignment }) => assignment.status === "EM_ANDAMENTO")
-    .map(({ state: assignment }) => assignment.moduleId);
-
-  for (const runtime of journey.runtimes) {
-    const moduleId = runtime.evaluation.moduleId;
-    if (runtime.evaluation.status === "DOMINIO_DIGITAL") {
-      masteredModuleIds.push(moduleId);
-    }
-    if (runtime.evaluation.status === "EM_REMEDIACAO") {
-      remediationModuleIds.push(moduleId);
-    }
-    if (
-      runtime.evaluation.retentionReviews.some(
-        (review) => review.status === "PENDENTE",
-      )
-    ) {
-      retentionDueModuleIds.push(moduleId);
-    }
-    if (runtime.evaluation.status === "AGUARDA_CORRECAO_HUMANA") {
-      inProgressModuleIds.push(moduleId);
-    }
-    if (!assignedModuleIds.includes(moduleId)) {
-      assignedModuleIds.push(moduleId);
-    }
-  }
-
-  const path = buildPersonalizedCurriculumPath({
-    masteredModuleIds,
-    remediationModuleIds,
-    retentionDueModuleIds,
-    inProgressModuleIds,
-    assignedModuleIds,
-  });
+  const path = buildParticipantCurriculumPath(journey);
 
   const diagnosticProfile =
     journey.diagnosticResults === undefined
@@ -376,7 +331,7 @@ export function deriveParticipantDashboard(
 
   return Object.freeze({
     kind: "participant",
-    nextAction: journey.nextAction ?? deriveJourneyNextAction(journey),
+    nextAction: deriveJourneyNextAction(journey),
     path: Object.freeze(path.map((item) => Object.freeze({ ...item }))),
     profile: deriveParticipantCompetencyProfile(journey),
     ...(diagnosticProfile === undefined ? {} : { diagnosticProfile }),

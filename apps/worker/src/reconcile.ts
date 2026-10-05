@@ -3,7 +3,10 @@ import type {
   VectorPointMetadata,
   VectorStorePort,
 } from "@cvg/integrations";
-import type { ContentIndexSourcePort } from "@cvg/persistence";
+import type {
+  ContentIndexSourcePort,
+  IndexableContentRecord,
+} from "@cvg/persistence";
 
 import {
   createInternalVectorPoint,
@@ -43,6 +46,95 @@ function sameMetadata(
   );
 }
 
+type ContentFence = NonNullable<
+  ContentIndexSourcePort["withContentVersionFence"]
+>;
+
+async function reconcilePublishedRecord(
+  record: IndexableContentRecord,
+  vector: readonly number[] | undefined,
+  fence: ContentFence,
+  vectorStore: VectorStorePort,
+  expected: Map<string, VectorPointMetadata>,
+): Promise<boolean> {
+  let upserted = false;
+  await fence(record.contentId, record.version, async (current) => {
+    if (current === null) return;
+    if (
+      current.contentId !== record.contentId ||
+      current.version !== record.version ||
+      current.scopeId !== record.scopeId ||
+      current.text !== record.text
+    )
+      throw new Error("published index source changed during embedding");
+    const metadata = createInternalVectorPointMetadata(
+      current,
+      vectorStore.indexVersion,
+      vectorStore.embeddingModel,
+    );
+    expected.set(metadata.id, metadata);
+    if (vector !== undefined) {
+      await vectorStore.upsert([createInternalVectorPoint(current, vector)]);
+      upserted = true;
+    }
+  });
+  return upserted;
+}
+
+async function removeStaleVersions(
+  existing: readonly VectorPointMetadata[],
+  expected: Map<string, VectorPointMetadata>,
+  fence: ContentFence,
+  vectorStore: VectorStorePort,
+): Promise<number> {
+  const groups = new Map<
+    string,
+    { contentId: string; version: number; ids: string[] }
+  >();
+  for (const point of existing) {
+    if (expected.has(point.id)) continue;
+    const prefix = `${point.knowledgeId}:v`;
+    const versionText = point.sectionId.startsWith(prefix)
+      ? point.sectionId.slice(prefix.length)
+      : "";
+    const version = Number(versionText);
+    if (!/^[1-9][0-9]*$/u.test(versionText) || !Number.isSafeInteger(version))
+      throw new Error("indexed content version identity is invalid");
+    const key = JSON.stringify([point.knowledgeId, version]);
+    const group = groups.get(key) ?? {
+      contentId: point.knowledgeId,
+      version,
+      ids: [],
+    };
+    group.ids.push(point.id);
+    groups.set(key, group);
+  }
+  let removed = 0;
+  for (const group of groups.values()) {
+    await fence(group.contentId, group.version, async (current) => {
+      if (current !== null) {
+        if (
+          current.contentId !== group.contentId ||
+          current.version !== group.version
+        )
+          throw new Error(
+            "published index source identity differs from deletion fence",
+          );
+        const metadata = createInternalVectorPointMetadata(
+          current,
+          vectorStore.indexVersion,
+          vectorStore.embeddingModel,
+        );
+        expected.set(metadata.id, metadata);
+        return;
+      }
+      await vectorStore.delete(group.ids);
+      removed += group.ids.length;
+    });
+  }
+  return removed;
+}
+
 export async function reconcileVectorIndex(
   dependencies: VectorReconciliationDependencies,
 ): Promise<VectorReconciliationResult> {
@@ -62,8 +154,14 @@ export async function reconcileVectorIndex(
     );
   }
 
+  const fence = dependencies.source.withContentVersionFence;
+  if (fence === undefined)
+    throw new Error("content version effect fence is not configured");
+
   return dependencies.withExclusiveLock(async () => {
-    const content = await dependencies.source.listPublishedIndexable();
+    const content = (await dependencies.source.listPublishedIndexable()).map(
+      (record) => Object.freeze({ ...record }),
+    );
     const expectedMetadata = content.map((record) =>
       createInternalVectorPointMetadata(
         record,
@@ -71,9 +169,7 @@ export async function reconcileVectorIndex(
         vectorStore.embeddingModel,
       ),
     );
-    const expectedById = new Map(
-      expectedMetadata.map((metadata) => [metadata.id, metadata] as const),
-    );
+    const expectedById = new Map<string, VectorPointMetadata>();
     const existing = await vectorStore.list();
     const existingById = new Map(
       existing.map((point) => [point.id, point] as const),
@@ -93,24 +189,51 @@ export async function reconcileVectorIndex(
       throw new Error("embedding provider returned an unexpected vector count");
     }
 
-    const changed = changedRecords.map((record, index) => {
-      const vector = vectors[index];
-      if (vector === undefined) {
-        throw new Error("embedding provider returned an incomplete vector set");
-      }
-      return createInternalVectorPoint(record, vector);
-    });
-    const stale = existing
-      .filter((point) => !expectedById.has(point.id))
-      .map((point) => point.id);
-
-    if (changed.length > 0) await vectorStore.upsert(changed);
-    if (stale.length > 0) await vectorStore.delete(stale);
+    const vectorsById = new Map(
+      changedRecords.map((record, index) => {
+        const vector = vectors[index];
+        if (vector === undefined) {
+          throw new Error(
+            "embedding provider returned an incomplete vector set",
+          );
+        }
+        const metadata = createInternalVectorPointMetadata(
+          record,
+          vectorStore.indexVersion,
+          vectorStore.embeddingModel,
+        );
+        return [metadata.id, vector] as const;
+      }),
+    );
+    let upserted = 0;
+    for (const record of content) {
+      const metadata = createInternalVectorPointMetadata(
+        record,
+        vectorStore.indexVersion,
+        vectorStore.embeddingModel,
+      );
+      if (
+        await reconcilePublishedRecord(
+          record,
+          vectorsById.get(metadata.id),
+          fence,
+          vectorStore,
+          expectedById,
+        )
+      )
+        upserted += 1;
+    }
+    const removed = await removeStaleVersions(
+      existing,
+      expectedById,
+      fence,
+      vectorStore,
+    );
 
     return Object.freeze({
-      expected: expectedMetadata.length,
-      upserted: changed.length,
-      removed: stale.length,
+      expected: expectedById.size,
+      upserted,
+      removed,
     });
   });
 }

@@ -1,3 +1,5 @@
+import type { RateLimitRiskClass } from "./routing/route-registry.js";
+
 export type RequestHeaders = Readonly<Record<string, string | undefined>>;
 
 export type RateLimitOptions = Readonly<{
@@ -21,6 +23,7 @@ export type RequestRateLimiter = Readonly<{
   readonly check: (
     key: string,
     nowMs?: number,
+    riskClass?: RateLimitRiskClass,
   ) => RateLimitDecision | Promise<RateLimitDecision>;
 }>;
 

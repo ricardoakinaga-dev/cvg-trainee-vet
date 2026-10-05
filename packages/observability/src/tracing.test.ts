@@ -229,6 +229,60 @@ describe("OTLP exporter and degradation", () => {
 });
 
 describe("batch span processor scheduled flush (AAA-FINAL-006)", () => {
+  it.each([true, false])(
+    "T23 close observes running and queued exports, success=%s",
+    async (success) => {
+      let release!: () => void;
+      let enter!: () => void;
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const entered = new Promise<void>((resolve) => {
+        enter = resolve;
+      });
+      const exported: string[] = [];
+      const processor = new BatchSpanProcessor({
+        export: async (spans) => {
+          if (spans.some((span) => span.name === "inflight")) {
+            enter();
+            await held;
+            if (!success) throw new Error("synthetic exporter failure");
+          }
+          exported.push(...spans.map((span) => span.name));
+        },
+      });
+      const tracer = createTracer({
+        onEnd: (span) => {
+          void processor.onEnd(span);
+        },
+      });
+      tracer.startSpan("inflight").end();
+      const exporting = processor.flush();
+      await entered;
+      tracer.startSpan("queued-final").end();
+      const first = processor.close();
+      let complete = false;
+      const closing = first.then(() => {
+        complete = true;
+      });
+      try {
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        expect(complete).toBe(false);
+        expect(processor.close()).toBe(first);
+        tracer.startSpan("denied-after-close").end();
+        release();
+        await Promise.all([exporting, closing]);
+        expect(exported).toContain("queued-final");
+        expect(exported.includes("inflight")).toBe(success);
+        expect(exported).not.toContain("denied-after-close");
+        expect(processor.dropped()).toBe(success ? 1 : 2);
+        expect(processor.pending()).toBe(0);
+      } finally {
+        release();
+        await Promise.all([exporting, closing]);
+      }
+    },
+  );
   it("exports queued spans on a timer without waiting for close", async () => {
     const exported: FinishedSpan[][] = [];
     const processor = new BatchSpanProcessor(

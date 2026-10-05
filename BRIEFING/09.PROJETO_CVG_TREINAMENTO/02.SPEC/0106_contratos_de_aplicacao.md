@@ -3,6 +3,31 @@
 **Padrão:** comandos e queries tipados, casos de uso pequenos e dependências injetadas.  
 **Regra:** o domínio não conhece HTTP, React, SQL ou SDK de fornecedor.
 
+## Continuidade de tentativa e identidade — AUDIT-20261003-T13/T15/T16
+
+`SaveAnswer` e `SubmitAttempt` identificam o pedido por participante, escopo,
+recurso e payload estável. Horários gerados pelo servidor não mudam essa
+identidade; uma repetição devolve o snapshot original, com compatibilidade
+estrita para fingerprints antigos que incluíam o horário persistido. Mudança
+de resposta, tentativa, dono ou escopo mantém conflito. A interface reutiliza
+chave/payload enquanto não confirmar a operação e distingue uma nova edição.
+
+`GET /api/v1/attempts/:attemptId` concretiza a retomada prevista para respostas:
+sessão ativa, dono e escopo autorizados no servidor; query de leitura sem
+mutação. O adaptador PostgreSQL protege a tentativa durante a leitura das
+respostas, retornando ID, atividade, status, versão e respostas próprias de
+itens publicados. A projeção usa `participantAttemptProjectionSchema`, sem
+participante, answerId, gabarito, rubrica ou fontes. Falha de integração retorna
+503 sem simular tentativa vazia. Falha de carga mantém o rascunho e impede envio
+até recuperação; edição pendente requer confirmação de save antes do submit.
+
+`GET /api/v1/internal/session/scopes` pode acrescentar `recoveryContext` com
+`principalId` e `sessionBinding` UUID validados, ligados à sessão autenticada
+na persistência. O vínculo não é credencial e muda na rotação/nova sessão;
+serve somente para descartar rascunho de usuário/sessão/escopo incompatível.
+Adaptador sem vínculo permanece fail-closed para recuperação de storage.
+`GET /api/v1/session/current` continua retornando apenas o estado público.
+
 ## 1. Comandos principais
 
 | Comando | Caso de uso | Resultado |
@@ -236,7 +261,7 @@ posteriores e não são inferidos por esta fatia.
 
 ## 9. Autoria e revisão materializadas no item 10
 
-`RunAuthoringPreflight` recebe um registro autoral interno e devolve checks determinísticos de campos, correção, fronteira pública e rastreabilidade. `ReviewAuthoringContent` exige principal ativo, papel/capacidade, escopo, revisor diferente do autor e registro em `EM_REVISAO_CLINICA`; persiste a decisão e chama a transição de conteúdo somente depois do preflight. `APROVAR_CLINICAMENTE` não torna o item publicável sozinho: a publicação ainda exige o gate de registro editorial + preflight + última aprovação clínica no repositório.
+`RunAuthoringPreflight` recebe um registro autoral interno e devolve checks determinísticos de campos, correção, fronteira pública e rastreabilidade. `ReviewAuthoringContent` exige principal ativo, papel/capacidade, escopo e registro em `EM_REVISAO_CLINICA`. Para o MVP interno, revisão pelo próprio autor só é permitida quando `principalId` coincide com o `approvedClinicalApproverId` configurado no servidor, conforme `RF-034`, `RN-043`/`RN-044` e a decisão de Ricardo registrada em `0191_adendo_decisao_autorrevisao_mvp.md`; sem essa correspondência, o comando falha fechado. Um `CLINICAL_APPROVER` distinto pode aprovar conteúdo de outro autor sem coincidir com o identificador configurado. Essa decisão versionada satisfaz o fluxo de revisão, mas não substitui a aprovação de Ricardo exigida por `RF-035`: o gate de publicação exige que a aprovação clínica mais recente tenha sido registrada pelo `approvedClinicalApproverId` configurado no servidor. `SOLICITAR_AJUSTES` permanece uma decisão `MODERATE_CONTENT` de `MODERATOR`/`ADMIN`, conforme SPEC 0111; sua resposta HTTP contém apenas identidade da versão, status e recibo da decisão, sem projeção de fonte, gabarito, rubrica ou preflight. As duas decisões só usam o fluxo de revisão autoral versionado; a transição genérica de conteúdo as rejeita para impedir mudança de estado sem decisão persistida. Para uma revisão concluída, a atualização de preflight, a decisão versionada, a transição de status, o evento outbox e a auditoria são confirmados na mesma transação PostgreSQL. Se qualquer gravação falhar, a transação inteira é revertida; uma aprovação bloqueada pode persistir apenas o resultado do preflight antes de rejeitar a decisão. `APROVAR_CLINICAMENTE` não torna o item publicável sozinho: a publicação ainda exige registro editorial, checks técnicos, `readyForPublication === true`, `checks.publicationBlocked === false` e aprovação mais recente da identidade clínica configurada. O hold global H-CONTENT permanece ativo nesta implementação como bloqueio explícito da persistência: os caminhos de criação, atualização e revisão normalizam o preflight para `readyForPublication === false` e `checks.publicationBlocked === true`, e a gravação/materialização para estado `PUBLICADO` falha fechado enquanto o hold estiver ativo. A capacidade prevista por `RF-034` descreve o fluxo futuro após liberação do hold; nenhum conteúdo clínico é publicado por esta implementação.
 
 O registro autoral é versionado por `content_id + version`, liga módulo/sessão/objetivo/autor e mantém `correctChoiceIds` ou rubrica somente no limite interno. A projeção `participant` é uma cópia estrutural sem gabarito, rubrica, fontes ou autoria. IA e Qdrant permanecem adapters assistivos e nunca executam esse caso de uso nem alteram estado.
 
@@ -245,10 +270,12 @@ O registro autoral é versionado por `content_id + version`, liga módulo/sessã
 `GetContentReviewQueue` é uma query imutável e escopada. Recebe principal ativo,
 escopos autorizados e `{ scopeId, status?, limit? }`; `status` aceita somente
 `EM_REVISAO_CLINICA` ou `AJUSTES_SOLICITADOS`, e `limit` é limitado a 1–100
-com padrão 50. `AUTHOR` recebe somente seus próprios registros, enquanto
-`MODERATOR`, `ADMIN` e a identidade clínica aprovada podem ler o escopo
-operacional completo. A capability `VIEW_CONTENT_REVIEW_QUEUE` não concede
-alteração, aprovação ou publicação.
+com padrão 50. Conta somente `AUTHOR` recebe seus próprios registros;
+`MODERATOR`, `ADMIN` e `CLINICAL_APPROVER` ativos podem ler o escopo
+operacional completo. Para combinações de papéis, `canOpenAuthoring` é
+calculado por item; só `CLINICAL_APPROVER` pode abrir fonte de outro autor.
+A capability `VIEW_CONTENT_REVIEW_QUEUE` não concede alteração, aprovação ou
+publicação.
 
 O port PostgreSQL aplica contexto transacional de `scopeId`, fica protegido por
 RLS `ENABLE/FORCE` nas tabelas editoriais, restringe ambas ao escopo pedido,

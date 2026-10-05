@@ -1,4 +1,8 @@
-import type { MetricsSnapshot } from "./observability.js";
+import {
+  API_SLO_BUCKET_BOUNDS_MS,
+  API_SLO_DURATION_METRIC,
+  type MetricsSnapshot,
+} from "./observability.js";
 
 export type SloDefinition = Readonly<{
   readonly id: string;
@@ -192,6 +196,62 @@ function requestMeasurement(metrics: MetricsSnapshot): SloMeasurement {
   );
 }
 
+function latencyMeasurement(
+  metrics: MetricsSnapshot,
+  operation: "read" | "mutation",
+): SloMeasurement {
+  const noData = { goodEvents: 0, totalEvents: 0 };
+  const histograms = metrics.histograms.filter(
+    (histogram) =>
+      histogram.name === API_SLO_DURATION_METRIC &&
+      histogram.labels.operation === operation,
+  );
+  if (histograms.length !== 1) return noData;
+  const histogram = histograms[0]!;
+  const buckets = histogram.buckets;
+  if (
+    Object.keys(histogram.labels).length !== 1 ||
+    !Number.isSafeInteger(histogram.count) ||
+    histogram.count <= 0 ||
+    buckets === undefined ||
+    buckets.length !== API_SLO_BUCKET_BOUNDS_MS.length
+  )
+    return noData;
+  let previousCount = 0;
+  for (const [index, bucket] of buckets.entries()) {
+    if (
+      bucket.upperBound !== API_SLO_BUCKET_BOUNDS_MS[index] ||
+      !Number.isSafeInteger(bucket.count) ||
+      bucket.count < previousCount ||
+      bucket.count > histogram.count
+    )
+      return noData;
+    previousCount = bucket.count;
+  }
+  if (previousCount !== histogram.count) return noData;
+  const rank = 0.95 * histogram.count;
+  let lowerBound = 0;
+  previousCount = 0;
+  for (const bucket of buckets) {
+    if (bucket.count >= rank) {
+      const p95Ms =
+        bucket.upperBound === null
+          ? lowerBound
+          : lowerBound +
+            (bucket.upperBound - lowerBound) *
+              ((rank - previousCount) / (bucket.count - previousCount));
+      return {
+        goodEvents: histogram.count,
+        totalEvents: histogram.count,
+        p95Ms,
+      };
+    }
+    lowerBound = bucket.upperBound ?? lowerBound;
+    previousCount = bucket.count;
+  }
+  return noData;
+}
+
 function requiredDefinition(id: string): SloDefinition {
   const definition = DEFAULT_OPERATIONAL_SLOS.find((item) => item.id === id);
   if (definition === undefined) {
@@ -210,14 +270,14 @@ export function deriveOperationalSnapshot(
   );
   const slos = Object.freeze([
     availability,
-    evaluateSlo(requiredDefinition("api.read.p95"), {
-      goodEvents: 0,
-      totalEvents: 0,
-    }),
-    evaluateSlo(requiredDefinition("api.mutation.p95"), {
-      goodEvents: 0,
-      totalEvents: 0,
-    }),
+    evaluateSlo(
+      requiredDefinition("api.read.p95"),
+      latencyMeasurement(metrics, "read"),
+    ),
+    evaluateSlo(
+      requiredDefinition("api.mutation.p95"),
+      latencyMeasurement(metrics, "mutation"),
+    ),
   ]);
   return Object.freeze({
     status: dependencyStatus,

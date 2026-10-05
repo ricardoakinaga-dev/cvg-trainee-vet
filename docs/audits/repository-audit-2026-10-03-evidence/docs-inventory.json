@@ -1,0 +1,519 @@
+{
+  "generatedAt": "2026-10-03T04:54:26.754948+00:00",
+  "head": "3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff",
+  "files": 85,
+  "bytes": 1619627,
+  "lines": 40445,
+  "inventory": [
+    {
+      "path": "docs/20_master_execution_log.md",
+      "bytes": 596804,
+      "lines": 15881,
+      "sha256": "1a40be67e497b51628c8fa9edce7e36b458388f1f158916d3bb5ee5b5f77b282"
+    },
+    {
+      "path": "docs/30_backlog_master.md",
+      "bytes": 321889,
+      "lines": 2964,
+      "sha256": "e8e1685020a8449b279943ecab97ccd613841f3bddaa7cf1d60c4adb4e700cb7"
+    },
+    {
+      "path": "docs/40_construction_audit_report_2026-09-09.md",
+      "bytes": 7951,
+      "lines": 73,
+      "sha256": "e20097f1e1abfe9b4a80248752421debb1f248f1aefba601aca143afd95e1978"
+    },
+    {
+      "path": "docs/41_executive_plan_triple_aaa.md",
+      "bytes": 7542,
+      "lines": 87,
+      "sha256": "816184680268df6ed3a5841228d339a16828eb50f1a5afa5b31d1ac7a8bc3730"
+    },
+    {
+      "path": "docs/42_roadmap_triple_aaa.md",
+      "bytes": 5146,
+      "lines": 57,
+      "sha256": "99a32c4ee0aa51c3494a9211e551d1faac3b5b9e7d0375f0fddd4f6c0b6626b6"
+    },
+    {
+      "path": "docs/43_backlog_triple_aaa.md",
+      "bytes": 8525,
+      "lines": 126,
+      "sha256": "5c68bb703cadcf7e7d9f44a4a6b1a0337b4db7f4bf04522343d60d6c53775190"
+    },
+    {
+      "path": "docs/44_round10_analysis.md",
+      "bytes": 3458,
+      "lines": 37,
+      "sha256": "155cf53c43690357d0bc2412fef36a981b9e8bfba9378c5c4fe3b0c96fef89ca"
+    },
+    {
+      "path": "docs/45_aaa001_decision_packet.md",
+      "bytes": 3137,
+      "lines": 50,
+      "sha256": "f6e28fbe23f46132ab179012b38a8ca87a3ebf91a0697e66251af324cc48269d"
+    },
+    {
+      "path": "docs/46_codex_master_prompt_state_of_art_triple_aaa.md",
+      "bytes": 40892,
+      "lines": 2653,
+      "sha256": "7620166c1d7484af80c2acb7f4786857978f9985baeb9d4a3d489f36b68a5e25"
+    },
+    {
+      "path": "docs/47_codex_master_prompt_final_closure_triple_aaa.md",
+      "bytes": 29637,
+      "lines": 2168,
+      "sha256": "88d85c139497bc12044fac1b71e074b1edd1449f1c88847c78d627a765a26960"
+    },
+    {
+      "path": "docs/48_codex_master_prompt_final_triple_aaa_closure.md",
+      "bytes": 22768,
+      "lines": 1792,
+      "sha256": "70bbdada24fe645aa6db9c20f17df1cf170cd275caabcf7f27c8a1a60cfe814d"
+    },
+    {
+      "path": "docs/49_codex_master_prompt_final_aaa_certification.md",
+      "bytes": 21846,
+      "lines": 1601,
+      "sha256": "db32b207bda56fc30acff122b49a5dab53a26b91a863f7eb11dfc6532975df31"
+    },
+    {
+      "path": "docs/50_codex_master_prompt_final_state_of_art_closure.md",
+      "bytes": 21653,
+      "lines": 1693,
+      "sha256": "41b3bcef7453900e8e99d21efd04444741197129d1d706ce5138a360ca5c35c5"
+    },
+    {
+      "path": "docs/51_codex_master_prompt_triple_aaa_verdict_machine.md",
+      "bytes": 8942,
+      "lines": 345,
+      "sha256": "a749c799dd0b3ec2865c9a5e96e439f62d8d513e537efac7dc1b5ccf18b760ab"
+    },
+    {
+      "path": "docs/52_codex_master_prompt_remote_aaa_certification.md",
+      "bytes": 14462,
+      "lines": 1230,
+      "sha256": "0833216d70bb24fdfd1592b07b252a78df45970804250f67c90547c6f184d5cf"
+    },
+    {
+      "path": "docs/53_codex_master_prompt_final_certification.md",
+      "bytes": 18221,
+      "lines": 1396,
+      "sha256": "9b4a780008ed0c20c1761e00b7b0f734aa98b8eb164323cd87533dfab6f04580"
+    },
+    {
+      "path": "docs/54_codex_master_prompt_certification_matrix_gates.md",
+      "bytes": 24960,
+      "lines": 950,
+      "sha256": "1fce31ea3eae47e81abffffb9aa51f8738d101b4e4705dd2b3990c0fc39b970a"
+    },
+    {
+      "path": "docs/55_executive_plan_state_of_art.md",
+      "bytes": 10388,
+      "lines": 64,
+      "sha256": "cf16db9d0d3f6b55d67dd3f0fba11ee4bdeb0657355d77e8a0150ba980907655"
+    },
+    {
+      "path": "docs/56_roadmap_state_of_art.md",
+      "bytes": 7532,
+      "lines": 65,
+      "sha256": "420087dc5a5621dbcba1b3bd39b5887eb07f36904b2854423cbb8571caf47cd7"
+    },
+    {
+      "path": "docs/57_backlog_state_of_art.md",
+      "bytes": 49999,
+      "lines": 470,
+      "sha256": "0fa0f4fbce027d3d7ae3500680ac111ad70d0d9ff4bbf3c3782b626599a2f65b"
+    },
+    {
+      "path": "docs/58_roadmap_repository_remediation_2026-10-01.md",
+      "bytes": 7679,
+      "lines": 99,
+      "sha256": "9ef2e497885649ad1d6cbc8ae8c2a5e721d9878ba644ddf4413b79459eb74707"
+    },
+    {
+      "path": "docs/59_backlog_repository_remediation_2026-10-01.md",
+      "bytes": 78358,
+      "lines": 1217,
+      "sha256": "2700f353a7a6c044cfa3f3348e8fb98293ad05199e170325a9053b08ffdc0a09"
+    },
+    {
+      "path": "docs/99_runtime_state.md",
+      "bytes": 45531,
+      "lines": 319,
+      "sha256": "5a6705764e2ae2ff25ea303fdf7f56866f396669d13f5dc75558a4f860f69cdb"
+    },
+    {
+      "path": "docs/architecture/component-view.md",
+      "bytes": 958,
+      "lines": 20,
+      "sha256": "294f40fac87fdb776bc26bd5e942082ad19e8c5e58a47b9514d7f29469f7e15c"
+    },
+    {
+      "path": "docs/architecture/container-view.md",
+      "bytes": 1054,
+      "lines": 33,
+      "sha256": "b75650475e66a86a0f2b670dd7ee36f77eab92d4179c877a5ab42cd064e067d3"
+    },
+    {
+      "path": "docs/architecture/data-flow.md",
+      "bytes": 892,
+      "lines": 22,
+      "sha256": "6464d27de2eae772cf4d437a3023b6ecc1853711fdc4f7bf7785d318afdba787"
+    },
+    {
+      "path": "docs/architecture/dependency-rules.md",
+      "bytes": 1030,
+      "lines": 33,
+      "sha256": "9cec1d6097fa746656c62f83e5e463e28014369798005c8d7f4c730f25d6eda8"
+    },
+    {
+      "path": "docs/architecture/system-context.md",
+      "bytes": 856,
+      "lines": 21,
+      "sha256": "cd82a37baf2fd564959dff44252d6787c767d116f05418b27726b5a5de30958a"
+    },
+    {
+      "path": "docs/architecture/trust-boundaries.md",
+      "bytes": 1133,
+      "lines": 17,
+      "sha256": "3a7a11ba0edd5d3f9fa17d1192663d0cb225878cbc278d98c67ce38ee5a47b4b"
+    },
+    {
+      "path": "docs/audits/adversarial-review-2026-09-09.md",
+      "bytes": 4392,
+      "lines": 46,
+      "sha256": "400888ebe6c0c0da0563740db03aeb2aad58fb22d630a6ac4f2837e6e235a5fe"
+    },
+    {
+      "path": "docs/audits/adversarial-review-v2-2026-09-10.md",
+      "bytes": 3346,
+      "lines": 44,
+      "sha256": "a8145e64c285bd4f3c77d7f86b510e93dfb648ab408dd6b94a67688af8de7c4f"
+    },
+    {
+      "path": "docs/audits/construction-assessment-2026-09-17.md",
+      "bytes": 13241,
+      "lines": 138,
+      "sha256": "2fe2da329f2d5afea4aa4412e03589064facd02803bd3d31f8f6e01069502652"
+    },
+    {
+      "path": "docs/audits/independent-review-v2.json",
+      "bytes": 4255,
+      "lines": 80,
+      "sha256": "95a54c07692d50c680875435a73130a70f7665c627dc10013e2b287c8b8f816a"
+    },
+    {
+      "path": "docs/audits/independent-review.json",
+      "bytes": 1670,
+      "lines": 29,
+      "sha256": "9ec5795e3fbc4ad5ad9529382d8aed5fd8c1ef8bf5ac4b8c73c41e89de28558c"
+    },
+    {
+      "path": "docs/audits/repository-audit-2026-10-01.md",
+      "bytes": 13124,
+      "lines": 114,
+      "sha256": "9d605f28c13b18fc524d00c84a505fcd0b6d06778fc88e4de887526cf5b804e7"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v2.md",
+      "bytes": 11943,
+      "lines": 270,
+      "sha256": "c4d6e704cec96afaad970de556d671da44e501cae1f5cc0616524b50c2614554"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v3.md",
+      "bytes": 12225,
+      "lines": 294,
+      "sha256": "241eb6cd2540dafe705ae3a13aebb0861143daf383cf63f930188a03a58bd76f"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v4.json",
+      "bytes": 1006,
+      "lines": 43,
+      "sha256": "a6da9b4b48b28a9c60302e5180b7e8515f30fb808902ff3e4ab7e53600ff369a"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v4.md",
+      "bytes": 11495,
+      "lines": 194,
+      "sha256": "a8dd98385e92888e61bd3d43bb21869f46de11cd6089ded4c7ddc983c48f26ef"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v5.json",
+      "bytes": 301,
+      "lines": 15,
+      "sha256": "8b0c320afface304205b702b4f6ae56a76c95f1f93af9f048e5e2f6d5fd5f86b"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v5.md",
+      "bytes": 10153,
+      "lines": 270,
+      "sha256": "cd51c423593a3dd08dd5f1c822fc23b350d611131d2c7d328723573caac69137"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v6.json",
+      "bytes": 1872,
+      "lines": 84,
+      "sha256": "edf2783ae772e837a581cbd85aaa433987481c7cc6e831c38713dfbdc38204b9"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v6.md",
+      "bytes": 10965,
+      "lines": 316,
+      "sha256": "84f535832270e2a260b9f8541d59a1a2a007a280cee3007554b5c55e85ffc651"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v7.json",
+      "bytes": 5257,
+      "lines": 175,
+      "sha256": "3fa9b8522bec88a2e478bc604fd35e7d13dcfd3b7687ac5669921bb8e498508b"
+    },
+    {
+      "path": "docs/audits/state-of-art-final-audit-v7.md",
+      "bytes": 7719,
+      "lines": 155,
+      "sha256": "f37dbaef7c79d2f150f1b406a89d8c8937f390b56f318e841381985d68496be2"
+    },
+    {
+      "path": "docs/audits/state-of-art-interim-audit-2026-09-09.md",
+      "bytes": 4629,
+      "lines": 136,
+      "sha256": "de8d7af7a6f3fd89b5a18bd507bb62eb3139cc0f316f513e88b32ba1812f156d"
+    },
+    {
+      "path": "docs/decisions/2026-10-02-rem06-summative-eligibility.md",
+      "bytes": 2738,
+      "lines": 53,
+      "sha256": "bde6cd511be6bac755e8dedda9695860c61aa9879b9b0dc226b85ad0d2721e9a"
+    },
+    {
+      "path": "docs/decisions/ADR-001-modular-monolith.md",
+      "bytes": 533,
+      "lines": 9,
+      "sha256": "6ad21f0e44159bb089174d89ccf28a69c2b604ee3123f604d85bcfed13b2c34b"
+    },
+    {
+      "path": "docs/decisions/ADR-002-distributed-rate-limit.md",
+      "bytes": 776,
+      "lines": 12,
+      "sha256": "2a859bbe4a68348301b1abe782e383af0741fc3207383f987d58b4199fcac1e3"
+    },
+    {
+      "path": "docs/decisions/ADR-003-observability-otel.md",
+      "bytes": 703,
+      "lines": 11,
+      "sha256": "05eaf263dc39c3e03d2bcaccf70b5cb9eeea24f59bf83eded92a84599aeb2511"
+    },
+    {
+      "path": "docs/decisions/ADR-004-release-provenance.md",
+      "bytes": 629,
+      "lines": 11,
+      "sha256": "763d181dba51b229e1f137fff250c51e532d607ee0411d8e45bf50c04e12c90b"
+    },
+    {
+      "path": "docs/decisions/ADR-005-resilience-policy.md",
+      "bytes": 807,
+      "lines": 12,
+      "sha256": "b1c234b37ce82f8de887ac63b6fdfe6cab5838dd9808c97383c6128cc466132d"
+    },
+    {
+      "path": "docs/decisions/ADR-006-rate-limit-failure-matrix.md",
+      "bytes": 1290,
+      "lines": 19,
+      "sha256": "f0c85e4e88fda619245c9ebd74c3639d0a4212553fbcbb1c8e0ea5a1e5e499e2"
+    },
+    {
+      "path": "docs/modernization/0001_baseline_audit.md",
+      "bytes": 9992,
+      "lines": 164,
+      "sha256": "3ac62c54519be7c1aca4a4d09328cc399b62b47bbb371b36b62115916f530a79"
+    },
+    {
+      "path": "docs/modernization/0002_final_aaa_closure_baseline.md",
+      "bytes": 2002,
+      "lines": 26,
+      "sha256": "80346824809ea2742aba4fdba2e05a9f7c9e4568d879b9dc8dd60ac823018adb"
+    },
+    {
+      "path": "docs/modernization/0004_final_aaa_certification_baseline.md",
+      "bytes": 6035,
+      "lines": 60,
+      "sha256": "aae1e0250d2d21ea014a67dca4ece78fff4151aec0afe61f5aede5ddbd776000"
+    },
+    {
+      "path": "docs/modernization/0005_final_aaa_closure_baseline.md",
+      "bytes": 2525,
+      "lines": 57,
+      "sha256": "136f62e2f148f016f53f30a9d12818a19f10194247be90ce3c88832136b48898"
+    },
+    {
+      "path": "docs/modernization/0006_final_aaa_v6_baseline.md",
+      "bytes": 2696,
+      "lines": 72,
+      "sha256": "15f619abbbda5107e03ae9070bc966a32ac50e9dde187ae4f8cc7c64ec40bbf7"
+    },
+    {
+      "path": "docs/modernization/0007_remote_aaa_certification_baseline.md",
+      "bytes": 3113,
+      "lines": 73,
+      "sha256": "8f7056c8052178c63d9da2823780e3405a6b3f6b70ff14b3ce918a5d6d8b99ea"
+    },
+    {
+      "path": "docs/operations/artifact-signing.md",
+      "bytes": 803,
+      "lines": 16,
+      "sha256": "0b8fbb060d8dd5335cf28a13960311788d09221ec20ca34e80e7b55f3d78db62"
+    },
+    {
+      "path": "docs/operations/branch-protection.md",
+      "bytes": 763,
+      "lines": 16,
+      "sha256": "755f225b9a2687c973fcedc1830680ea9a6840ad8f6ebd739a9238bb96a1a0ec"
+    },
+    {
+      "path": "docs/operations/disaster-recovery.md",
+      "bytes": 6142,
+      "lines": 104,
+      "sha256": "d44987b0b78da44ca9664320c0f76d411e819433a582f247d05d5cc5b1f5bbc8"
+    },
+    {
+      "path": "docs/operations/load-baseline.md",
+      "bytes": 1690,
+      "lines": 37,
+      "sha256": "18e40a3c63c7c4bf9748f639038740a593068f1e0fa3aed92ac80a1305f2db8c"
+    },
+    {
+      "path": "docs/operations/otel-collector-reference.md",
+      "bytes": 1405,
+      "lines": 56,
+      "sha256": "ab6c7b70b242e4b69d2f935752a1df8cca3b5c9a836a9e346779e951735ecf09"
+    },
+    {
+      "path": "docs/operations/slo.md",
+      "bytes": 2531,
+      "lines": 43,
+      "sha256": "019c138d49057b001848ba4757526025edb4c641757ab8d2fd991b0d5ac4bfa2"
+    },
+    {
+      "path": "docs/operations/timeout-policy.md",
+      "bytes": 1858,
+      "lines": 26,
+      "sha256": "40c984c71f98b1bed00d0938b0980ecedf8efe22c966e225138cd0dcd531aa8b"
+    },
+    {
+      "path": "docs/quality/mutation-authorization.md",
+      "bytes": 1702,
+      "lines": 35,
+      "sha256": "abc4902b5c2a433a2c5f03379465314167f2fd9850ee8e5b1bfcf8c025fd2dfc"
+    },
+    {
+      "path": "docs/quality/mutation-classification-v4.md",
+      "bytes": 9774,
+      "lines": 96,
+      "sha256": "94e0c2fee12df0e7e391170e5826cdb9b237108eb61b93c477947248ea275146"
+    },
+    {
+      "path": "docs/quality/mutation-expansion-v5.md",
+      "bytes": 6022,
+      "lines": 99,
+      "sha256": "694cbf902ad158911e9094875563b85f97e33b6525f931d4743f983b7e1e3737"
+    },
+    {
+      "path": "docs/quality/residual-risk-register.json",
+      "bytes": 5441,
+      "lines": 117,
+      "sha256": "80cc78940bac251cc346d27f1a95c7caf70adccbdb0bf1e6ba788bd8a5229ca3"
+    },
+    {
+      "path": "docs/quality/scorecard.md",
+      "bytes": 5063,
+      "lines": 82,
+      "sha256": "93dd069dc5954ab24d0d20d1fd2efc0dd63d6d99362a946c197275f3131d31a0"
+    },
+    {
+      "path": "docs/quality/skip-inventory.md",
+      "bytes": 1966,
+      "lines": 41,
+      "sha256": "eeebc59627a5919e5a9d569c21bb1d67ad4b605923832f0e652ebc9f2114cac2"
+    },
+    {
+      "path": "docs/runbooks/api-down.md",
+      "bytes": 904,
+      "lines": 32,
+      "sha256": "80276f3ae779d884f33c549c0041e13c201b1e0aeb84dfa049862b4621e1b439"
+    },
+    {
+      "path": "docs/runbooks/compromised-secret.md",
+      "bytes": 888,
+      "lines": 34,
+      "sha256": "c2c69e6f26882070057683ae3a605e0dc286b2f9521fde49cd8d451c9d8cbb9b"
+    },
+    {
+      "path": "docs/runbooks/database-down.md",
+      "bytes": 1255,
+      "lines": 38,
+      "sha256": "a26870c30d4bdad3aeb52361b053c4c212fabf14531a9e3d918199327c1c974d"
+    },
+    {
+      "path": "docs/runbooks/failed-deploy.md",
+      "bytes": 749,
+      "lines": 31,
+      "sha256": "7d03cd347b6398ce07742a233bba8530b3f27cefe9fb449f0905ca2b41f85e67"
+    },
+    {
+      "path": "docs/runbooks/qdrant-down.md",
+      "bytes": 827,
+      "lines": 32,
+      "sha256": "24331230a447706f4f9d48b8c5f5fb727a0dd491685cb4d79da8bdc7658b01bb"
+    },
+    {
+      "path": "docs/runbooks/restore-database.md",
+      "bytes": 6544,
+      "lines": 119,
+      "sha256": "8f00c69f8c78e3924b3e0ae6dbc3e647487e05f914d8b39e95fbd45c2741eb62"
+    },
+    {
+      "path": "docs/runbooks/worker-backlog.md",
+      "bytes": 861,
+      "lines": 32,
+      "sha256": "216053313f067e0f6b81b858003197fef22d64bce2a2686b63cef24390d7db18"
+    },
+    {
+      "path": "docs/runtime-history/2026-08.md",
+      "bytes": 21401,
+      "lines": 508,
+      "sha256": "793f8fbe2a458733188b06aed0032fd1c0c3b47f237c725ef6a4b339588219ff"
+    },
+    {
+      "path": "docs/runtime-history/2026-09.md",
+      "bytes": 4859,
+      "lines": 131,
+      "sha256": "7cb877e044fd812d06db1ff25b30f14ed71defd74556d3e2d8bbb864eab103dc"
+    },
+    {
+      "path": "docs/security/authorization-matrix.generated.md",
+      "bytes": 9190,
+      "lines": 99,
+      "sha256": "3c7f28222e9af5af295d7d69fd107fbad2325384b3152e454cafbb7df914d23d"
+    },
+    {
+      "path": "docs/security/authorization-matrix.md",
+      "bytes": 6165,
+      "lines": 63,
+      "sha256": "5b6664dba25cee170678b47962fcd2eba2e6aa6f8782f623ea8dbce9ede01028"
+    },
+    {
+      "path": "docs/security/data-classification.md",
+      "bytes": 1432,
+      "lines": 18,
+      "sha256": "4b133fb147986dee262fae6e715f2bb9e1a227e4de24a098cfc8402401f7ecd4"
+    },
+    {
+      "path": "docs/security/threat-model.md",
+      "bytes": 4717,
+      "lines": 75,
+      "sha256": "647d928c49b691de831a9e5c36480e05aa04856331365988331780122db7b141"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "final-audit-consistency",
+  "command": [
+    "pnpm",
+    "verify:audit-consistency"
+  ],
+  "startedAt": "2026-10-03T05:24:09.639106+00:00",
+  "durationSeconds": 0.37,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/final-audit-consistency.log",
+  "sha256": "9bee1770a07acf08b7ef335f5887f928dc48ef4ff315b985e31d3db17fdc6998"
+}

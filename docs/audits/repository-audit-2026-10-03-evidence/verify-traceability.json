@@ -1,0 +1,13 @@
+{
+  "name": "verify-traceability",
+  "command": [
+    "pnpm",
+    "verify:traceability"
+  ],
+  "startedAt": "2026-10-03T04:54:28.595284+00:00",
+  "durationSeconds": 0.47,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-traceability.log",
+  "sha256": "fd58a8cfcd575a260f5ae09fff58e27992cb892f67077409b8aee8ac72abe47a"
+}

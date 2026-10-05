@@ -10,7 +10,10 @@ import type {
 } from "@cvg/application";
 
 import { errorResponse, type ApiHttpResponse } from "../../http/errors.js";
-import type { ApiHttpDependencies, ApiPrincipal } from "../../http.js";
+import type {
+  ApiHttpDependencies,
+  ApiPrincipal,
+} from "../../http/contracts.js";
 import { isAllowed } from "../../http/authorization.js";
 
 export function publicActivityProjection(

@@ -94,7 +94,9 @@ export async function setDatabaseSecurityContext(
       set_config('cvg.appeal_review_scope_id', '', true),
       set_config('cvg.audit_write', '', true),
       set_config('cvg.audit_read', '', true),
-      set_config('cvg.audit_scope_id', '', true)`,
+      set_config('cvg.audit_scope_id', '', true),
+      set_config('cvg.curriculum_activity_id', '', true),
+      set_config('cvg.curriculum_attempt_id', '', true)`,
   );
 }
 
@@ -127,7 +129,9 @@ export async function setDatabaseServiceContext(
       set_config('cvg.appeal_review_scope_id', '', true),
       set_config('cvg.audit_write', '', true),
       set_config('cvg.audit_read', '', true),
-      set_config('cvg.audit_scope_id', '', true)`,
+      set_config('cvg.audit_scope_id', '', true),
+      set_config('cvg.curriculum_activity_id', '', true),
+      set_config('cvg.curriculum_attempt_id', '', true)`,
   );
 }
 
@@ -171,7 +175,9 @@ export async function setDatabaseTokenSecurityContext(
       set_config('cvg.appeal_review_scope_id', '', true),
       set_config('cvg.audit_write', '', true),
       set_config('cvg.audit_read', '', true),
-      set_config('cvg.audit_scope_id', '', true)`,
+      set_config('cvg.audit_scope_id', '', true),
+      set_config('cvg.curriculum_activity_id', '', true),
+      set_config('cvg.curriculum_attempt_id', '', true)`,
   );
 }
 
@@ -195,7 +201,9 @@ export async function setDatabaseAccountProvisioningContext(
       set_config('cvg.appeal_review_scope_id', '', true),
       set_config('cvg.audit_write', '', true),
       set_config('cvg.audit_read', '', true),
-      set_config('cvg.audit_scope_id', '', true)`,
+      set_config('cvg.audit_scope_id', '', true),
+      set_config('cvg.curriculum_activity_id', '', true),
+      set_config('cvg.curriculum_attempt_id', '', true)`,
   );
 }
 
@@ -219,7 +227,9 @@ export async function setDatabaseSessionSecurityContext(
       set_config('cvg.appeal_review_scope_id', '', true),
       set_config('cvg.audit_write', '', true),
       set_config('cvg.audit_read', '', true),
-      set_config('cvg.audit_scope_id', '', true)`,
+      set_config('cvg.audit_scope_id', '', true),
+      set_config('cvg.curriculum_activity_id', '', true),
+      set_config('cvg.curriculum_attempt_id', '', true)`,
   );
 }
 
@@ -240,7 +250,9 @@ export async function setDatabaseAppealReviewContext(
       set_config('cvg.appeal_review_scope_id', ${scopeId}, true),
       set_config('cvg.audit_write', '', true),
       set_config('cvg.audit_read', '', true),
-      set_config('cvg.audit_scope_id', '', true)`,
+      set_config('cvg.audit_scope_id', '', true),
+      set_config('cvg.curriculum_activity_id', '', true),
+      set_config('cvg.curriculum_attempt_id', '', true)`,
   );
 }
 
@@ -261,6 +273,8 @@ export async function setDatabaseAuditReadContext(
       set_config('cvg.appeal_review_scope_id', '', true),
       set_config('cvg.audit_write', '', true),
       set_config('cvg.audit_read', 'on', true),
-      set_config('cvg.audit_scope_id', ${scopeId}, true)`,
+      set_config('cvg.audit_scope_id', ${scopeId}, true),
+      set_config('cvg.curriculum_activity_id', '', true),
+      set_config('cvg.curriculum_attempt_id', '', true)`,
   );
 }

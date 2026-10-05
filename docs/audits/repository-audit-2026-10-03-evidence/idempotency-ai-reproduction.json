@@ -1,0 +1,13 @@
+{
+  "name": "idempotency-ai-reproduction",
+  "command": [
+    "node",
+    "/tmp/cvg-audit-replays-20261003.mjs"
+  ],
+  "startedAt": "2026-10-03T05:11:34.929417+00:00",
+  "durationSeconds": 0.17,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/idempotency-ai-reproduction.log",
+  "sha256": "078126e7d9a5a674fe8a1255170aca263fbbc02789087a047ca05313c66cf08d"
+}

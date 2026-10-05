@@ -2,11 +2,11 @@ import { sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { AuditEntry, AuditPort } from "@cvg/application";
 
-import { PersistenceMappingError } from "./attempt-repository.js";
+import { PersistenceMappingError } from "./persistence-errors.js";
 import { auditEntries } from "./schema.js";
 import type * as schema from "./schema.js";
 
-export { PersistenceMappingError } from "./attempt-repository.js";
+export { PersistenceMappingError } from "./persistence-errors.js";
 
 export type AuditInsertRow = Readonly<{
   readonly id: string;
@@ -99,6 +99,8 @@ export function createAuditRepository(
           sql`select
           set_config('cvg.audit_write', 'on', true),
           set_config('cvg.audit_read', '', true),
+          set_config('cvg.curriculum_activity_id', '', true),
+          set_config('cvg.curriculum_attempt_id', '', true),
             set_config('cvg.audit_scope_id', ${entry.scopeId ?? ""}, true)`,
         );
         await transaction.insert(auditEntries).values(auditEntryToRow(entry));

@@ -293,8 +293,42 @@ export type BackendRequestLimiterOptions = Readonly<{
 }>;
 
 export type BackendRequestLimiter = Readonly<{
-  readonly check: (key: string, nowMs?: number) => Promise<RateLimitDecision>;
+  readonly check: (
+    key: string,
+    nowMs?: number,
+    riskClass?: RateLimitRiskClass,
+  ) => Promise<RateLimitDecision>;
 }>;
+
+/** Server-selected classes share one backend, with independent class keys.
+ * Legacy callers retain the general 120/min budget and fail-closed policy.
+ */
+export function createClassifiedBackendRequestLimiter(
+  createLimiter: (riskClass: RateLimitRiskClass) => BackendRequestLimiter,
+): BackendRequestLimiter {
+  const classes = Object.keys(RISK_CLASS_LIMITS) as RateLimitRiskClass[];
+  const limiters = new Map(
+    classes.map((riskClass) => [riskClass, createLimiter(riskClass)]),
+  );
+  return Object.freeze({
+    check: async (key, nowMs = Date.now(), riskClass = "expensive-read") => {
+      const limiter = limiters.get(riskClass);
+      if (limiter === undefined)
+        throw new RangeError("unknown rate-limit risk class");
+      try {
+        return await limiter.check(`risk:${riskClass}|${key}`, nowMs);
+      } catch {
+        return FAIL_POLICY_BY_RISK_CLASS[riskClass] === "fail-open"
+          ? Object.freeze({ allowed: true, remaining: 0 })
+          : Object.freeze({
+              allowed: false,
+              remaining: 0,
+              retryAfterSeconds: 1,
+            });
+      }
+    },
+  });
+}
 
 /**
  * AAA-CERT-003 §25: adaptador explícito de um `RateLimitStore` durável

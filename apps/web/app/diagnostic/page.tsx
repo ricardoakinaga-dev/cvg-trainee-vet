@@ -3,290 +3,26 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type DiagnosticChoice = Readonly<{
-  readonly id: string;
-  readonly label: string;
-  readonly text: string;
-}>;
+import {
+  DiagnosticSessionClient,
+  DiagnosticRequestCancelled,
+  DiagnosticRequestError,
+  parseDiagnosticSession,
+  requestDiagnosticJson,
+  isDiagnosticReceipt,
+  sameDiagnosticChoices as sameChoiceIds,
+  type DiagnosticSession,
+  type PendingDiagnosticMutation,
+} from "../diagnostic-session-client";
+import { PublicApiError } from "../participant-contracts";
+import { participantPublicError } from "../participant-field-validation";
 
-type DiagnosticItem = Readonly<{
-  readonly itemId: string;
-  readonly ordinal: number;
-  readonly title: string;
-  readonly text: string;
-  readonly responseMode: "CHOICE";
-  readonly choices: readonly DiagnosticChoice[];
-  readonly selectionMode: "SINGLE" | "MULTIPLE";
-}>;
-
-type DiagnosticAnswer = Readonly<{
-  readonly itemId: string;
-  readonly selectedChoiceIds: readonly string[];
-}>;
-
-type DiagnosticTheme = Readonly<{
-  readonly themeId: "B07-S1" | "B07-S2" | "B07-S3";
-  readonly themeLabel: string;
-  readonly status: "SEM_EVIDENCIA_DIGITAL" | "BASELINE_REGISTRADA";
-  readonly scorePercent: number | null;
-  readonly answeredItemCount: number;
-  readonly itemCount: number;
-  readonly lastEvaluatedAt?: string;
-  readonly evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL";
-  readonly notPunitive: true;
-  readonly noGlobalPassFail: true;
-  readonly practicalCompetenceClaim: "PROIBIDO_MVP";
-}>;
-
-type DiagnosticResult = Readonly<{
-  readonly completedAt: string;
-  readonly themes: readonly DiagnosticTheme[];
-}>;
-
-type DiagnosticSession = Readonly<{
-  readonly sessionId: string;
-  readonly diagnosticId: "B07-DIAGNOSTIC-V1";
-  readonly diagnosticVersion: "0.1.0";
-  readonly version: number;
-  readonly status: "EM_ANDAMENTO" | "FINALIZADA";
-  readonly startedAt: string;
-  readonly lastCheckpointAt?: string;
-  readonly finalizedAt?: string;
-  readonly itemCount: 120;
-  readonly answeredItemCount: number;
-  readonly currentOrdinal: number | null;
-  readonly items: readonly DiagnosticItem[];
-  readonly answers: readonly DiagnosticAnswer[];
-  readonly result?: DiagnosticResult;
-  readonly nextAction?: "CONTINUAR_TRILHA" | "CONSULTAR_PROXIMO_PASSO";
-}>;
-
-type ApiRecord = Readonly<Record<string, unknown>>;
+type DiagnosticItem = DiagnosticSession["items"][number];
+type DiagnosticTheme = NonNullable<
+  DiagnosticSession["result"]
+>["themes"][number];
 type ViewState = "loading" | "needs_start" | "ready" | "error";
-
-const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-
-class PublicApiError extends Error {
-  public constructor(public readonly code: string) {
-    super("public diagnostic request failed");
-    this.name = "PublicApiError";
-  }
-}
-
-function isRecord(value: unknown): value is ApiRecord {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isString(value: unknown): value is string {
-  return typeof value === "string";
-}
-
-function isIsoDate(value: unknown): value is string {
-  return isString(value) && !Number.isNaN(new Date(value).getTime());
-}
-
-function isUuid(value: unknown): value is string {
-  return isString(value) && uuidPattern.test(value);
-}
-
-function isDiagnosticTheme(value: unknown): value is DiagnosticTheme {
-  if (!isRecord(value)) return false;
-  return (
-    (value.themeId === "B07-S1" ||
-      value.themeId === "B07-S2" ||
-      value.themeId === "B07-S3") &&
-    isString(value.themeLabel) &&
-    (value.status === "SEM_EVIDENCIA_DIGITAL" ||
-      value.status === "BASELINE_REGISTRADA") &&
-    (value.scorePercent === null ||
-      (typeof value.scorePercent === "number" &&
-        Number.isInteger(value.scorePercent) &&
-        value.scorePercent >= 0 &&
-        value.scorePercent <= 100)) &&
-    typeof value.answeredItemCount === "number" &&
-    Number.isInteger(value.answeredItemCount) &&
-    value.answeredItemCount >= 0 &&
-    typeof value.itemCount === "number" &&
-    Number.isInteger(value.itemCount) &&
-    value.itemCount > 0 &&
-    (value.lastEvaluatedAt === undefined || isIsoDate(value.lastEvaluatedAt)) &&
-    value.evidence === "DIAGNOSTICO_FORMATIVO_DIGITAL" &&
-    value.notPunitive === true &&
-    value.noGlobalPassFail === true &&
-    value.practicalCompetenceClaim === "PROIBIDO_MVP"
-  );
-}
-
-function parseDiagnosticSession(value: unknown): DiagnosticSession {
-  if (!isRecord(value)) throw new PublicApiError("internal_error");
-  if (
-    !isUuid(value.sessionId) ||
-    value.diagnosticId !== "B07-DIAGNOSTIC-V1" ||
-    value.diagnosticVersion !== "0.1.0" ||
-    (value.status !== "EM_ANDAMENTO" && value.status !== "FINALIZADA") ||
-    typeof value.version !== "number" ||
-    !Number.isInteger(value.version) ||
-    value.version < 0 ||
-    !isIsoDate(value.startedAt) ||
-    (value.lastCheckpointAt !== undefined &&
-      !isIsoDate(value.lastCheckpointAt)) ||
-    (value.finalizedAt !== undefined && !isIsoDate(value.finalizedAt)) ||
-    value.itemCount !== 120 ||
-    typeof value.answeredItemCount !== "number" ||
-    !Number.isInteger(value.answeredItemCount) ||
-    value.answeredItemCount < 0 ||
-    value.answeredItemCount > 120 ||
-    (value.currentOrdinal !== null &&
-      (typeof value.currentOrdinal !== "number" ||
-        !Number.isInteger(value.currentOrdinal) ||
-        value.currentOrdinal < 1 ||
-        value.currentOrdinal > 120)) ||
-    !Array.isArray(value.items) ||
-    value.items.length !== 120 ||
-    !Array.isArray(value.answers) ||
-    value.answers.length !== value.answeredItemCount
-  ) {
-    throw new PublicApiError("internal_error");
-  }
-
-  const items: DiagnosticItem[] = [];
-  for (const candidate of value.items) {
-    if (!isRecord(candidate)) throw new PublicApiError("internal_error");
-    if (
-      !isUuid(candidate.itemId) ||
-      typeof candidate.ordinal !== "number" ||
-      !Number.isInteger(candidate.ordinal) ||
-      candidate.ordinal < 1 ||
-      candidate.ordinal > 120 ||
-      !isString(candidate.title) ||
-      !isString(candidate.text) ||
-      candidate.responseMode !== "CHOICE" ||
-      (candidate.selectionMode !== "SINGLE" &&
-        candidate.selectionMode !== "MULTIPLE") ||
-      !Array.isArray(candidate.choices) ||
-      candidate.choices.length === 0
-    ) {
-      throw new PublicApiError("internal_error");
-    }
-    const choices: DiagnosticChoice[] = [];
-    for (const choice of candidate.choices) {
-      if (
-        !isRecord(choice) ||
-        !isString(choice.id) ||
-        !isString(choice.label) ||
-        !isString(choice.text)
-      ) {
-        throw new PublicApiError("internal_error");
-      }
-      choices.push({ id: choice.id, label: choice.label, text: choice.text });
-    }
-    items.push({
-      itemId: candidate.itemId,
-      ordinal: candidate.ordinal,
-      title: candidate.title,
-      text: candidate.text,
-      responseMode: "CHOICE",
-      choices,
-      selectionMode: candidate.selectionMode,
-    });
-  }
-
-  const itemIds = new Set(items.map((item) => item.itemId));
-  const answers: DiagnosticAnswer[] = [];
-  for (const candidate of value.answers) {
-    if (
-      !isRecord(candidate) ||
-      !isUuid(candidate.itemId) ||
-      !itemIds.has(candidate.itemId) ||
-      !Array.isArray(candidate.selectedChoiceIds) ||
-      candidate.selectedChoiceIds.length === 0 ||
-      candidate.selectedChoiceIds.some((choiceId) => !isString(choiceId))
-    ) {
-      throw new PublicApiError("internal_error");
-    }
-    answers.push({
-      itemId: candidate.itemId,
-      selectedChoiceIds: [...candidate.selectedChoiceIds],
-    });
-  }
-
-  let result: DiagnosticResult | undefined;
-  if (value.result !== undefined) {
-    if (!isRecord(value.result) || !isIsoDate(value.result.completedAt)) {
-      throw new PublicApiError("internal_error");
-    }
-    if (
-      !Array.isArray(value.result.themes) ||
-      value.result.themes.length !== 3 ||
-      !value.result.themes.every(isDiagnosticTheme)
-    ) {
-      throw new PublicApiError("internal_error");
-    }
-    result = {
-      completedAt: value.result.completedAt,
-      themes: value.result.themes,
-    };
-  }
-  if (
-    (value.status === "FINALIZADA" &&
-      (value.finalizedAt === undefined || result === undefined)) ||
-    (value.status === "EM_ANDAMENTO" &&
-      (value.finalizedAt !== undefined || result !== undefined))
-  ) {
-    throw new PublicApiError("internal_error");
-  }
-
-  return {
-    sessionId: value.sessionId,
-    diagnosticId: "B07-DIAGNOSTIC-V1",
-    diagnosticVersion: "0.1.0",
-    version: value.version,
-    status: value.status,
-    startedAt: value.startedAt,
-    ...(value.lastCheckpointAt === undefined
-      ? {}
-      : { lastCheckpointAt: value.lastCheckpointAt }),
-    ...(value.finalizedAt === undefined
-      ? {}
-      : { finalizedAt: value.finalizedAt }),
-    itemCount: 120,
-    answeredItemCount: value.answeredItemCount,
-    currentOrdinal: value.currentOrdinal,
-    items,
-    answers,
-    ...(result === undefined ? {} : { result }),
-    ...(value.nextAction === "CONTINUAR_TRILHA" ||
-    value.nextAction === "CONSULTAR_PROXIMO_PASSO"
-      ? { nextAction: value.nextAction }
-      : {}),
-  };
-}
-
-async function requestJson(
-  path: string,
-  method: "GET" | "POST" | "PUT",
-  body?: unknown,
-): Promise<unknown> {
-  const response = await fetch(`${apiBase}${path}`, {
-    method,
-    credentials: "include",
-    headers: { "content-type": "application/json" },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
-  const payload: unknown = await response.json().catch(() => null);
-  if (!response.ok || !isRecord(payload) || payload.success !== true) {
-    const error =
-      isRecord(payload) && isRecord(payload.error) ? payload.error : undefined;
-    throw new PublicApiError(
-      error !== undefined && isString(error.code)
-        ? error.code
-        : "internal_error",
-    );
-  }
-  return payload.data;
-}
+type ItemAnchor = Readonly<{ sessionId: string; itemId: string }>;
 
 function publicErrorMessage(error: unknown): string {
   const code = error instanceof PublicApiError ? error.code : "internal_error";
@@ -331,7 +67,10 @@ function clientIdempotencyKey(parts: readonly string[]): string {
 }
 
 function firstOpenItemIndex(session: DiagnosticSession): number {
-  if (session.currentOrdinal !== null) return session.currentOrdinal - 1;
+  if (session.currentOrdinal !== null)
+    return session.items.findIndex(
+      (item) => item.ordinal === session.currentOrdinal,
+    );
   const answered = new Set(session.answers.map((answer) => answer.itemId));
   const firstOpen = session.items.findIndex(
     (item) => !answered.has(item.itemId),
@@ -346,18 +85,6 @@ function answerFor(
   return (
     session.answers.find((answer) => answer.itemId === itemId)
       ?.selectedChoiceIds ?? []
-  );
-}
-
-function sameChoiceIds(
-  left: readonly string[],
-  right: readonly string[],
-): boolean {
-  if (left.length !== right.length) return false;
-  const normalizedLeft = [...left].sort();
-  const normalizedRight = [...right].sort();
-  return normalizedLeft.every(
-    (choiceId, index) => choiceId === normalizedRight[index],
   );
 }
 
@@ -378,45 +105,109 @@ export default function DiagnosticPage() {
   const [draftChoiceIds, setDraftChoiceIds] = useState<readonly string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [answerError, setAnswerError] = useState<ItemAnchor | null>(null);
   const startKeyRef = useRef<string | null>(null);
+  const clientRef = useRef(new DiagnosticSessionClient());
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const advanceFocusRef = useRef<{ sessionId: string; itemId: string } | null>(
+    null,
+  );
+  const answerFieldRef = useRef<HTMLFieldSetElement | null>(null);
+  const validationFocusRef = useRef<ItemAnchor | null>(null);
+  const draftRef = useRef(draftChoiceIds);
+  draftRef.current = draftChoiceIds;
 
   const applySession = useCallback((nextSession: DiagnosticSession): void => {
-    setSession(nextSession);
-    setActiveIndex(firstOpenItemIndex(nextSession));
+    const current = clientRef.current.readSession(nextSession);
+    setSession(current);
+    const index = firstOpenItemIndex(current);
+    setActiveIndex(index);
+    setDraftChoiceIds(answerFor(current, current.items[index]?.itemId ?? ""));
     setViewState("ready");
   }, []);
 
   const loadCurrent = useCallback(async (): Promise<void> => {
+    const client = clientRef.current;
+    const read = client.beginRead();
     setViewState("loading");
     setError(null);
+    setAnswerError(null);
     setNotice(null);
     try {
-      const data = await requestJson(
+      const data = await requestDiagnosticJson(
         "/api/v1/diagnostics/b07/sessions/current",
-        "GET",
+        { method: "GET", signal: read.signal },
       );
-      applySession(parseDiagnosticSession(data));
-    } catch (caught) {
-      if (caught instanceof PublicApiError && caught.code === "not_found") {
-        setSession(null);
-        setViewState("needs_start");
+      if (!read.current()) return;
+      const next = parseDiagnosticSession(data);
+      const original = client.pending?.expected;
+      if (client.pending !== null) {
+        if (
+          original !== undefined &&
+          next.sessionId === original.sessionId &&
+          next.status === "EM_ANDAMENTO"
+        )
+          setSession(client.readSession(next));
+        setViewState("ready");
         return;
       }
-      setViewState("error");
-      setError(publicErrorMessage(caught));
+      applySession(next);
+    } catch (caught) {
+      if (!read.current() || caught instanceof DiagnosticRequestCancelled)
+        return;
+      if (client.pending !== null) {
+        setViewState("ready");
+        setError(publicErrorMessage(caught));
+      } else if (
+        caught instanceof PublicApiError &&
+        caught.code === "not_found"
+      ) {
+        setSession(null);
+        setViewState("needs_start");
+      } else {
+        setViewState("error");
+        setError(publicErrorMessage(caught));
+      }
     }
   }, [applySession]);
 
   useEffect(() => {
+    const client = new DiagnosticSessionClient();
+    clientRef.current = client;
     void loadCurrent();
+    return () => {
+      client.cancel();
+      advanceFocusRef.current = null;
+      validationFocusRef.current = null;
+    };
   }, [loadCurrent]);
 
   useEffect(() => {
-    if (session === null) return;
-    const item = session.items[activeIndex];
-    if (item === undefined) return;
-    setDraftChoiceIds(answerFor(session, item.itemId));
-  }, [activeIndex, session]);
+    if (viewState !== "ready") return;
+    const destination = advanceFocusRef.current;
+    advanceFocusRef.current = null;
+    if (
+      destination !== null &&
+      session?.status === "EM_ANDAMENTO" &&
+      session.sessionId === destination.sessionId &&
+      session.items[activeIndex]?.itemId === destination.itemId
+    )
+      headingRef.current?.focus();
+  }, [activeIndex, session, viewState]);
+
+  useEffect(() => {
+    if (viewState !== "ready") return;
+    const destination = validationFocusRef.current;
+    validationFocusRef.current = null;
+    if (
+      destination !== null &&
+      session?.status === "EM_ANDAMENTO" &&
+      session.sessionId === destination.sessionId &&
+      session.items[activeIndex]?.itemId === destination.itemId &&
+      answerError === destination
+    )
+      answerFieldRef.current?.focus();
+  }, [activeIndex, answerError, session, viewState]);
 
   function startIdempotencyKey(): string {
     if (startKeyRef.current !== null) return startKeyRef.current;
@@ -437,24 +228,112 @@ export default function DiagnosticPage() {
     return value;
   }
 
-  async function handleStart(): Promise<void> {
+  async function executeMutation(
+    mutation: PendingDiagnosticMutation,
+  ): Promise<void> {
+    const client = clientRef.current;
+    const draftBefore = [...draftRef.current];
     setViewState("loading");
     setError(null);
+    setAnswerError(null);
     setNotice(null);
     try {
-      const data = await requestJson(
-        "/api/v1/diagnostics/b07/sessions",
-        "POST",
-        { idempotencyKey: startIdempotencyKey() },
-      );
-      applySession(parseDiagnosticSession(data));
-      setNotice(
-        "Sessão iniciada. Salve cada resposta para poder retomar depois.",
-      );
+      const data = await requestDiagnosticJson(mutation.path, {
+        method: mutation.method,
+        body: mutation.body,
+        signal: client.signal,
+      });
+      if (client.signal.aborted || clientRef.current !== client) return;
+      const next = parseDiagnosticSession(data);
+      if (
+        mutation.expected !== undefined &&
+        !isDiagnosticReceipt(next, mutation.expected)
+      )
+        throw new PublicApiError(
+          "internal_error",
+          "unproven diagnostic receipt",
+        );
+      if (mutation.expected === undefined && next.status !== "EM_ANDAMENTO")
+        throw new PublicApiError(
+          "internal_error",
+          "invalid diagnostic start receipt",
+        );
+      const acknowledged = client.acknowledgeSession(next);
+      client.complete(mutation);
+      if (mutation.expected?.operation === "answer") {
+        const originalChoices = mutation.expected.selectedChoiceIds ?? [];
+        const keepDraft =
+          !sameChoiceIds(
+            draftBefore,
+            mutation.draftChoiceIds ?? originalChoices,
+          ) || !sameChoiceIds(draftRef.current, draftBefore);
+        setSession(acknowledged);
+        if (!keepDraft && mutation.advance) {
+          const index = Math.min(
+            activeIndex + 1,
+            acknowledged.items.length - 1,
+          );
+          const nextItem = acknowledged.items[index];
+          if (index !== activeIndex && nextItem !== undefined)
+            advanceFocusRef.current = {
+              sessionId: acknowledged.sessionId,
+              itemId: nextItem.itemId,
+            };
+          setActiveIndex(index);
+          setDraftChoiceIds(
+            answerFor(acknowledged, acknowledged.items[index]?.itemId ?? ""),
+          );
+        } else if (!keepDraft) setDraftChoiceIds([...originalChoices]);
+        setNotice(
+          originalChoices.length === 0
+            ? "Resposta removida; a sessão continua pronta para retomada."
+            : "Resposta salva. Você pode avançar ou voltar quando quiser.",
+        );
+      } else {
+        applySession(acknowledged);
+        setNotice(
+          mutation.expected?.operation === "finalize"
+            ? "Diagnóstico finalizado e resultado formativo registrado."
+            : "Sessão iniciada. Salve cada resposta para poder retomar depois.",
+        );
+      }
+      setViewState("ready");
     } catch (caught) {
-      setViewState("error");
-      setError(publicErrorMessage(caught));
+      if (
+        client.signal.aborted ||
+        clientRef.current !== client ||
+        caught instanceof DiagnosticRequestCancelled
+      )
+        return;
+      client.reject(mutation, caught);
+      setViewState(session === null ? "error" : "ready");
+      const expected = mutation.expected;
+      if (
+        caught instanceof DiagnosticRequestError &&
+        caught.definitiveRejection &&
+        caught.code === "validation_error" &&
+        expected?.operation === "answer" &&
+        expected.itemId !== undefined
+      ) {
+        const destination = {
+          sessionId: expected.sessionId,
+          itemId: expected.itemId,
+        };
+        setAnswerError(destination);
+        validationFocusRef.current = destination;
+        setError(participantPublicError(caught, "answer"));
+      } else setError(publicErrorMessage(caught));
     }
+  }
+
+  async function handleStart(): Promise<void> {
+    const mutation = clientRef.current.prepare({
+      path: "/api/v1/diagnostics/b07/sessions",
+      method: "POST",
+      body: JSON.stringify({ idempotencyKey: startIdempotencyKey() }),
+      advance: false,
+    });
+    await executeMutation(mutation);
   }
 
   function activeItem(): DiagnosticItem | null {
@@ -464,6 +343,10 @@ export default function DiagnosticPage() {
   function toggleChoice(choiceId: string): void {
     const item = activeItem();
     if (item === null || session?.status === "FINALIZADA") return;
+    if (answerError !== null) {
+      setAnswerError(null);
+      setError(null);
+    }
     if (item.selectionMode === "SINGLE") {
       setDraftChoiceIds([choiceId]);
       return;
@@ -479,47 +362,36 @@ export default function DiagnosticPage() {
     selectedChoiceIds: readonly string[],
     advance: boolean,
   ): Promise<void> {
-    if (session === null) return;
     const item = activeItem();
-    if (item === null || session.status === "FINALIZADA") return;
-    const expectedVersion = session.version;
-    setViewState("loading");
-    setError(null);
-    setNotice(null);
-    try {
-      const data = await requestJson(
-        `/api/v1/diagnostics/b07/sessions/${encodeURIComponent(session.sessionId)}/answers/${encodeURIComponent(item.itemId)}`,
-        "PUT",
-        {
-          version: expectedVersion,
-          selectedChoiceIds: [...selectedChoiceIds],
-          idempotencyKey: clientIdempotencyKey([
-            "answer",
-            session.sessionId,
-            item.itemId,
-            String(expectedVersion),
-            selectedChoiceIds.length === 0
-              ? "clear"
-              : [...selectedChoiceIds].sort().join("."),
-          ]),
-        },
-      );
-      const nextSession = parseDiagnosticSession(data);
-      setSession(nextSession);
-      setDraftChoiceIds([...selectedChoiceIds]);
-      if (advance && activeIndex < nextSession.items.length - 1) {
-        setActiveIndex((current) => current + 1);
-      }
-      setViewState("ready");
-      setNotice(
-        selectedChoiceIds.length === 0
-          ? "Resposta removida; a sessão continua pronta para retomada."
-          : "Resposta salva. Você pode avançar ou voltar quando quiser.",
-      );
-    } catch (caught) {
-      setViewState("ready");
-      setError(publicErrorMessage(caught));
-    }
+    if (session === null || item === null || session.status === "FINALIZADA")
+      return;
+    const mutation = clientRef.current.prepare({
+      path: `/api/v1/diagnostics/b07/sessions/${encodeURIComponent(session.sessionId)}/answers/${encodeURIComponent(item.itemId)}`,
+      method: "PUT",
+      advance,
+      draftChoiceIds: [...draftRef.current],
+      expected: {
+        operation: "answer",
+        sessionId: session.sessionId,
+        version: session.version,
+        itemId: item.itemId,
+        selectedChoiceIds,
+      },
+      body: JSON.stringify({
+        version: session.version,
+        selectedChoiceIds: [...selectedChoiceIds],
+        idempotencyKey: clientIdempotencyKey([
+          "answer",
+          session.sessionId,
+          item.itemId,
+          String(session.version),
+          selectedChoiceIds.length === 0
+            ? "clear"
+            : [...selectedChoiceIds].sort().join("."),
+        ]),
+      }),
+    });
+    await executeMutation(mutation);
   }
 
   async function handleFinalize(): Promise<void> {
@@ -532,29 +404,34 @@ export default function DiagnosticPage() {
       setError("Salve ou limpe a resposta atual antes de finalizar.");
       return;
     }
-    const expectedVersion = session.version;
-    setViewState("loading");
-    setError(null);
-    setNotice(null);
-    try {
-      const data = await requestJson(
-        `/api/v1/diagnostics/b07/sessions/${encodeURIComponent(session.sessionId)}/finalize`,
-        "POST",
-        {
-          version: expectedVersion,
+    if (clientRef.current.pending !== null) return;
+    await executeMutation(
+      clientRef.current.prepare({
+        path: `/api/v1/diagnostics/b07/sessions/${encodeURIComponent(session.sessionId)}/finalize`,
+        method: "POST",
+        advance: false,
+        expected: {
+          operation: "finalize",
+          sessionId: session.sessionId,
+          version: session.version,
+        },
+        body: JSON.stringify({
+          version: session.version,
           idempotencyKey: clientIdempotencyKey([
             "finalize",
             session.sessionId,
-            String(expectedVersion),
+            String(session.version),
           ]),
-        },
-      );
-      applySession(parseDiagnosticSession(data));
-      setNotice("Diagnóstico finalizado e resultado formativo registrado.");
-    } catch (caught) {
-      setViewState("ready");
-      setError(publicErrorMessage(caught));
-    }
+        }),
+      }),
+    );
+  }
+
+  function changeItem(index: number): void {
+    if (clientRef.current.pending !== null || session === null) return;
+    setAnswerError(null);
+    setActiveIndex(index);
+    setDraftChoiceIds(answerFor(session, session.items[index]?.itemId ?? ""));
   }
 
   const item = activeItem();
@@ -562,6 +439,11 @@ export default function DiagnosticPage() {
     session === null || item === null ? [] : answerFor(session, item.itemId);
   const hasUnsavedChanges = !sameChoiceIds(persistedChoiceIds, draftChoiceIds);
   const busy = viewState === "loading";
+  const hasAnswerError =
+    answerError !== null &&
+    answerError.sessionId === session?.sessionId &&
+    answerError.itemId === item?.itemId;
+  const pending = clientRef.current.pending;
 
   return (
     <main
@@ -637,10 +519,7 @@ export default function DiagnosticPage() {
 
         {session !== null ? (
           <>
-            <div
-              className="diagnostic-progress"
-              aria-label="Progresso do diagnóstico"
-            >
+            <div className="diagnostic-progress">
               <div className="diagnostic-progress-label">
                 <span>
                   {session.answeredItemCount} de {session.itemCount} itens
@@ -654,6 +533,7 @@ export default function DiagnosticPage() {
                 </strong>
               </div>
               <progress
+                aria-label="Progresso do diagnóstico"
                 value={session.answeredItemCount}
                 max={session.itemCount}
               >
@@ -717,8 +597,13 @@ export default function DiagnosticPage() {
                   <button
                     className="diagnostic-secondary"
                     type="button"
-                    disabled={busy || hasUnsavedChanges || activeIndex === 0}
-                    onClick={() => setActiveIndex((current) => current - 1)}
+                    disabled={
+                      busy ||
+                      pending !== null ||
+                      hasUnsavedChanges ||
+                      activeIndex === 0
+                    }
+                    onClick={() => changeItem(activeIndex - 1)}
                   >
                     Item anterior
                   </button>
@@ -730,10 +615,11 @@ export default function DiagnosticPage() {
                     type="button"
                     disabled={
                       busy ||
+                      pending !== null ||
                       hasUnsavedChanges ||
                       activeIndex === session.items.length - 1
                     }
-                    onClick={() => setActiveIndex((current) => current + 1)}
+                    onClick={() => changeItem(activeIndex + 1)}
                   >
                     Próximo item
                   </button>
@@ -750,9 +636,19 @@ export default function DiagnosticPage() {
                       ? "mais de uma escolha"
                       : "uma escolha"}
                   </p>
-                  <h2 id="diagnostic-item-title">{item.title}</h2>
+                  <h2 id="diagnostic-item-title" ref={headingRef} tabIndex={-1}>
+                    {item.title}
+                  </h2>
                   <p>{item.text}</p>
-                  <fieldset className="diagnostic-choice-fieldset">
+                  <fieldset
+                    className="diagnostic-choice-fieldset"
+                    ref={answerFieldRef}
+                    tabIndex={-1}
+                    aria-invalid={hasAnswerError || undefined}
+                    aria-describedby={
+                      hasAnswerError ? "diagnostic-answer-error" : undefined
+                    }
+                  >
                     <legend>Selecione sua resposta</legend>
                     <div className="diagnostic-choice-list">
                       {item.choices.map((choice) => (
@@ -782,6 +678,7 @@ export default function DiagnosticPage() {
                       type="button"
                       disabled={
                         busy ||
+                        pending !== null ||
                         draftChoiceIds.length === 0 ||
                         !hasUnsavedChanges
                       }
@@ -794,6 +691,7 @@ export default function DiagnosticPage() {
                       type="button"
                       disabled={
                         busy ||
+                        pending !== null ||
                         (persistedChoiceIds.length === 0 &&
                           draftChoiceIds.length === 0)
                       }
@@ -818,7 +716,7 @@ export default function DiagnosticPage() {
                   </div>
                   <button
                     type="button"
-                    disabled={busy || hasUnsavedChanges}
+                    disabled={busy || pending !== null || hasUnsavedChanges}
                     onClick={() => void handleFinalize()}
                   >
                     Finalizar diagnóstico
@@ -829,8 +727,34 @@ export default function DiagnosticPage() {
           </>
         ) : null}
 
+        {pending !== null ? (
+          <div className="feedback warning">
+            <p role="status">
+              Há um envio pendente. Suas novas escolhas ficam preservadas.
+            </p>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void executeMutation(pending)}
+            >
+              Reenviar envio pendente
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void loadCurrent()}
+            >
+              Atualizar sessão
+            </button>
+          </div>
+        ) : null}
+
         {error !== null && viewState !== "error" ? (
-          <p className="feedback error" role="alert">
+          <p
+            className="feedback error"
+            role="alert"
+            id={hasAnswerError ? "diagnostic-answer-error" : undefined}
+          >
             {error}
           </p>
         ) : null}

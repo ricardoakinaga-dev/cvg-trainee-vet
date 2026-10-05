@@ -1,0 +1,5 @@
+{
+  "status": "PASS",
+  "sha": "3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff",
+  "suite": "tests/integration/ratelimit-redis-restart.test.ts"
+}

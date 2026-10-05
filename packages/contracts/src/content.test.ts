@@ -34,4 +34,17 @@ describe("content workflow contract", () => {
       }),
     ).toThrow();
   });
+
+  it.each(["APROVAR_CLINICAMENTE", "SOLICITAR_AJUSTES"])(
+    "requires the recorded authoring review flow for %s",
+    (event) => {
+      expect(() =>
+        contentTransitionRequestSchema.parse({
+          version: 1,
+          scopeId: "22222222-2222-4222-8222-222222222222",
+          event,
+        }),
+      ).toThrow();
+    },
+  );
 });

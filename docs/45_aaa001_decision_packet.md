@@ -17,6 +17,12 @@
 ## D3 — RPO / RTO do piloto
 
 - Recomendado: **APROVO** — RPO ≤ 24 h (backup diário automatizado), RTO ≤ 4 h (runbook de restore exercitado antes do piloto). Medição real no `AAA-605`; se exceder, piloto não abre.
+- **Reconciliação normativa (2026-10-02):** RPO ≤24 h é somente a recomendação
+  proposta de D3 e conflita com RNF-015/D-107, cujo alvo aprovado permanece
+  RPO ≤1 h e RTO ≤4 h. D3 não altera o PRD; qualquer mudança do alvo exige
+  decisão explícita e atualização documental do requisito. Os runbooks locais
+  continuam usando o alvo aprovado, e AAA-001 segue como gate de aceite
+  operacional/produção.
 - [ ] APROVO / [ ] REJEITO / [ ] AJUSTO: ___
 
 ## D4 — Capacidade do piloto

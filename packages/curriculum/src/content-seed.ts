@@ -151,10 +151,14 @@ export function createDiagnosticContentSeed(
   status: CurriculumContentSeedStatus = "RASCUNHO",
 ): CurriculumActivitySeed {
   assertScopeId(scopeId);
-  return createSeedFromActivity(
-    scopeId,
-    status,
-    "RASCUNHO",
-    toParticipantActivityFromDiagnosticDraft(b07DiagnosticDraftPack),
+  const catalog = toParticipantActivityFromDiagnosticDraft(
+    b07DiagnosticDraftPack,
+    {
+      boundary: "INTERNAL_DIAGNOSTIC_CATALOG",
+    },
   );
+  return createSeedFromActivity(scopeId, status, "RASCUNHO", {
+    ...catalog.activity,
+    items: catalog.items,
+  });
 }

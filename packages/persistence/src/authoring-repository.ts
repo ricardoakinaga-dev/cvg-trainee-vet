@@ -22,6 +22,8 @@ import {
 } from "./schema.js";
 import type * as schema from "./schema.js";
 import { setDatabaseSecurityContext } from "./security-context.js";
+import { enforceClinicalPublicationHold } from "./clinical-publication-hold.js";
+import { createAuthoringReviewCommitter } from "./authoring/commit-review.js";
 
 export type AuthoringRowShape = Readonly<{
   readonly editorialRecordId: string;
@@ -354,6 +356,7 @@ async function findAuthoringRecord(
   contentId: string,
   version: number,
   scopeId: string,
+  ownerId?: string,
 ): Promise<AuthoringRecord | null> {
   const rows = await executor
     .select({
@@ -381,6 +384,9 @@ async function findAuthoringRecord(
         eq(contentEditorialRecords.version, version),
         eq(contentEditorialRecords.scopeId, scopeId),
         eq(contentVersions.scopeId, scopeId),
+        ...(ownerId === undefined
+          ? []
+          : [eq(contentEditorialRecords.authorId, ownerId)]),
       ),
     )
     .limit(1);
@@ -491,6 +497,9 @@ export function createAuthoringRepository(
         return await db.transaction(async (transaction) => {
           const executor = transaction as unknown as DatabaseExecutor;
           assertDraftPersistenceInput(record, options);
+          const persistedPreflight = enforceClinicalPublicationHold(
+            record.preflight,
+          );
           await setDatabaseSecurityContext(executor, {
             scopeId: record.scopeId,
           });
@@ -573,7 +582,7 @@ export function createAuthoringRepository(
             objectiveId: record.objectiveId,
             authorId: record.authorId,
             item,
-            preflight: record.preflight,
+            preflight: persistedPreflight,
           });
           await executor.execute(
             sql`select
@@ -596,7 +605,7 @@ export function createAuthoringRepository(
             authorId: record.authorId,
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1_000),
           });
-          return record;
+          return Object.freeze({ ...record, preflight: persistedPreflight });
         });
       } catch (error) {
         if (isUniqueViolation(error)) {
@@ -607,19 +616,26 @@ export function createAuthoringRepository(
         throw error;
       }
     },
-    find: async (contentId, version, scopeId) =>
+    find: async (contentId, version, scopeId, ownerId) =>
       db.transaction(async (transaction) => {
         const executor = transaction as unknown as DatabaseExecutor;
         await setDatabaseSecurityContext(executor, { scopeId });
-        return findAuthoringRecord(executor, contentId, version, scopeId);
+        return findAuthoringRecord(
+          executor,
+          contentId,
+          version,
+          scopeId,
+          ownerId,
+        );
       }),
     savePreflight: async (record, preflight) => {
+      const persistedPreflight = enforceClinicalPublicationHold(preflight);
       await db.transaction(async (transaction) => {
         const executor = transaction as unknown as DatabaseExecutor;
         await setDatabaseSecurityContext(executor, { scopeId: record.scopeId });
         await executor
           .update(contentEditorialRecords)
-          .set({ preflight, updatedAt: new Date() })
+          .set({ preflight: persistedPreflight, updatedAt: new Date() })
           .where(
             and(
               eq(contentEditorialRecords.id, record.editorialRecordId),
@@ -629,71 +645,9 @@ export function createAuthoringRepository(
             ),
           );
       });
-      return Object.freeze({ ...record, preflight });
+      return Object.freeze({ ...record, preflight: persistedPreflight });
     },
-    saveReview: async (record, review) => {
-      await db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, { scopeId: record.scopeId });
-        await executor.insert(contentReviewDecisions).values({
-          contentEditorialRecordId: record.editorialRecordId,
-          contentVersionId: record.contentVersionId,
-          contentId: record.contentId,
-          version: record.version,
-          scopeId: record.scopeId,
-          reviewerId: review.reviewerId,
-          decision: review.decision,
-          rationale: review.rationale,
-          correlationId: review.correlationId,
-          reviewedAt: new Date(review.reviewedAt),
-        });
-        await executor
-          .update(contentEditorialRecords)
-          .set({ updatedAt: new Date() })
-          .where(
-            and(
-              eq(
-                contentEditorialRecords.contentVersionId,
-                record.contentVersionId,
-              ),
-              eq(contentEditorialRecords.contentId, record.contentId),
-              eq(contentEditorialRecords.version, record.version),
-              eq(contentEditorialRecords.scopeId, record.scopeId),
-            ),
-          );
-      });
-      return Object.freeze({ ...record, latestReview: review });
-    },
-    rollbackReview: async (record, preflight, review) => {
-      await db.transaction(async (transaction) => {
-        const executor = transaction as unknown as DatabaseExecutor;
-        await setDatabaseSecurityContext(executor, { scopeId: record.scopeId });
-        await executor
-          .delete(contentReviewDecisions)
-          .where(
-            and(
-              eq(
-                contentReviewDecisions.contentEditorialRecordId,
-                record.editorialRecordId,
-              ),
-              eq(contentReviewDecisions.reviewerId, review.reviewerId),
-              eq(contentReviewDecisions.correlationId, review.correlationId),
-              eq(contentReviewDecisions.scopeId, record.scopeId),
-            ),
-          );
-        await executor
-          .update(contentEditorialRecords)
-          .set({ preflight, updatedAt: new Date() })
-          .where(
-            and(
-              eq(contentEditorialRecords.id, record.editorialRecordId),
-              eq(contentEditorialRecords.contentId, record.contentId),
-              eq(contentEditorialRecords.version, record.version),
-              eq(contentEditorialRecords.scopeId, record.scopeId),
-            ),
-          );
-      });
-    },
+    commitReviewTransition: createAuthoringReviewCommitter(db),
   };
   return Object.freeze(repository);
 }

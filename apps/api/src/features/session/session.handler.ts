@@ -15,7 +15,7 @@ import type {
   ApiHttpDependencies,
   ApiHttpRequest,
   ApiPrincipal,
-} from "../../http.js";
+} from "../../http/contracts.js";
 import { isAllowed } from "../../http/authorization.js";
 
 export async function handleRevokeSession(
@@ -90,6 +90,14 @@ export async function handleInternalSessionScopes(
   const data = internalSessionScopesProjectionSchema.parse({
     kind: "internal_session_scopes",
     scopes: [...principal.scopes],
+    ...(principal.sessionId === undefined
+      ? {}
+      : {
+          recoveryContext: {
+            principalId: principal.principalId,
+            sessionBinding: principal.sessionId,
+          },
+        }),
   });
   return {
     status: 200,

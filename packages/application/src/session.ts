@@ -1,12 +1,23 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import type { AccountStatus, Role } from "./authorization.js";
+import {
+  isSessionWithinExpiryPolicy,
+  SESSION_ABSOLUTE_LIFETIME_SECONDS,
+} from "./session-expiry-policy.js";
 
 export type SessionPrincipal = Readonly<{
+  readonly sessionId?: string;
   readonly accountId: string;
   readonly accountStatus: AccountStatus;
   readonly roles: readonly Role[];
   readonly scopes: readonly string[];
+  /** Trusted repository clock proof for rotation; never project publicly. */
+  readonly sessionLifetime?: Readonly<{
+    readonly createdAt: Date;
+    readonly lastSeenAt: Date;
+    readonly expiresAt: Date;
+  }>;
 }>;
 
 export type SessionRecord = SessionPrincipal &
@@ -57,7 +68,6 @@ export type RotateSessionInput = Readonly<{
 }>;
 
 const sessionCookieName = "__Host-cvg_session";
-const maxSessionLifetimeSeconds = 7 * 24 * 60 * 60;
 
 function assertAccountId(accountId: string): void {
   if (accountId.trim().length === 0) {
@@ -112,7 +122,7 @@ function createSessionMaterial(
   if (
     !Number.isInteger(input.expiresInSeconds) ||
     input.expiresInSeconds <= 0 ||
-    input.expiresInSeconds > maxSessionLifetimeSeconds
+    input.expiresInSeconds > SESSION_ABSOLUTE_LIFETIME_SECONDS
   ) {
     throw new Error("expiresInSeconds is outside the allowed range");
   }
@@ -123,6 +133,8 @@ function createSessionMaterial(
   const sessionId = (input.sessionIdFactory ?? randomUUID)();
   assertAccountId(sessionId);
   const expiresAt = new Date(now.getTime() + input.expiresInSeconds * 1_000);
+  if (!Number.isFinite(expiresAt.getTime()))
+    throw new Error("expiry is invalid");
   const record: SessionRecord = Object.freeze({
     sessionId,
     accountId: input.accountId,
@@ -173,6 +185,16 @@ export async function rotateSession(
   const tokenHash = hashSessionToken(token);
   const principal = await repository.findActive(tokenHash, now);
   if (principal === null) return null;
+  const lifetime = principal.sessionLifetime;
+  if (
+    lifetime === undefined ||
+    principal.accountStatus !== "ACTIVE" ||
+    !isSessionWithinExpiryPolicy(
+      { ...lifetime, roles: principal.roles, revokedAt: null },
+      now,
+    )
+  )
+    return null;
 
   const material = createSessionMaterial(
     {
@@ -190,8 +212,25 @@ export async function rotateSession(
     },
     now,
   );
-  await repository.rotate(tokenHash, material.record, now);
-  return createdSession(material, input.expiresInSeconds);
+  const absoluteDeadline =
+    lifetime.createdAt.getTime() + SESSION_ABSOLUTE_LIFETIME_SECONDS * 1_000;
+  const seconds = Math.min(
+    input.expiresInSeconds,
+    Math.floor((absoluteDeadline - now.getTime()) / 1_000),
+  );
+  if (seconds <= 0) return null;
+  const expiresAt = new Date(now.getTime() + seconds * 1_000);
+  const rotated = Object.freeze({
+    ...material,
+    expiresAt,
+    record: Object.freeze({
+      ...material.record,
+      createdAt: new Date(lifetime.createdAt.getTime()),
+      expiresAt,
+    }),
+  });
+  await repository.rotate(tokenHash, rotated.record, now);
+  return createdSession(rotated, seconds);
 }
 
 export async function revokeSessionCookie(
@@ -216,6 +255,9 @@ export async function authenticateSessionCookie(
   const principal = await repository.findActive(hashSessionToken(token), now);
   if (principal === null) return null;
   return Object.freeze({
+    ...(principal.sessionId === undefined
+      ? {}
+      : { sessionId: principal.sessionId }),
     accountId: principal.accountId,
     accountStatus: principal.accountStatus,
     roles: Object.freeze([...principal.roles]),

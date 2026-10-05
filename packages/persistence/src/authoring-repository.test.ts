@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { createFakeDatabase } from "./test-support/fake-database.js";
 import {
+  auditEntries,
+  contentEditorialRecords,
+  contentReviewDecisions,
+  contentVersions,
+  outboxEvents,
+} from "./schema.js";
+import {
   authoringRowToRecord,
   createAuthoringRepository,
   reviewRowToState,
@@ -95,6 +102,38 @@ const draftOptions = {
     occurredAt: "2026-08-10T05:00:00.000Z",
   },
 } as const;
+
+function sqlChunks(value: unknown): readonly unknown[] {
+  if (Array.isArray(value)) return value.flatMap(sqlChunks);
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "queryChunks" in value &&
+    Array.isArray(value.queryChunks)
+  ) {
+    return value.queryChunks.flatMap(sqlChunks);
+  }
+  return [value];
+}
+
+function isSqlColumn(value: unknown): value is { readonly name: string } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "name" in value &&
+    typeof value.name === "string" &&
+    !("queryChunks" in value)
+  );
+}
+
+function isSqlParameter(value: unknown): value is { readonly value: unknown } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "encoder" in value &&
+    "value" in value
+  );
+}
 
 describe("authoring persistence mapping", () => {
   it("maps internal correction metadata and keeps it separate from participant fields", () => {
@@ -448,6 +487,40 @@ describe("authoring repository operations", () => {
     expect(created.contentStatus).toBe("RASCUNHO");
   });
 
+  it("normalizes the preflight hold when creating a draft", async () => {
+    const inserted: Array<Readonly<{ table: unknown; values: unknown }>> = [];
+    const db = createFakeDatabase({
+      onInsert: (table, values) => inserted.push({ table, values }),
+    });
+    const repository = createAuthoringRepository(
+      db as unknown as Parameters<typeof createAuthoringRepository>[0],
+    );
+    const draft = {
+      ...draftRecord,
+      preflight: {
+        ...row.preflight,
+        readyForPublication: true,
+        checks: { ...row.preflight.checks, publicationBlocked: false },
+      },
+    };
+
+    const created = await repository.createDraft(draft, { ...draftOptions });
+    const editorialInsert = inserted.find(
+      (entry) => entry.table === contentEditorialRecords,
+    );
+
+    expect(created.preflight).toMatchObject({
+      readyForPublication: false,
+      checks: { publicationBlocked: true },
+    });
+    expect(editorialInsert?.values).toMatchObject({
+      preflight: {
+        readyForPublication: false,
+        checks: { publicationBlocked: true },
+      },
+    });
+  });
+
   it("rejects drafts that are not version-one RASCUNHO records", async () => {
     const db = createFakeDatabase();
     const repository = createAuthoringRepository(
@@ -625,6 +698,32 @@ describe("authoring repository operations", () => {
     expect(found?.latestReview?.decision).toBe("APROVAR_CLINICAMENTE");
   });
 
+  it("filters by owner before loading an internal source record", async () => {
+    const conditions: unknown[] = [];
+    const db = createFakeDatabase({
+      rows: [[], [row], []],
+      onWhere: (condition) => conditions.push(condition),
+    });
+    const repository = createAuthoringRepository(
+      db as unknown as Parameters<typeof createAuthoringRepository>[0],
+    );
+
+    await repository.find(
+      row.contentId,
+      row.version,
+      row.scopeId,
+      row.authorId,
+    );
+
+    const chunks = sqlChunks(conditions[0]);
+    expect(chunks.filter(isSqlColumn).map((column) => column.name)).toContain(
+      contentEditorialRecords.authorId.name,
+    );
+    expect(
+      chunks.filter(isSqlParameter).map((parameter) => parameter.value),
+    ).toContain(row.authorId);
+  });
+
   it("finds a record without a review", async () => {
     const db = createFakeDatabase({ rows: [[], [row], []] });
     const repository = createAuthoringRepository(
@@ -652,52 +751,187 @@ describe("authoring repository operations", () => {
   });
 
   it("saves a preflight snapshot", async () => {
-    const db = createFakeDatabase();
+    const updates: Array<Readonly<{ table: unknown; values: unknown }>> = [];
+    const db = createFakeDatabase({
+      onUpdate: (table, values) => updates.push({ table, values }),
+    });
     const repository = createAuthoringRepository(
       db as unknown as Parameters<typeof createAuthoringRepository>[0],
     );
     const updated = await repository.savePreflight(
       { ...draftRecord },
-      { ...row.preflight, readyForPublication: true },
-    );
-    expect(updated.preflight.readyForPublication).toBe(true);
-  });
-
-  it("saves a clinical review decision", async () => {
-    const db = createFakeDatabase();
-    const repository = createAuthoringRepository(
-      db as unknown as Parameters<typeof createAuthoringRepository>[0],
-    );
-    const updated = await repository.saveReview(
-      { ...draftRecord },
       {
-        reviewerId: "66666666-6666-4666-8666-666666666666",
-        decision: "APROVAR_CLINICAMENTE",
-        rationale: "Revisão sintética concluída.",
-        reviewedAt: "2026-08-10T05:00:00.000Z",
-        correlationId: "77777777-7777-4777-8777-777777777777",
+        ...row.preflight,
+        readyForPublication: true,
+        checks: { ...row.preflight.checks, publicationBlocked: false },
       },
     );
-    expect(updated.latestReview?.decision).toBe("APROVAR_CLINICAMENTE");
+    expect(updated.preflight).toMatchObject({
+      readyForPublication: false,
+      checks: { publicationBlocked: true },
+    });
+    expect(updates[0]?.values).toMatchObject({
+      preflight: {
+        readyForPublication: false,
+        checks: { publicationBlocked: true },
+      },
+    });
   });
 
-  it("rolls back a clinical review decision", async () => {
-    const db = createFakeDatabase();
+  it("commits review, status, outbox and audit atomically", async () => {
+    const writes: unknown[] = [];
+    const updates: Array<Readonly<{ table: unknown; values: unknown }>> = [];
+    const db = createFakeDatabase({
+      rows: [
+        [],
+        [{ id: row.contentVersionId }],
+        [],
+        [{ id: row.editorialRecordId }],
+        [],
+        [],
+        [],
+      ],
+      onInsert: (table) => writes.push(table),
+      onUpdate: (table, values) => updates.push({ table, values }),
+    });
+    const originalTransaction = db.transaction;
+    let transactionCount = 0;
+    db.transaction = async (action) => {
+      transactionCount += 1;
+      return originalTransaction(action);
+    };
     const repository = createAuthoringRepository(
       db as unknown as Parameters<typeof createAuthoringRepository>[0],
     );
+    const reviewerId = "66666666-6666-4666-8666-666666666666";
+    const review = {
+      reviewerId,
+      decision: "APROVAR_CLINICAMENTE" as const,
+      rationale: "Revisão sintética concluída.",
+      reviewedAt: "2026-08-10T05:00:00.000Z",
+      correlationId: "77777777-7777-4777-8777-777777777777",
+    };
+    const requestedPreflight = {
+      ...row.preflight,
+      readyForPublication: true,
+      checks: { ...row.preflight.checks, publicationBlocked: false },
+    };
+    const updated = await repository.commitReviewTransition(
+      authoringRowToRecord(row),
+      requestedPreflight,
+      review,
+      {
+        nextStatus: "APROVADO_CLINICAMENTE",
+        event: {
+          eventId: "88888888-8888-4888-8888-888888888888",
+          eventType: "content.workflow.changed.v1",
+          aggregateType: "content_version",
+          aggregateId: row.contentId,
+          occurredAt: review.reviewedAt,
+          schemaVersion: 1,
+          correlationId: review.correlationId,
+          payload: {
+            content_id: row.contentId,
+            version: String(row.version),
+            status: "APROVADO_CLINICAMENTE",
+          },
+        },
+        audit: {
+          auditId: "99999999-9999-4999-8999-999999999999",
+          principalId: reviewerId,
+          action: "CONTENT_APROVAR_CLINICAMENTE",
+          resourceType: "content_version",
+          resourceId: row.contentId,
+          scopeId: row.scopeId,
+          outcome: "SUCCESS",
+          reasonCode: "content_workflow_transition",
+          requestId: review.correlationId,
+          correlationId: review.correlationId,
+          occurredAt: review.reviewedAt,
+        },
+      },
+    );
+    expect(updated).toMatchObject({
+      contentStatus: "APROVADO_CLINICAMENTE",
+      latestReview: review,
+      preflight: {
+        readyForPublication: false,
+        checks: { publicationBlocked: true },
+      },
+    });
+    expect(transactionCount).toBe(1);
+    expect(writes).toEqual([
+      contentReviewDecisions,
+      outboxEvents,
+      auditEntries,
+    ]);
+    expect(updates).toEqual([
+      {
+        table: contentVersions,
+        values: expect.objectContaining({ status: "APROVADO_CLINICAMENTE" }),
+      },
+      {
+        table: contentEditorialRecords,
+        values: expect.objectContaining({ preflight: row.preflight }),
+      },
+    ]);
+  });
+
+  it("rejects a direct publication status from the internal review adapter", async () => {
+    const writes: unknown[] = [];
+    const db = createFakeDatabase({
+      onInsert: (table) => writes.push(table),
+      onUpdate: (table) => writes.push(table),
+    });
+    const repository = createAuthoringRepository(
+      db as unknown as Parameters<typeof createAuthoringRepository>[0],
+    );
+    const reviewerId = "66666666-6666-4666-8666-666666666666";
+    const review = {
+      reviewerId,
+      decision: "APROVAR_CLINICAMENTE" as const,
+      rationale: "Revisão sintética concluída.",
+      reviewedAt: "2026-08-10T05:00:00.000Z",
+      correlationId: "77777777-7777-4777-8777-777777777777",
+    };
+
     await expect(
-      repository.rollbackReview(
-        { ...draftRecord },
-        { ...row.preflight },
+      repository.commitReviewTransition(
+        authoringRowToRecord(row),
+        row.preflight,
+        review,
         {
-          reviewerId: "66666666-6666-4666-8666-666666666666",
-          decision: "SOLICITAR_AJUSTES",
-          rationale: "Revisão sintética concluída.",
-          reviewedAt: "2026-08-10T05:00:00.000Z",
-          correlationId: "77777777-7777-4777-8777-777777777777",
+          nextStatus: "PUBLICADO",
+          event: {
+            eventId: "88888888-8888-4888-8888-888888888888",
+            eventType: "content.workflow.changed.v1",
+            aggregateType: "content_version",
+            aggregateId: row.contentId,
+            occurredAt: review.reviewedAt,
+            schemaVersion: 1,
+            correlationId: review.correlationId,
+            payload: {
+              content_id: row.contentId,
+              version: String(row.version),
+              status: "PUBLICADO",
+            },
+          },
+          audit: {
+            auditId: "99999999-9999-4999-8999-999999999999",
+            principalId: reviewerId,
+            action: "CONTENT_APROVAR_CLINICAMENTE",
+            resourceType: "content_version",
+            resourceId: row.contentId,
+            scopeId: row.scopeId,
+            outcome: "SUCCESS",
+            reasonCode: "content_workflow_transition",
+            requestId: review.correlationId,
+            correlationId: review.correlationId,
+            occurredAt: review.reviewedAt,
+          },
         },
       ),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("authoring review transition cannot publish content");
+    expect(writes).toEqual([]);
   });
 });

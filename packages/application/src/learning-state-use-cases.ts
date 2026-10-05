@@ -57,6 +57,7 @@ export interface LearningStateRepositoryPort {
   readonly saveLearningAssignment: (
     context: LearningStateContext,
     state: LearningAssignmentState,
+    options?: Readonly<{ readonly started?: boolean }>,
   ) => Promise<ScopedLearningAssignment>;
   readonly findLearningAssignment: (
     context: LearningStateContext,
@@ -263,7 +264,11 @@ export async function transitionLearningAssignmentState(
   assertCurrentVersion(persisted.state.version, command.version);
   try {
     const state = transitionLearningAssignment(persisted.state, command.event);
-    return (await repository.saveLearningAssignment(context, state)).state;
+    return (
+      await repository.saveLearningAssignment(context, state, {
+        started: command.event.type === "INICIAR",
+      })
+    ).state;
   } catch (error) {
     if (error instanceof Error && error.name.endsWith("DomainError")) {
       throw new ApplicationError("state_conflict", "Invalid state transition");

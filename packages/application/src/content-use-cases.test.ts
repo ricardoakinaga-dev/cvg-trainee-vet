@@ -19,12 +19,35 @@ function dependencies(
 ): ContentUseCaseDependencies & {
   readonly saved: { current?: ContentRecord };
   readonly events: { current?: Readonly<Record<string, unknown>> };
+  readonly findCalls: Array<{
+    contentId: string;
+    version: number;
+    approvedClinicalApproverId?: string;
+  }>;
 } {
   const saved: { current?: ContentRecord } = {};
   const events: { current?: Readonly<Record<string, unknown>> } = {};
+  const findCalls: Array<{
+    contentId: string;
+    version: number;
+    approvedClinicalApproverId?: string;
+  }> = [];
   const repository = {
-    find: vi.fn(async (_contentId: string, version: number) =>
-      version === state.version ? state : null,
+    find: vi.fn(
+      async (
+        contentId: string,
+        version: number,
+        approvedClinicalApproverId?: string,
+      ) => {
+        findCalls.push({
+          contentId,
+          version,
+          ...(approvedClinicalApproverId === undefined
+            ? {}
+            : { approvedClinicalApproverId }),
+        });
+        return version === state.version ? state : null;
+      },
     ),
     save: vi.fn(async (_current: ContentRecord, next: ContentRecord) => {
       saved.current = next;
@@ -52,6 +75,7 @@ function dependencies(
     },
     saved,
     events,
+    findCalls,
   };
 }
 
@@ -75,6 +99,13 @@ describe("content workflow use cases", () => {
     const result = await advanceContent(publishCommand, deps);
 
     expect(result.status).toBe("PUBLICADO");
+    expect(deps.findCalls).toEqual([
+      {
+        contentId: publishCommand.contentId,
+        version: publishCommand.version,
+        approvedClinicalApproverId: publishCommand.approvedClinicalApproverId,
+      },
+    ]);
     expect(deps.saved.current).toEqual({ ...content, status: "PUBLICADO" });
     expect(deps.events.current).toMatchObject({
       eventType: "content.published.v1",

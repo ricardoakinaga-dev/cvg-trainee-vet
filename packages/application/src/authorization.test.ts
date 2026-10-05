@@ -105,7 +105,7 @@ describe("authorization policy", () => {
     ).toBe(false);
   });
 
-  it("allows clinical approval only to Ricardo's configured approved identity", () => {
+  it("allows scoped clinical approvers to review while keeping publication configured", () => {
     const request = participant({
       principalId: "ricardo-account",
       roles: ["CLINICAL_APPROVER"],
@@ -117,8 +117,26 @@ describe("authorization policy", () => {
 
     expect(canAccess(request)).toBe(true);
     expect(canAccess({ ...request, principalId: "another-approver" })).toBe(
+      true,
+    );
+    expect(
+      canAccess({
+        ...request,
+        capability: "PUBLISH_CONTENT",
+        principalId: "another-approver",
+      }),
+    ).toBe(false);
+    expect(canAccess({ ...request, capability: "PUBLISH_CONTENT" })).toBe(true);
+    expect(canAccess({ ...request, capability: "MODERATE_CONTENT" })).toBe(
       false,
     );
+    expect(
+      canAccess({
+        ...request,
+        roles: ["CLINICAL_APPROVER", "MODERATOR"],
+        capability: "MODERATE_CONTENT",
+      }),
+    ).toBe(true);
     expect(
       canAccess({
         ...request,
@@ -271,19 +289,24 @@ describe("authorization policy", () => {
     expect(canAccess({ ...moderator, scopes: ["other-scope"] })).toBe(false);
   });
 
-  it("requires the configured identity for a clinical queue reader", () => {
+  it("allows a scoped clinical reviewer to read internal editorial data", () => {
     const request = {
-      principalId: "ricardo-account",
+      principalId: "another-approver",
       accountStatus: "ACTIVE" as const,
       roles: ["CLINICAL_APPROVER"] as const,
       capability: "VIEW_CONTENT_REVIEW_QUEUE" as const,
       resource: { scopeId: "curriculum-1" },
       scopes: ["curriculum-1"] as const,
     };
-    expect(canAccess(request)).toBe(false);
-    expect(
-      canAccess({ ...request, approvedClinicalApproverId: "ricardo-account" }),
-    ).toBe(true);
+    expect(canAccess(request)).toBe(true);
+    expect(canAccess({ ...request, capability: "VIEW_INTERNAL_SOURCE" })).toBe(
+      true,
+    );
+    expect(canAccess({ ...request, capability: "VIEW_INTERNAL_SCOPES" })).toBe(
+      true,
+    );
+    expect(canAccess({ ...request, accountStatus: "SUSPENDED" })).toBe(false);
+    expect(canAccess({ ...request, scopes: ["other-scope"] })).toBe(false);
   });
 
   it("exposes only session scope context to internal editorial identities", () => {

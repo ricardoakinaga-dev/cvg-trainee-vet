@@ -1,0 +1,13 @@
+{
+  "name": "evidence-consistency",
+  "command": [
+    "pnpm",
+    "verify:evidence-consistency"
+  ],
+  "startedAt": "2026-10-03T04:56:05.097901+00:00",
+  "durationSeconds": 0.52,
+  "exitCode": 1,
+  "result": "FAIL",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/evidence-consistency.log",
+  "sha256": "0262e90ac922f0ead7d4c199e5efb9cd6d34868205773e75f3b813ae1b2400e4"
+}

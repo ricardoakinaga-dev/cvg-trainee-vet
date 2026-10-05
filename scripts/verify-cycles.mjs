@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 
@@ -47,40 +48,65 @@ async function listTsFiles(directory) {
   return files;
 }
 
-function importedSpecifiers(source) {
+function importedSpecifiers(source, file) {
+  const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
   const specifiers = [];
-  const pattern = /(?:import|export)\s+(?:[^"']*?\sfrom\s+)?["']([^"']+)["']/gu;
-  for (const match of source.matchAll(pattern)) specifiers.push(match[1]);
+  for (const statement of ast.statements) {
+    if (
+      (ts.isImportDeclaration(statement) ||
+        ts.isExportDeclaration(statement)) &&
+      statement.moduleSpecifier !== undefined &&
+      ts.isStringLiteral(statement.moduleSpecifier)
+    ) {
+      specifiers.push(statement.moduleSpecifier.text);
+    }
+  }
   return specifiers;
 }
 
-function resolveSpecifier(specifier, fromFile) {
+function sourceCandidates(base) {
+  if (base.endsWith(".js")) {
+    const stem = base.slice(0, -3);
+    return [`${stem}.ts`, `${stem}.tsx`, base];
+  }
+  return [base, `${base}.ts`, `${base}.tsx`, join(base, "index.ts")];
+}
+
+function resolveSpecifier(specifier, fromFile, workspaceRoot) {
   if (specifier.startsWith(".")) {
     const base = resolve(dirname(fromFile), specifier);
-    return [base, `${base}.ts`, `${base}.tsx`, join(base, "index.ts")];
+    return sourceCandidates(base);
   }
   for (const [name, directory] of WORKSPACE_PACKAGES) {
     if (specifier === name || specifier.startsWith(`${name}/`)) {
       const rest = specifier.slice(name.length).replace(/^\//u, "");
-      const base = resolve(root, directory, rest === "" ? "index" : rest);
-      return [base, `${base}.ts`, `${base}.tsx`, join(base, "index.ts")];
+      const base = resolve(
+        workspaceRoot,
+        directory,
+        rest === "" ? "index" : rest,
+      );
+      return sourceCandidates(base);
     }
   }
   return [];
 }
 
-export async function verifyCycles() {
+export async function verifyCycles(workspaceRoot = root) {
   const files = [];
   for (const directory of WORKSPACE_PACKAGES.values()) {
-    files.push(...(await listTsFiles(join(root, directory))));
+    files.push(...(await listTsFiles(join(workspaceRoot, directory))));
   }
   const existing = new Set(files);
   const graph = new Map();
   for (const file of files) {
     const source = await readFile(file, "utf8");
     const edges = new Set();
-    for (const specifier of importedSpecifiers(source)) {
-      for (const candidate of resolveSpecifier(specifier, file)) {
+    for (const specifier of importedSpecifiers(source, file)) {
+      for (const candidate of resolveSpecifier(
+        specifier,
+        file,
+        workspaceRoot,
+      )) {
         if (existing.has(candidate)) {
           edges.add(candidate);
           break;
@@ -106,7 +132,7 @@ export async function verifyCycles() {
   }
   for (const file of [...graph.keys()].sort()) visit(file);
   return cycles.map((cycle) =>
-    cycle.map((file) => relative(root, file)).join(" -> "),
+    cycle.map((file) => relative(workspaceRoot, file)).join(" -> "),
   );
 }
 

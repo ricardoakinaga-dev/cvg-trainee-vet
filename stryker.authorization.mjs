@@ -1,3 +1,5 @@
+import { mutationReportPath } from "./scripts/mutation-report-path.mjs";
+
 /**
  * StrykerJS — mutation testing SELETIVO (AAA-FINAL-002 §16).
  *
@@ -12,6 +14,7 @@ export default {
   mutate: ["packages/application/src/authorization.ts"],
   testRunner: "vitest",
   reporters: ["clear-text", "json"],
+  jsonReporter: { fileName: mutationReportPath("authorization") },
   coverageAnalysis: "perTest",
   thresholds: { high: 90, low: 75, break: 0 },
   timeoutMS: 20000,

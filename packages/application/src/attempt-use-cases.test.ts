@@ -224,7 +224,14 @@ describe("attempt application commands", () => {
     };
 
     const submitted = await submitAttempt(command, dependencies);
-    const replay = await submitAttempt(command, dependencies);
+    const replay = await submitAttempt(
+      {
+        ...command,
+        correlationId: "correlation-submit-retry",
+        submittedAt: "2026-08-09T17:05:00.000Z",
+      },
+      dependencies,
+    );
 
     expect(submitted.status).toBe("SUBMETIDA");
     expect(replay).toEqual(submitted);
@@ -236,6 +243,57 @@ describe("attempt application commands", () => {
       aggregateId: saved.attemptId,
       payload: { status: "SUBMETIDA" },
     });
+  });
+
+  it("replays legacy submissions but rejects a different attempt or scope", async () => {
+    const dependencies = createDependencies([
+      {
+        attemptId: "attempt-legacy",
+        participantId: ids.participantId,
+        activityId: ids.activityId,
+        status: "SALVA",
+        version: 2,
+      },
+    ]);
+    const command = {
+      attemptId: "attempt-legacy",
+      participantId: ids.participantId,
+      scopeId: ids.scopeId,
+      idempotencyKey: "legacy-submit-retry",
+      correlationId: "original-submit",
+      submittedAt: "2026-08-09T17:00:00.000Z",
+    };
+    const first = await submitAttempt(command, dependencies);
+    const record = dependencies.idempotencies.get(command.idempotencyKey)!;
+    dependencies.idempotencies.set(command.idempotencyKey, {
+      ...record,
+      fingerprint: JSON.stringify({
+        operation: "submit_attempt",
+        attemptId: command.attemptId,
+        participantId: command.participantId,
+        scopeId: command.scopeId,
+        submittedAt: command.submittedAt,
+      }),
+    });
+
+    await expect(
+      submitAttempt(
+        { ...command, submittedAt: "2026-08-09T17:10:00.000Z" },
+        dependencies,
+      ),
+    ).resolves.toEqual(first);
+    for (const changed of [
+      { ...command, attemptId: "other-attempt" },
+      { ...command, scopeId: "other-scope" },
+      { ...command, participantId: "other-participant" },
+    ]) {
+      await expect(submitAttempt(changed, dependencies)).rejects.toMatchObject({
+        code: "idempotency_conflict",
+        status: 409,
+      });
+    }
+    expect(dependencies.events).toHaveLength(1);
+    expect(dependencies.audits).toHaveLength(1);
   });
 
   it("denies cross-participant submission and preserves the attempt", async () => {

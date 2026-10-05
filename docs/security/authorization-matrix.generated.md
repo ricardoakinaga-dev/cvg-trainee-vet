@@ -5,7 +5,7 @@
 > `tests/integration/auth-matrix-generated.test.ts` falha se este arquivo
 > estiver desatualizado.
 
-Total: 57 entradas.
+Total: 58 entradas.
 
 | Method | Route | Auth | Capability | Enforcement | Risk |
 |---|---|---|---|---|---|
@@ -26,6 +26,7 @@ Total: 57 entradas.
 | GET | `/api/v1/feedback` | session | VIEW_OWN_FEEDBACK | http | expensive-read |
 | GET | `/api/v1/appeals` | session | VIEW_OWN_APPEALS | http | expensive-read |
 | POST | `/api/v1/appeals` | session | CREATE_APPEAL | http | mutation |
+| GET | `/api/v1/attempts/:attemptId` | session | VIEW_OWN_ACTIVITY | http | expensive-read |
 | POST | `/api/v1/attempts` | session | START_OWN_ATTEMPT | http | mutation |
 | GET | `/api/v1/learning-path` | session | VIEW_OWN_ACTIVITY | http | expensive-read |
 | GET | `/api/v1/dashboard` | session | VIEW_OWN_ACTIVITY, VIEW_STAFF_DASHBOARD | http | expensive-read |

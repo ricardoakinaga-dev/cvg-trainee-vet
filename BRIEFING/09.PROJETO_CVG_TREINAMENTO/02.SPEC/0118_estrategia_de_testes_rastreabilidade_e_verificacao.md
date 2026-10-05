@@ -199,7 +199,7 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 - RED/GREEN: o teste de exportação falhou quando MetricsPort não possuía prometheus e passou após renderização Prometheus allowlisted, autenticação interna e projeção sem campos proibidos;
 - SLO/alertas: packages/observability/src/operations.test.ts cobre definições válidas/ inválidas, PASS, BREACHED, NO_DATA, PostgreSQL crítico, Qdrant degradado e ausência de amostras;
 - live health: tests/integration/api-health.test.ts iniciou API real com PostgreSQL/Qdrant locais, verificou ready/dependencies e confirmou resposta sem URL, segredo, password ou api_key;
-- restore: tests/integration/postgres-restore.test.ts chamou scripts/verify-postgres-restore.mjs, restaurou marcador sintético em banco isolado e limpou os artefatos; RTO local da rodada: 2.581 ms;
+- restore: tests/integration/postgres-restore.test.ts chamou scripts/verify-postgres-restore.mjs, restaurou marcador sintético em banco isolado e limpou os artefatos; a duração local de 2.581 ms cobre dump, criação do destino, restore e leitura do marcador, não o RTO operacional;
 - limites: collector/OTel externo, retenção efetiva, dashboard provisionado, spans distribuídos, crash/failover, carga, múltiplas réplicas e E2E navegador→API real continuam pendentes.
 
 ## 17. Evidência executável do item 13
@@ -214,7 +214,7 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
 
 - comandos por camada: `pnpm test:contract` (12 arquivos/36 testes), `pnpm test:worker` (4/24), `pnpm test:integration:live` (18/26 sem skips), `pnpm test:integration:restore` (1/1), `pnpm verify:migrations` e `pnpm verify`;
 - cobertura: 352 testes passaram e 17 testes live ficaram fora do gate unitário por configuração; statements 84,92%, branches 80,34%, functions 85,89% e lines 85,61%; entrypoints de composição e alguns repositórios continuam com cobertura de módulo menor e permanecem visíveis no relatório;
-- fixture real: `scripts/real-e2e-fixture-server.mjs` cria convite/conta e conteúdo editorial sintéticos em PostgreSQL, executa a publicação autoral, descobre a atividade materializada, cria a atribuição, escreve fixture temporária, é usado por `tests/e2e/real-runtime.spec.ts` e remove os artefatos no shutdown;
+- fixture real: `scripts/real-e2e-fixture-server.mjs` cria convite/conta e pré-provisiona uma atividade sintética no PostgreSQL descartável como estado inicial do participante; não executa revisão nem publicação editorial. O servidor escreve fixture temporária, é usado por `tests/e2e/real-runtime.spec.ts` e remove os registros no shutdown;
 - E2E: `pnpm test:e2e` passa 12/12; `CVG_RUN_REAL_E2E=true pnpm test:e2e` passa 14/14 com convite, jornada, tentativa, resposta e submissão persistidos; a projeção pública não exibe `participantId`, `participantText` ou `tokenHash`;
 - migrations/CI: `scripts/verify-migrations.mjs` alinha 15 SQLs ao journal 0000–0014; `.github/workflows/quality.yml` declara PostgreSQL, aplica migrations, roda live/restore/E2E padrão/E2E real e audit;
 - limites: execução remota do workflow, carga/failover/restart, múltiplas réplicas, leitor de tela e aprovação clínica continuam pendentes; nenhum teste usa PDF, foto, prontuário, tutor ou dado real.
@@ -415,3 +415,127 @@ Testes negativos tentam introduzir e encontrar em DTOs, eventos, logs, notifica�
   trigger/concorrência live ou browser→API→PostgreSQL; não há claim de produção,
   resposta ao participante, SLA, notificação ou atribuição arbitrária nesta
   fatia.
+
+## 31. Evidência adicional — AUDIT-REM-09 snapshot preflight
+
+- RED/GREEN: a integração opt-in exige `snapshotPreflightVerified` para o dump
+  custom válido e `corruptSnapshotAbortVerified` para um archive sintético
+  cujo magic header foi adulterado; o segundo caso também confirma que o banco
+  de destino ainda não existe após a rejeição.
+- implementação: antes de criar o destino, o drill executa `pg_restore --list`
+  e decodifica o archive para SQL em arquivo temporário privado; falha de
+  leitura/decodificação ou saída vazia interrompe a execução. O arquivo SQL é
+  removido inclusive em erro.
+- verificação local: em Node 22.23.2, `CVG_RUN_RESTORE_MIGRATION_DRILL=true`
+  com migration/policy passou 7/7; execução direta PG16 retornou PASS para
+  `0053 → restore → 0054`, preflight válido, rejeição do arquivo corrompido,
+  alvo isolado, socket privado, journal, RLS, policies, owners e role; duração
+  completa `verificationDurationMs=1730`.
+- limite: a fixture sintética comprova rejeição do header corrompido antes de
+  criar o destino; não comprova backup externo, incompatibilidade semântica de
+  schema, matriz de grants/constraints produtivos, aprovação do principal de
+  migration ou RPO/RTO operacional. Critic fresh integrado permanece pendente.
+
+## 32. Evidência adicional — paridade de constraints do restore
+
+- RED/GREEN: a integração opt-in exige `constraintsVerified`; a execução falhou
+  antes da implementação porque o drill não reportava paridade do catálogo.
+- A fixture compara a origem histórica `0053` com o destino restaurado após
+  `0054`, limitada às tabelas `content_versions` e `ai_suggestions`. Compara
+  tipo, nulabilidade, identidade/geração e default das colunas; nome/tipo/
+  definição/validação das constraints; e identidade/definição/estado unique,
+  primary, valid e ready dos índices.
+- Em Node 22.23.2, o teste de migration passou 4/4 e o drill direto retornou
+  `constraintsVerified=true`, `status=PASS` e
+  `verificationDurationMs=1723`. A verificação é sintética e não representa
+  grants nem integridade estrutural de todas as tabelas em ambiente real.
+
+## 33. Rejeição de divergência estrutural do snapshot
+
+- O oracle contratado em §32 agora é executável e negativo: o helper
+  `restoreIntegrityCatalogMatches` exige colunas, constraints e índices para
+  cada uma das duas tabelas e rejeita qualquer diferença entre os catálogos de
+  origem/restauração, constraint não validada ou índice não utilizável.
+- RED falhou antes da criação do helper importado; GREEN passou 6 testes
+  focais (um drill PostgreSQL skipped sem opt-in). Com PostgreSQL 16 opt-in,
+  migration/policy passou 10/10; execução direta do drill passou com
+  `constraintsVerified=true` e `verificationDurationMs=1774`.
+- Isso valida a comparação estrutural das duas tabelas sintéticas. Ainda não
+  constrói um archive legível com journal válido e schema semanticamente
+  incompatível; backups externos, o restante do schema, grants, principal de
+  migration aprovado e RPO/RTO operacional seguem sem prova.
+- Crítica fresh C3 foi encerrada sem veredito. Fingerprint completo pré/pós
+  coincidiu (`1175c8824ab98a2924e53d5c97764065a320118c81304cf41cbd5b540393b4c9`);
+  nenhum PASS ou rebaseline foi inferido.
+
+## 34. Audit de dependências de produção
+
+- Em 2026-10-02, `pnpm audit --prod` encontrou 11 avisos no worktree: Next.js
+  `16.3.4` com um advisory crítico e undici `7.29.0` transitivo com dois altos,
+  cinco moderados e três baixos. Os advisories oficiais fixam `next@16.3.6` e
+  `undici@7.29.1` como patched.
+- O pin do Next e o override transitivo foram atualizados, o lockfile foi
+  refeito e `pnpm audit --prod` retornou “No known vulnerabilities found”.
+  Typechecks web/integrations passaram e o teste browser de operações passou
+  23/23. Evidência: `.agent/artifacts/remediation/dependency-audit-remediation-20261002.md`.
+- O gate cobre o grafo de produção do worktree no momento do audit; não declara
+  produção implantada nem ausência de vulnerabilidades futuras.
+
+## 35. Rejeição de archive com journal válido e drift estrutural
+
+- O drill local cria uma archive custom sintética após adicionar uma coluna
+  extra em `content_versions`, sem alterar o histórico Drizzle até `0053`.
+  `pg_restore --list` e a extração SQL passam, e o journal restaurado continua
+  apontando para `0053_aaa_content_integrity` com `0054` pendente.
+- Depois de restaurar a archive e aplicar `0054`, o comparador contra o
+  catálogo de referência capturado na origem limpa rejeita o catálogo
+  divergente. O resultado do drill exige `semanticSnapshotMismatchRejected=true`.
+- Em TDD, a asserção RED falhou porque o resultado não carregava esse sinal;
+  GREEN implementou o cenário. O teste opt-in `restore-migrations` passou
+  7/7; o drill PostgreSQL 16 direto retornou PASS, todos os flags verdadeiros e
+  `verificationDurationMs=2172`.
+- Esta fixture prova a rejeição de uma coluna extra nas duas tabelas cobertas
+  pelo comparador; não valida backups externos, incompatibilidades arbitrárias,
+  grants, constraints do banco inteiro, principal de migration aprovado ou
+  RPO/RTO operacional.
+
+## 36. Matriz local de grants no restore histórico
+
+- O drill aplica no destino restaurado o `roleProvisionSql` do provisionador
+  de CI com roles sintéticos distintos para migration, aplicação e administração.
+- A consulta de catálogo verifica os privilégios efetivos do app role em todas
+  as relações da schema pública contra `applicationTablePrivileges`, exige
+  `knowledge_documents` sem acesso e confirma que uma tabela criada depois do
+  provisionamento continua sem grants. Também verifica ausência de ownership,
+  `SUPERUSER`, `BYPASSRLS`, `CREATEDB`, `CREATEROLE`, `REPLICATION` e `CREATE`
+  no banco/schema; `CONNECT` e `USAGE` permanecem permitidos.
+- RED reproduziu a ausência dos quatro sinais de grants/capacidades no
+  resultado do drill. GREEN passou `restore-migrations`, policy e
+  `migration-governance` em 40/40; a execução direta PostgreSQL 16 passou com
+  `applicationGrantMatrixVerified=true`,
+  `applicationRoleLeastPrivilegeVerified=true`,
+  `applicationRoleDefaultPrivilegesDenied=true`,
+  `applicationRoleHasNoOwnership=true` e
+  `verificationDurationMs=2226`.
+- O resultado valida somente o provisionador local do fixture sintético. Não
+  atesta grants, ownership, principal de migration ou operação em ambiente
+  produtivo; essas evidências continuam sob autoridade operacional.
+
+## 37. Completude do resultado de paridade estrutural — AUDIT-REM-09
+
+- As consultas de colunas, constraints e índices carregam a contagem de linhas
+  por tabela calculada no PostgreSQL. O comparador exige que a contagem
+  observada corresponda ao número de rows recebidas e seja consistente em cada
+  row, rejeitando catálogos truncados depois da consulta.
+- Os objetos e rows têm campos exatos e tipos validados; `constraint_type`
+  aceita somente os códigos PostgreSQL 16 documentados (`c`, `f`, `p`, `t`,
+  `u`, `x`).
+  [Catálogo `pg_constraint` do PostgreSQL 16](https://www.postgresql.org/docs/16/catalog-pg-constraint.html).
+- A igualdade ignora ordem de propriedades e de rows, normalizando cada
+  categoria por sua chave (`table_name` mais nome de coluna, constraint ou
+  índice). Chaves duplicadas continuam inválidas. Isso mantém a comparação
+  estrutural estável caso a ordem de resultados varie.
+- RED/GREEN cobre ordem de rows/propriedades, truncamento com contagem original
+  e `constraint_type` desconhecido. As consultas reais foram exercitadas no
+  drill PostgreSQL 16 `0053 → restore → 0054`; a cobertura permanece limitada
+  às duas tabelas contratuais e ao fixture sintético.

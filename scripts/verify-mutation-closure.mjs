@@ -1,343 +1,656 @@
-import { execFile } from "node:child_process";
-import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { promisify } from "node:util";
+import { Buffer } from "node:buffer";
+import { createHash } from "node:crypto";
+import { dirname, isAbsolute, relative, resolve, win32 } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  openContainedMutationFile,
+  readContainedMutationFile,
+  validateDedicatedCandidateRoot,
+} from "./mutation-safe-files.mjs";
+import { validateMutationIdentities } from "./mutation-identity-validation.mjs";
+import {
+  runSuite,
+  validateSuiteResult,
+} from "./mutation-result-validation.mjs";
+import {
+  resolveRepositoryRoot,
+  MUTATION_RUNNER_INPUT_FILES,
+  validateCurrentBoundedMutationManifest,
+} from "./mutation-bounded-contract.mjs";
+import { runMutationClosureCli } from "./mutation-closure-cli.mjs";
 
-const execFileAsync = promisify(execFile);
-const root = join(fileURLToPath(import.meta.url), "..", "..");
-const TARGET = join(root, "packages/application/src/authorization.ts");
+export function verifyHistoricalClosure() {
+  return {
+    status: "NOT_VERIFIED",
+    exitCode: 1,
+    missing_proof: [
+      "Green baseline and completed structured assertion results bound to the same candidate",
+      "Exact source/operator/start/end/replacement identities and source digests for every historical mutant",
+      "Individually reviewed semantic equivalence; switch labels and NO_EFFECT are not equivalence proof",
+    ],
+    detail:
+      "SOA-31: historical mutation closure is quarantined. No sources or reports were written; existing summaries remain unverified. Provide a bounded manifest for a copied candidate to run runBoundedClosure.",
+  };
+}
 
-const SUITE = [
-  "packages/application/src/authorization.test.ts",
-  "packages/application/src/authorization.property.test.ts",
-  "packages/application/src/authorization-mutation-closure.test.ts",
-];
+function sha256Hex(content) {
+  return createHash("sha256").update(content).digest("hex");
+}
 
-/**
- * AAA-CERT-001 — harness autoritativo de fechamento de mutation.
- *
- * O Stryker (`coverageAnalysis: perTest` + `vitest.related: true`) reportou
- * 22 sobreviventes com raw 89,95%. A filtragem per-test produz falsos
- * sobreviventes (provado: mutante L105→true aplicado na mão mata 3 testes
- * do suite, mas o Stryker o declarou Survived após 126 testes filtrados).
- *
- * Este harness aplica cada mutante sobrevivente por substituição textual
- * ancorada em linha, executa o suite de autorização COMPLETO (sem filtro
- * per-test) e registra kill (suite falha) ou no-effect (suite verde).
- * no-effect só é aceito se o mutante constar na lista de EQUIVALENT com
- * prova em `docs/quality/mutation-classification-v4.md`; qualquer outro
- * no-effect é REAL survivor e reprova o gate.
- */
-const MUTANTS = [
-  {
-    id: "M40",
-    stryker: "40/ConditionalExpression",
-    line: 105,
-    classification: "REAL",
-    old: "return scopeId !== undefined && request.scopes.includes(scopeId);",
-    next: "return true;",
-  },
-  {
-    id: "M59",
-    stryker: "59/LogicalOperator",
-    line: 121,
-    classification: "REAL",
-    old: 'hasRole(request, "MODERATOR") ||\n    hasRole(request, "ADMIN") ||',
-    next: 'hasRole(request, "MODERATOR") &&\n    hasRole(request, "ADMIN") ||',
-  },
-  {
-    id: "M63",
-    stryker: "63/ConditionalExpression",
-    line: 128,
-    classification: "REAL",
-    old: 'if (request.accountStatus !== "ACTIVE" || request.principalId.trim() === "") {',
-    next: "if (true) {",
-  },
-  {
-    id: "M67",
-    stryker: "67/EqualityOperator",
-    line: 128,
-    classification: "REAL",
-    old: 'request.accountStatus !== "ACTIVE"',
-    next: 'request.accountStatus === "ACTIVE"',
-  },
-  {
-    id: "M70",
-    stryker: "70/EqualityOperator",
-    line: 128,
-    classification: "REAL",
-    old: 'request.principalId.trim() === ""',
-    next: 'request.principalId.trim() !== ""',
-  },
-  {
-    id: "M80",
-    stryker: "80/StringLiteral",
-    line: 138,
-    classification: "EQUIVALENT",
-    proof: "P-D1",
-    old: 'case "START_OWN_ATTEMPT":',
-    next: 'case "":',
-  },
-  {
-    id: "M81",
-    stryker: "81/StringLiteral",
-    line: 139,
-    classification: "EQUIVALENT",
-    proof: "P-D1",
-    old: 'case "SAVE_OWN_ANSWER":',
-    next: 'case "":',
-  },
-  {
-    id: "M82",
-    stryker: "82/StringLiteral",
-    line: 140,
-    classification: "EQUIVALENT",
-    proof: "P-D1",
-    old: 'case "SUBMIT_OWN_ATTEMPT":',
-    next: 'case "":',
-  },
-  {
-    id: "M83",
-    stryker: "83/StringLiteral",
-    line: 141,
-    classification: "EQUIVALENT",
-    proof: "P-D1",
-    old: 'case "VIEW_OWN_FEEDBACK":',
-    next: 'case "":',
-  },
-  {
-    id: "M84",
-    stryker: "84/ConditionalExpression",
-    line: 142,
-    classification: "EQUIVALENT",
-    proof: "P-D1",
-    old: 'case "VIEW_OWN_APPEALS":\n      return (\n        hasRole(request, "PARTICIPANT") &&\n        ownsResource(request) &&\n        hasScope(request)\n      );',
-    next: 'case "VIEW_OWN_APPEALS":',
-  },
-  {
-    id: "M94",
-    stryker: "94/StringLiteral",
-    line: 149,
-    classification: "EQUIVALENT",
-    proof: "P-E1",
-    old: 'case "CREATE_APPEAL":',
-    next: 'case "":',
-  },
-  {
-    id: "M102",
-    stryker: "102/StringLiteral",
-    line: 156,
-    classification: "EQUIVALENT",
-    proof: "P-E2",
-    old: 'case "MANAGE_ASSESSMENT_WORKFLOWS":',
-    next: 'case "":',
-  },
-  {
-    id: "M115",
-    stryker: "115/LogicalOperator",
-    line: 162,
-    classification: "REAL",
-    old: '(hasRole(request, "MODERATOR") || hasRole(request, "ADMIN")) &&',
-    next: '(hasRole(request, "MODERATOR") && hasRole(request, "ADMIN")) &&',
-  },
-  {
-    id: "M117",
-    stryker: "117/StringLiteral",
-    line: 162,
-    classification: "REAL",
-    old: '(hasRole(request, "MODERATOR") || hasRole(request, "ADMIN")) &&\n        hasScope(request)\n      );\n    case "REVIEW_APPEAL":',
-    next: '(hasRole(request, "") || hasRole(request, "ADMIN")) &&\n        hasScope(request)\n      );\n    case "REVIEW_APPEAL":',
-  },
-  {
-    id: "M137",
-    stryker: "137/ConditionalExpression",
-    line: 174,
-    classification: "REAL",
-    old: 'case "AUTHOR_CONTENT":\n      return hasRole(request, "AUTHOR") && hasScope(request);',
-    next: 'case "AUTHOR_CONTENT":',
-  },
-  {
-    id: "M148",
-    stryker: "148/LogicalOperator",
-    line: 178,
-    classification: "REAL",
-    old: 'return isApprovedClinicalIdentity(request) && hasScope(request);\n    case "VIEW_INTERNAL_SOURCE":',
-    next: 'return isApprovedClinicalIdentity(request) || hasScope(request);\n    case "VIEW_INTERNAL_SOURCE":',
-  },
-  {
-    id: "M163",
-    stryker: "163/StringLiteral",
-    line: 185,
-    classification: "REAL",
-    old: 'return hasRole(request, "AUDITOR") || hasRole(request, "ADMIN");',
-    next: 'return hasRole(request, "") || hasRole(request, "ADMIN");',
-  },
-  {
-    id: "M170",
-    stryker: "170/LogicalOperator",
-    line: 188,
-    classification: "REAL",
-    old: '(hasRole(request, "AUDITOR") ||\n          hasRole(request, "ADMIN") ||\n          isApprovedClinicalIdentity(request)) &&',
-    next: '(hasRole(request, "AUDITOR") ||\n          hasRole(request, "ADMIN") &&\n          isApprovedClinicalIdentity(request)) &&',
-  },
-  {
-    id: "M175",
-    stryker: "175/ConditionalExpression",
-    line: 193,
-    classification: "EQUIVALENT",
-    proof: "P-I1",
-    old: 'case "VIEW_STAFF_DASHBOARD":\n      return hasScopedStaffRole(request) && hasScope(request);',
-    next: 'case "VIEW_STAFF_DASHBOARD":',
-  },
-  {
-    id: "M193",
-    stryker: "193/ConditionalExpression",
-    line: 202,
-    classification: "REAL",
-    old: 'case "VIEW_INTERNAL_SCOPES":\n      return (\n        hasRole(request, "AUTHOR") ||\n        hasRole(request, "MODERATOR") ||\n        hasRole(request, "ADMIN") ||\n        isApprovedClinicalIdentity(request)\n      );',
-    next: 'case "VIEW_INTERNAL_SCOPES":',
-  },
-  {
-    id: "M214",
-    stryker: "214/ConditionalExpression",
-    line: 213,
-    classification: "EQUIVALENT",
-    proof: "P-J1",
-    old: 'case "GRANT_CLINICAL_APPROVER":\n      return false;',
-    next: 'case "GRANT_CLINICAL_APPROVER":',
-  },
-  {
-    id: "M215",
-    stryker: "215/StringLiteral",
-    line: 213,
-    classification: "EQUIVALENT",
-    proof: "P-J1",
-    old: 'case "GRANT_CLINICAL_APPROVER":',
-    next: 'case "":',
-  },
-];
+function isSafeRelativePath(name) {
+  return (
+    typeof name === "string" &&
+    name.length > 0 &&
+    !isAbsolute(name) &&
+    !win32.isAbsolute(name) &&
+    !name.includes(":") &&
+    !name.includes("\\") &&
+    name
+      .split("/")
+      .every((segment) => segment !== "" && segment !== "." && segment !== "..")
+  );
+}
 
-async function runSuite() {
-  try {
-    await execFileAsync(
-      "pnpm",
-      ["vitest", "run", "--project", "unit", ...SUITE],
-      {
-        cwd: root,
-        timeout: 240000,
-      },
+export function requireIsolatedRoot(root) {
+  if (typeof root !== "string" || !isAbsolute(root)) {
+    throw new Error("candidate root must be an absolute isolated path");
+  }
+  const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const target = resolve(root);
+  if (target === repoRoot) {
+    throw new Error("candidate root must not be the repository");
+  }
+  const repoInsideCandidate = relative(target, repoRoot);
+  const candidateInsideRepo = relative(repoRoot, target);
+  if (
+    (!repoInsideCandidate.startsWith("..") &&
+      !isAbsolute(repoInsideCandidate)) ||
+    (!candidateInsideRepo.startsWith("..") && !isAbsolute(candidateInsideRepo))
+  ) {
+    throw new Error("candidate root overlaps the real repository tree");
+  }
+  return target;
+}
+
+function offsetOf(source, point) {
+  const lines = source.split("\n");
+  if (point.line > lines.length) return null;
+  let offset = 0;
+  for (let index = 0; index < point.line - 1; index += 1) {
+    offset += lines[index].length + 1;
+  }
+  const columnOffset = offset + point.column - 1;
+  return columnOffset <= offset + lines[point.line - 1].length
+    ? columnOffset
+    : null;
+}
+
+function validateManifest(manifest) {
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+    throw new Error("missing bounded manifest");
+  }
+  const { root, vitest, config, sources, tests, identities } = manifest;
+  if (typeof vitest !== "string" || !isAbsolute(vitest)) {
+    throw new Error("manifest vitest entrypoint must be absolute");
+  }
+  if (
+    config !== undefined &&
+    config !== null &&
+    (typeof config !== "string" ||
+      config.startsWith("-") ||
+      !isSafeRelativePath(config))
+  ) {
+    throw new Error("invalid config entry");
+  }
+  if (
+    !sources ||
+    typeof sources !== "object" ||
+    Array.isArray(sources) ||
+    Object.keys(sources).length === 0 ||
+    Object.entries(sources).some(
+      ([name, contents]) =>
+        !isSafeRelativePath(name) || typeof contents !== "string",
+    )
+  ) {
+    throw new Error("invalid sources manifest");
+  }
+  if (
+    !Array.isArray(tests) ||
+    tests.length === 0 ||
+    tests.some(
+      (test) =>
+        typeof test !== "string" ||
+        test.startsWith("-") ||
+        !isSafeRelativePath(test),
+    ) ||
+    new Set(tests).size !== tests.length
+  ) {
+    throw new Error("invalid tests manifest");
+  }
+  return {
+    root,
+    vitest,
+    candidateSha: manifest.candidateSha,
+    candidateRunId:
+      manifest.candidateRunId ?? manifest.provenance?.candidateRunId,
+    config,
+    sources,
+    tests,
+    identities,
+    timeout: manifest.timeout,
+  };
+}
+
+async function requireCleanCandidate(root, sources, tests, config) {
+  for (const [name, contents] of Object.entries(sources)) {
+    const onDisk = await readContainedMutationFile(root, name).catch(
+      () => null,
     );
-    return true;
-  } catch {
-    return false;
+    if (onDisk === null || onDisk.bytes.toString("utf8") !== contents) {
+      throw new Error(`${name} does not match the manifest contents`);
+    }
+  }
+  for (const test of tests) {
+    await readContainedMutationFile(root, test);
+  }
+  if (config !== undefined && config !== null) {
+    await readContainedMutationFile(root, config);
   }
 }
 
-async function main() {
-  const writeSummary = process.argv.includes("--write-summary");
-  const original = await readFile(TARGET, "utf8");
-  const results = [];
+async function captureRunnerInputs(
+  root,
+  manifest,
+  validated,
+  strictProvenance,
+) {
+  const names = strictProvenance
+    ? MUTATION_RUNNER_INPUT_FILES
+    : [...validated.tests, ...(validated.config ? [validated.config] : [])];
+  const snapshot = new Map();
+  for (const name of names) {
+    const file = await readContainedMutationFile(root, name);
+    const actualDigest = sha256Hex(file.bytes);
+    const expectedDigest = strictProvenance
+      ? manifest.runnerInputDigests?.[name]
+      : actualDigest;
+    if (actualDigest !== expectedDigest) {
+      throw new Error(`candidate runner input digest mismatch: ${name}`);
+    }
+    snapshot.set(name, actualDigest);
+  }
+  return snapshot;
+}
+
+async function assertRunnerInputsUnchanged(root, snapshot, stage) {
+  for (const [name, expectedDigest] of snapshot) {
+    const file = await readContainedMutationFile(root, name);
+    if (sha256Hex(file.bytes) !== expectedDigest) {
+      throw new Error(`candidate runner input changed ${stage}: ${name}`);
+    }
+  }
+}
+
+async function captureCandidateSourceBytes(root, sources) {
+  const snapshots = new Map();
+  for (const name of Object.keys(sources)) {
+    snapshots.set(name, (await readContainedMutationFile(root, name)).bytes);
+  }
+  return snapshots;
+}
+
+async function assertCandidateSourcesUnchanged(root, snapshots, stage) {
+  for (const [name, expectedBytes] of snapshots) {
+    const file = await readContainedMutationFile(root, name);
+    if (!file.bytes.equals(expectedBytes)) {
+      throw new Error(`candidate source changed ${stage}: ${name}`);
+    }
+  }
+}
+
+async function assertCandidateExecutionState(root, runnerInputs, stage) {
+  if (!(await root.isStillCurrent())) {
+    throw new Error(`candidate root changed ${stage}`);
+  }
+  await assertRunnerInputsUnchanged(root, runnerInputs, stage);
+}
+
+async function evaluateCandidate({
+  root,
+  cwd,
+  identity,
+  sources,
+  tests,
+  vitest,
+  config,
+  budget,
+  baselineExecution,
+  runnerInputs,
+  sourceSnapshots,
+  allowExternalRunnerPaths,
+}) {
+  const source = sources[identity.source];
+  let baselineDigest = sha256Hex(Buffer.from(source, "utf8"));
+  const start = offsetOf(source, identity.location.start);
+  const end = offsetOf(source, identity.location.end);
+  if (
+    start === null ||
+    end === null ||
+    end <= start ||
+    source.slice(start, end) === identity.replacement
+  ) {
+    return {
+      id: identity.id,
+      scopeId: identity.scopeId,
+      outcome: "HARNESS_ERROR",
+      detail: "identity does not select a replaceable source range",
+      restored: true,
+      baselineDigest,
+      candidateDigest: null,
+      failedTests: [],
+    };
+  }
+  const candidate =
+    source.slice(0, start) + identity.replacement + source.slice(end);
+  let sourceFile;
+  let baselineFile;
   try {
-    for (const mutant of MUTANTS) {
-      if (!original.includes(mutant.old)) {
-        results.push({
-          ...mutant,
-          outcome: "HARNESS_ERROR",
-          detail: "anchor not found",
-        });
-        continue;
+    sourceFile = await openContainedMutationFile(root, identity.source);
+    baselineFile = await sourceFile.read();
+    baselineDigest = sha256Hex(baselineFile.bytes);
+    if (
+      !baselineFile.bytes.equals(Buffer.from(source, "utf8")) ||
+      baselineDigest !== identity.sourceDigest
+    ) {
+      throw new Error("source no longer matches its identity baseline");
+    }
+    await sourceFile.replace(Buffer.from(candidate, "utf8"), baselineFile.mode);
+  } catch (error) {
+    let restored = false;
+    try {
+      const current = await sourceFile?.read();
+      restored =
+        baselineFile !== undefined &&
+        current?.bytes.equals(baselineFile.bytes) === true &&
+        sha256Hex(current.bytes) === baselineDigest &&
+        (await sourceFile?.isStillContained()) === true;
+    } catch {
+      restored = false;
+    }
+    await sourceFile?.close().catch(() => undefined);
+    return {
+      id: identity.id,
+      scopeId: identity.scopeId,
+      outcome: "HARNESS_ERROR",
+      detail: error.message,
+      restored,
+      baselineDigest,
+      candidateDigest: null,
+      failedTests: [],
+    };
+  }
+  const candidateBytes = Buffer.from(candidate, "utf8");
+  const candidateDigest = sha256Hex(candidateBytes);
+  let execution;
+  let executionError;
+  try {
+    await assertCandidateExecutionState(
+      root,
+      runnerInputs,
+      "before mutant suite",
+    );
+    execution = await runSuite({
+      cwd: root.executionPath,
+      expectedRoot: cwd,
+      files: tests,
+      vitest,
+      config,
+      allowExternalRunnerPaths,
+      timeout: budget,
+    });
+  } catch (error) {
+    executionError = error;
+  }
+  try {
+    await assertCandidateExecutionState(
+      root,
+      runnerInputs,
+      "after mutant execution",
+    );
+  } catch (error) {
+    executionError ??= error;
+  }
+  try {
+    if (!(await sourceFile.isStillContained())) {
+      executionError ??= new Error(
+        "candidate root or source parent moved during mutation execution",
+      );
+    } else {
+      const currentCandidate = await sourceFile.read();
+      if (!currentCandidate.bytes.equals(candidateBytes)) {
+        executionError ??= new Error(
+          "candidate source changed during mutation execution",
+        );
       }
-      await writeFile(TARGET, original.replace(mutant.old, mutant.next));
-      const green = await runSuite();
-      await writeFile(TARGET, original);
-      results.push({
-        ...mutant,
-        outcome: green ? "NO_EFFECT" : "KILLED",
-      });
-      console.log(
-        `${mutant.id} (${mutant.stryker} L${mutant.line}): ${green ? "NO_EFFECT" : "KILLED"}`,
+    }
+  } catch (error) {
+    executionError ??= error;
+  }
+  let restoreError;
+  try {
+    if (!(await sourceFile.isStillContained())) {
+      throw new Error(
+        "candidate root or source parent moved; restoration was refused",
       );
     }
-  } finally {
-    await writeFile(TARGET, original);
+    await sourceFile.replace(baselineFile.bytes, baselineFile.mode);
+  } catch (error) {
+    restoreError = error;
   }
-  const killed = results.filter((r) => r.outcome === "KILLED");
-  const noEffect = results.filter((r) => r.outcome === "NO_EFFECT");
-  const equivalent = noEffect.filter((r) => r.classification === "EQUIVALENT");
-  const realSurvivors = noEffect.filter(
-    (r) => r.classification !== "EQUIVALENT",
-  );
-  const errors = results.filter((r) => r.outcome === "HARNESS_ERROR");
-  console.log(
-    `\nkilled=${killed.length} equivalent-no-effect=${equivalent.length} real-survivors=${realSurvivors.length} errors=${errors.length}`,
-  );
-  for (const r of [...realSurvivors, ...errors]) {
-    console.error(`OPEN: ${r.id} ${r.outcome}`);
+  let restoredSource;
+  try {
+    if (await sourceFile.isStillContained()) {
+      restoredSource = await sourceFile.read();
+    } else {
+      restoredSource = null;
+    }
+  } catch {
+    restoredSource = null;
   }
-  if (writeSummary) {
-    const stryker = JSON.parse(
-      await readFile(join(root, "reports/mutation/mutation.json"), "utf8"),
+  const restored =
+    restoredSource !== null &&
+    restoredSource.bytes.equals(baselineFile.bytes) &&
+    sha256Hex(restoredSource.bytes) === baselineDigest &&
+    (await sourceFile.isStillContained());
+  await sourceFile.close().catch(() => undefined);
+  try {
+    await assertCandidateSourcesUnchanged(
+      root,
+      sourceSnapshots,
+      "after mutant restoration",
     );
-    const file = Object.values(stryker.files)[0];
-    const total = file.mutants.length;
-    const strykerKilled = file.mutants.filter(
-      (m) => m.status === "Killed",
-    ).length;
-    const equivalentCount = 10;
-    const verifiedKills = killed.length;
-    const adjusted =
-      (strykerKilled + verifiedKills) / (total - equivalentCount);
-    const { stdout: headSha } = await execFileAsync(
-      "git",
-      ["rev-parse", "HEAD"],
-      {
-        cwd: root,
-      },
-    ).catch(() => ({ stdout: "unknown" }));
-    const summary = {
-      format: "cvg-mutation-summary/v1",
-      sha: headSha.trim(),
-      scope: ["packages/application/src/authorization.ts"],
-      tool: "StrykerJS 9 + cvg mutation-closure harness v1",
-      generatedAt: new Date().toISOString(),
-      total,
-      raw_killed: strykerKilled,
-      raw_score: strykerKilled / total,
-      equivalent_count: equivalentCount,
-      equivalent_ids: [
-        "80",
-        "81",
-        "82",
-        "83",
-        "84",
-        "94",
-        "102",
-        "175",
-        "214",
-        "215",
-      ],
-      verified_kills: verifiedKills,
-      verified_kill_ids: killed.map((r) => r.stryker),
-      critical_real_survivors: realSurvivors.length,
-      adjusted_score: adjusted,
-      status:
-        realSurvivors.length === 0 && errors.length === 0 && adjusted >= 0.9
-          ? "PASS"
-          : "FAIL",
+    await assertCandidateExecutionState(
+      root,
+      runnerInputs,
+      "after mutant restoration",
+    );
+  } catch (error) {
+    executionError ??= error;
+  }
+  const verdict = execution
+    ? validateSuiteResult(execution, baselineExecution)
+    : { outcome: "HARNESS_ERROR", detail: executionError?.message };
+  const base = {
+    id: identity.id,
+    scopeId: identity.scopeId,
+    baselineDigest,
+    candidateDigest,
+    restored,
+    baselineRun: baselineExecution.runId,
+    candidateRun: execution?.runId ?? null,
+    failedTests: verdict.failedTests ?? [],
+  };
+  if (!restored) {
+    return {
+      ...base,
+      outcome: "HARNESS_ERROR",
+      detail: `candidate source was not restored: ${
+        restoreError?.message ?? "baseline digest mismatch"
+      }`,
     };
-    await writeFile(
-      join(root, "reports/mutation-summary.json"),
-      `${JSON.stringify(summary, null, 2)}\n`,
-    );
-    console.log(
-      `mutation summary written (adjusted=${adjusted.toFixed(4)} status=${summary.status})`,
-    );
   }
-  if (realSurvivors.length > 0 || errors.length > 0) process.exitCode = 1;
+  if (executionError) {
+    return {
+      ...base,
+      outcome: "HARNESS_ERROR",
+      detail: executionError.message,
+    };
+  }
+  if (
+    verdict.outcome === "ASSERTION_FAILURE" &&
+    candidateDigest !== baselineDigest
+  ) {
+    return { ...base, outcome: "KILLED" };
+  }
+  if (verdict.outcome === "NO_EFFECT") {
+    return { ...base, outcome: "NO_EFFECT" };
+  }
+  return {
+    ...base,
+    outcome: "HARNESS_ERROR",
+    detail: verdict.detail ?? "candidate outcome is not a proven kill",
+  };
 }
 
-await main().catch((error) => {
-  console.error(`mutation closure harness failed: ${error.message}`);
-  process.exitCode = 1;
+export async function runBoundedClosure(manifest, options = {}) {
+  let candidateRootLease;
+  try {
+    const validated = validateManifest(manifest);
+    const target = requireIsolatedRoot(validated.root);
+    candidateRootLease = await validateDedicatedCandidateRoot(target, {
+      candidateSha: validated.candidateSha,
+      candidateRunId: validated.candidateRunId,
+      expectedRunId: options.expectedRunId,
+    });
+    let candidateProvenance;
+    const testOnly = options.testOnlyAllowMissingProvenance === true;
+    if (!testOnly) {
+      if (typeof options.expectedRunId !== "string" || !options.expectedRunId) {
+        throw new Error("current candidate run id is required");
+      }
+      candidateProvenance = await validateCurrentBoundedMutationManifest(
+        manifest,
+        {
+          candidateRoot: target,
+          repositoryRoot: resolveRepositoryRoot(),
+          expectedRunId: options.expectedRunId,
+        },
+      );
+    }
+    const allowExternalRunnerPaths = candidateProvenance === undefined;
+    const suiteVitest = allowExternalRunnerPaths
+      ? validated.vitest
+      : relative(target, validated.vitest);
+    if (!allowExternalRunnerPaths && !isSafeRelativePath(suiteVitest)) {
+      throw new Error("candidate Vitest entrypoint is outside the root");
+    }
+    const proof =
+      validated.identities.length === 0
+        ? { valid: candidateProvenance?.pendingMutants === 0 }
+        : validateMutationIdentities(validated.identities, validated.sources);
+    if (!proof.valid) {
+      return {
+        status: proof.outcome ?? "NOT_VERIFIED",
+        exitCode: 1,
+        detail:
+          proof.detail ?? "manifest has no proven current mutant identities",
+        results: [],
+      };
+    }
+    const requestedScopes = options.scopeIds;
+    if (
+      requestedScopes !== undefined &&
+      (!Array.isArray(requestedScopes) ||
+        requestedScopes.length === 0 ||
+        new Set(requestedScopes).size !== requestedScopes.length ||
+        requestedScopes.some(
+          (scope) =>
+            !candidateProvenance?.reportDigests.some(
+              (report) => report.scope === scope,
+            ),
+        ))
+    ) {
+      throw new Error("requested mutation scopes are invalid or duplicated");
+    }
+    const identities =
+      requestedScopes === undefined
+        ? validated.identities
+        : validated.identities.filter((identity) =>
+            requestedScopes.includes(identity.scopeId),
+          );
+    if (candidateProvenance !== undefined) {
+      for (const scope of requestedScopes ??
+        candidateProvenance.reportDigests.map((report) => report.scope)) {
+        const expected = manifest.provenance.scopes.find(
+          (item) => item.id === scope,
+        );
+        const actual = identities.filter(
+          (identity) => identity.scopeId === scope,
+        ).length;
+        if (!expected || expected.pendingMutants !== actual) {
+          throw new Error(
+            `manifest pending identities differ from report count for ${scope}`,
+          );
+        }
+      }
+    }
+    await requireCleanCandidate(
+      candidateRootLease,
+      validated.sources,
+      validated.tests,
+      validated.config,
+    );
+    const runnerInputs = await captureRunnerInputs(
+      candidateRootLease,
+      manifest,
+      validated,
+      candidateProvenance !== undefined,
+    );
+    const sourceSnapshots = await captureCandidateSourceBytes(
+      candidateRootLease,
+      validated.sources,
+    );
+    await assertCandidateExecutionState(
+      candidateRootLease,
+      runnerInputs,
+      "before baseline",
+    );
+    await assertCandidateSourcesUnchanged(
+      candidateRootLease,
+      sourceSnapshots,
+      "before baseline",
+    );
+    const budget =
+      Number.isSafeInteger(validated.timeout) &&
+      validated.timeout > 0 &&
+      validated.timeout <= 240000
+        ? validated.timeout
+        : null;
+    if (budget === null) throw new Error("invalid execution budget");
+    const baselineExecution = await runSuite({
+      cwd: candidateRootLease.executionPath,
+      expectedRoot: target,
+      files: validated.tests,
+      vitest: suiteVitest,
+      config: validated.config,
+      allowExternalRunnerPaths,
+      timeout: budget,
+    });
+    await assertCandidateExecutionState(
+      candidateRootLease,
+      runnerInputs,
+      "after baseline",
+    );
+    await assertCandidateSourcesUnchanged(
+      candidateRootLease,
+      sourceSnapshots,
+      "after baseline",
+    );
+    const baseline = validateSuiteResult(baselineExecution);
+    if (baseline.outcome !== "BASELINE_GREEN") {
+      return {
+        status: "HARNESS_ERROR",
+        exitCode: 1,
+        detail: `baseline ${baseline.outcome}: ${baseline.detail ?? "not green"}`,
+        results: [],
+      };
+    }
+    const results = [];
+    for (const identity of identities) {
+      await assertCandidateExecutionState(
+        candidateRootLease,
+        runnerInputs,
+        "before mutant execution",
+      );
+      await assertCandidateSourcesUnchanged(
+        candidateRootLease,
+        sourceSnapshots,
+        "before mutant execution",
+      );
+      const result = await evaluateCandidate({
+        root: candidateRootLease,
+        cwd: target,
+        identity,
+        sources: validated.sources,
+        tests: validated.tests,
+        vitest: suiteVitest,
+        config: validated.config,
+        budget,
+        baselineExecution,
+        runnerInputs,
+        sourceSnapshots,
+        allowExternalRunnerPaths,
+      });
+      results.push(result);
+      if (result.outcome === "HARNESS_ERROR") break;
+    }
+    const evidenceStatus = results.some(
+      (result) => result.outcome === "HARNESS_ERROR",
+    )
+      ? "HARNESS_ERROR"
+      : results.some((result) => result.outcome === "NOT_VERIFIED")
+        ? "NOT_VERIFIED"
+        : results.every((result) => result.outcome === "KILLED")
+          ? "KILLED"
+          : "SURVIVED";
+    const status =
+      candidateProvenance === undefined && evidenceStatus === "KILLED"
+        ? "TEST_ONLY_KILLED"
+        : evidenceStatus;
+    const outputResults =
+      candidateProvenance === undefined
+        ? results.map((result) =>
+            result.outcome === "KILLED"
+              ? { ...result, outcome: "TEST_ONLY_KILLED" }
+              : result,
+          )
+        : results;
+    const verifiedKills = results.filter(
+      (result) => result.outcome === "KILLED",
+    ).length;
+    return {
+      status,
+      exitCode: status === "KILLED" || status === "TEST_ONLY_KILLED" ? 0 : 1,
+      results: outputResults,
+      ...(candidateProvenance === undefined ? { testOnly: true } : {}),
+      ...(candidateProvenance === undefined
+        ? {}
+        : {
+            candidateRunId: candidateProvenance.candidateRunId,
+            candidateSha: candidateProvenance.candidateSha,
+            manifestSha256: options.manifestSha256,
+            scopes:
+              requestedScopes ??
+              candidateProvenance.reportDigests.map((report) => report.scope),
+            mutantCount: identities.length,
+            verifiedKills,
+            realSurvivors: identities.length - verifiedKills,
+          }),
+    };
+  } catch (error) {
+    return {
+      status: "HARNESS_ERROR",
+      exitCode: 1,
+      detail: error.message,
+      results: [],
+    };
+  } finally {
+    await candidateRootLease?.close().catch(() => undefined);
+  }
+}
+
+await runMutationClosureCli({
+  scriptName: "verify-mutation-closure.mjs",
+  runBoundedClosure,
+  verifyHistoricalClosure,
 });

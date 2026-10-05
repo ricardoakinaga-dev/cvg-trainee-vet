@@ -153,7 +153,16 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           savedAt: now.toISOString(),
         } as const;
         const saved = await saveAnswer(command, answerDependencies);
-        const replay = await saveAnswer(command, answerDependencies);
+        const [replay, concurrentReplay] = await Promise.all([
+          saveAnswer(
+            { ...command, savedAt: "2026-08-09T17:05:00.000Z" },
+            answerDependencies,
+          ),
+          saveAnswer(
+            { ...command, savedAt: "2026-08-09T17:10:00.000Z" },
+            answerDependencies,
+          ),
+        ]);
         const storedAnswers = await admin.db
           .select()
           .from(answers)
@@ -169,6 +178,7 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
 
         expect(saved.attempt.status).toBe("SALVA");
         expect(replay).toEqual(saved);
+        expect(concurrentReplay).toEqual(saved);
         expect(storedAnswers).toHaveLength(1);
         expect(storedIdempotency).toHaveLength(1);
         expect(storedEvents).toHaveLength(1);

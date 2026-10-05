@@ -34,13 +34,13 @@ describe("rotate session request", () => {
       rotateSessionRequestSchema.parse({ sessionExpiresInSeconds: 60 }),
     ).toEqual({ sessionExpiresInSeconds: 60 });
     expect(
-      rotateSessionRequestSchema.parse({ sessionExpiresInSeconds: 604_800 }),
-    ).toEqual({ sessionExpiresInSeconds: 604_800 });
+      rotateSessionRequestSchema.parse({ sessionExpiresInSeconds: 43_200 }),
+    ).toEqual({ sessionExpiresInSeconds: 43_200 });
     expect(() =>
       rotateSessionRequestSchema.parse({ sessionExpiresInSeconds: 59 }),
     ).toThrow();
     expect(() =>
-      rotateSessionRequestSchema.parse({ sessionExpiresInSeconds: 604_801 }),
+      rotateSessionRequestSchema.parse({ sessionExpiresInSeconds: 43_201 }),
     ).toThrow();
   });
 

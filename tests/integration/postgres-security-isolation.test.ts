@@ -78,6 +78,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       }
 
       const { application, admin } = harness;
+      if (liveDatabaseUrl === undefined)
+        throw new Error("live database URL required");
       const roleName = `cvg_rls_${randomUUID().replaceAll("-", "")}`;
       const rolePassword = randomUUID().replaceAll("-", "");
       const role = quoteIdentifier(roleName);
@@ -279,26 +281,29 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             status: "DISPONIVEL",
           },
         ]);
+        const runtimeStateFixture: (typeof curriculumRuntimeStates.$inferInsert)["state"] & {
+          readonly synthetic: true;
+        } = {
+          moduleId: "M01",
+          status: "DOMINIO_DIGITAL",
+          nextAction: "REVISAR_RETENCAO",
+          objectiveResults: [],
+          remediationObjectiveIds: [],
+          criticalErrorItemIds: [],
+          invalidAnswerItemIds: [],
+          unansweredChoiceItemIds: [],
+          openResponseItemIds: [],
+          retentionReviews: [],
+          practicalCompetenceClaim: "PROIBIDO_MVP",
+          synthetic: true,
+        };
         await admin.db.insert(curriculumRuntimeStates).values({
           id: runtimeId,
           participantId,
           scopeId,
           moduleId: "M01",
           version: 1,
-          state: {
-            moduleId: "M01",
-            status: "DOMINIO_DIGITAL",
-            nextAction: "REVISAR_RETENCAO",
-            objectiveResults: [],
-            remediationObjectiveIds: [],
-            criticalErrorItemIds: [],
-            invalidAnswerItemIds: [],
-            unansweredChoiceItemIds: [],
-            openResponseItemIds: [],
-            retentionReviews: [],
-            practicalCompetenceClaim: "PROIBIDO_MVP",
-            synthetic: true,
-          },
+          state: runtimeStateFixture,
         });
         await admin.db.insert(diagnosticResults).values({
           id: randomUUID(),

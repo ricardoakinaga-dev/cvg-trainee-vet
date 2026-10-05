@@ -5,6 +5,25 @@ import { describe, expect, it, vi } from "vitest";
 import { createApiRuntime } from "./main.js";
 
 describe("API runtime", () => {
+  it("T23 shares shutdown and cannot restart a closed runtime", async () => {
+    const runtime = createApiRuntime({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+      QDRANT_ENABLED: "false",
+      AI_ENABLED: "false",
+      API_PORT: "0",
+    });
+    const first = runtime.close();
+    const second = runtime.close();
+    try {
+      expect(first).toBe(second);
+      await first;
+      await expect(runtime.listen()).rejects.toThrow(/closing/u);
+      expect(runtime.server.address()).toBeNull();
+    } finally {
+      await runtime.close();
+    }
+  });
   it("starts with deterministic integrations disabled", async () => {
     const runtime = createApiRuntime({
       NODE_ENV: "test",

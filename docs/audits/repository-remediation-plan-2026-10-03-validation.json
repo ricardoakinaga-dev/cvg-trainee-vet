@@ -1,0 +1,514 @@
+{
+  "format": "cvg-remediation-planning/v1",
+  "task": "PLAN-AUDIT-20261003",
+  "status": "COMPLETED",
+  "generatedAt": "2026-10-03T11:07:09.000Z",
+  "scope": "planning documentation only; no product changes or release approval",
+  "head": "3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff",
+  "sourceAudit": {
+    "path": "docs/audits/repository-audit-2026-10-03.md",
+    "sha256": "bf7849228b504cf8ca3ea31094f79c4fce06ac784292afa7ab7be48e5058a32e",
+    "manifestPath": "docs/audits/repository-audit-2026-10-03-evidence/audit-manifest.json",
+    "manifestSha256": "f90b8e0f95202ae67a692be7c3153fbae15e31ee46aab3cd7caaa3203f8c6a6f",
+    "preserved": true
+  },
+  "validation": {
+    "tasks": 44,
+    "findingTasks": 34,
+    "continuityTasks": 10,
+    "onePrincipalTaskPerFinding": true,
+    "allMandatoryFields": true,
+    "roadmapContainsEveryTaskOnce": true,
+    "dependencyGraphAcyclic": true,
+    "localLinksChecked": 15,
+    "missingLinks": [],
+    "missingExistingPaths": [],
+    "futureTaskStatuses": {
+      "AUDIT-20261003-T01": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T02": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T03": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T04": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T05": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T06": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T07": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T08": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T09": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T10": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T11": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T12": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T13": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T14": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T15": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T16": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T17": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T18": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T19": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T20": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T21": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T22": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T23": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T24": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T25": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T26": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T27": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T28": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T29": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T30": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T31": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T32": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T33": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-T34": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-G01": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-G02": "WAITING_HUMAN_APPROVAL",
+      "AUDIT-20261003-G03": "WAITING_HUMAN_APPROVAL",
+      "AUDIT-20261003-G04": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-G05": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-G06": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-G07": "READY_FOR_NEXT_STEP",
+      "AUDIT-20261003-G08": "WAITING_HUMAN_APPROVAL",
+      "AUDIT-20261003-G09": "WAITING_HUMAN_APPROVAL",
+      "AUDIT-20261003-G10": "WAITING_HUMAN_APPROVAL"
+    },
+    "dependencies": {
+      "G01": [],
+      "T01": [
+        "G01"
+      ],
+      "T03": [
+        "G01"
+      ],
+      "T04": [
+        "G01"
+      ],
+      "T05": [
+        "G01"
+      ],
+      "T06": [
+        "G01"
+      ],
+      "T08": [
+        "G01"
+      ],
+      "T11": [
+        "G01"
+      ],
+      "T12": [
+        "G01"
+      ],
+      "T13": [
+        "G01"
+      ],
+      "T21": [
+        "G01"
+      ],
+      "T22": [
+        "G01"
+      ],
+      "T23": [
+        "G01"
+      ],
+      "T24": [
+        "G01"
+      ],
+      "T25": [
+        "G01"
+      ],
+      "T26": [
+        "G01"
+      ],
+      "T27": [
+        "G01"
+      ],
+      "T28": [
+        "G01"
+      ],
+      "T31": [
+        "G01"
+      ],
+      "T32": [
+        "G01"
+      ],
+      "T33": [
+        "G01"
+      ],
+      "T34": [
+        "G01"
+      ],
+      "T02": [
+        "G01",
+        "T01"
+      ],
+      "T07": [
+        "G01",
+        "T01",
+        "T25",
+        "T28",
+        "T32"
+      ],
+      "T09": [
+        "G01",
+        "T03"
+      ],
+      "T10": [
+        "G01",
+        "T03",
+        "T09"
+      ],
+      "T14": [
+        "G01",
+        "T13"
+      ],
+      "T15": [
+        "G01",
+        "T13"
+      ],
+      "T16": [
+        "G01",
+        "T33"
+      ],
+      "T17": [
+        "G01",
+        "T18"
+      ],
+      "T19": [
+        "G01",
+        "T18"
+      ],
+      "T18": [
+        "G01"
+      ],
+      "T20": [
+        "G01",
+        "T12"
+      ],
+      "T29": [
+        "G01",
+        "T13",
+        "T15"
+      ],
+      "T30": [
+        "G01",
+        "T17"
+      ],
+      "G02": [
+        "G01",
+        "T18"
+      ],
+      "G03": [
+        "G01",
+        "T34"
+      ],
+      "G04": [
+        "G01"
+      ],
+      "G06": [
+        "G01",
+        "T21",
+        "T22",
+        "T23",
+        "T26"
+      ],
+      "G07": [
+        "G01",
+        "T23",
+        "T31"
+      ],
+      "G05": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T17",
+        "T18",
+        "T19",
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T24",
+        "T25",
+        "T26",
+        "T27",
+        "T28",
+        "T29",
+        "T30",
+        "T31",
+        "T32",
+        "T33",
+        "T34",
+        "G03",
+        "G04",
+        "G06",
+        "G07"
+      ],
+      "G08": [
+        "G05",
+        "T04",
+        "T05"
+      ],
+      "G09": [
+        "T01",
+        "T18",
+        "T19",
+        "T32"
+      ],
+      "G10": [
+        "G05",
+        "G08",
+        "G03",
+        "G04",
+        "G06",
+        "G07"
+      ]
+    },
+    "topologicalOrder": [
+      "G01",
+      "T18",
+      "G02",
+      "T34",
+      "G03",
+      "G04",
+      "T01",
+      "T02",
+      "T03",
+      "T04",
+      "T05",
+      "T06",
+      "T25",
+      "T28",
+      "T32",
+      "T07",
+      "T08",
+      "T09",
+      "T10",
+      "T11",
+      "T12",
+      "T13",
+      "T14",
+      "T15",
+      "T33",
+      "T16",
+      "T17",
+      "T19",
+      "T20",
+      "T21",
+      "T22",
+      "T23",
+      "T24",
+      "T26",
+      "T27",
+      "T29",
+      "T30",
+      "T31",
+      "G06",
+      "G07",
+      "G05",
+      "G08",
+      "G09",
+      "G10"
+    ]
+  },
+  "checks": [
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "prettier",
+        "--ignore-path",
+        "/dev/null",
+        "--check",
+        "docs/60_roadmap_repository_remediation_2026-10-03.md",
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "traceability.yml"
+      ],
+      "startedAt": "2026-10-03T11:04:58.460725+00:00",
+      "durationSeconds": 0.88,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stdoutSha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "vulnerabilityCounts": null
+    },
+    {
+      "command": [
+        "pnpm",
+        "verify:documentation"
+      ],
+      "startedAt": "2026-10-03T11:06:25.799Z",
+      "durationSeconds": 0.379,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "\n> cvg-trainee-vet@0.1.0 verify:documentation /home/ricardo/cvg-trainee-vet\n> node scripts/verify-documentation.mjs\n\ndocumentation gate: canonical files, evidence, roadmap, backlog and traceability are consistent\n"
+    },
+    {
+      "command": [
+        "pnpm",
+        "verify:traceability"
+      ],
+      "startedAt": "2026-10-03T11:06:25.799Z",
+      "durationSeconds": 0.36,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "\n> cvg-trainee-vet@0.1.0 verify:traceability /home/ricardo/cvg-trainee-vet\n> node scripts/verify-traceability.mjs\n\ntraceability manifest: structurally valid with current artifact evidence\n"
+    },
+    {
+      "command": [
+        "pnpm",
+        "verify:audit-consistency"
+      ],
+      "startedAt": "2026-10-03T11:06:25.799Z",
+      "durationSeconds": 0.364,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "\n> cvg-trainee-vet@0.1.0 verify:audit-consistency /home/ricardo/cvg-trainee-vet\n> node scripts/verify-audit-consistency.mjs\n\nok: final audit JSON exists\nok: final audit Markdown exists\nok: audit SHA valid\nok: Markdown cites the candidate SHA\nok: audit verdict present\nok: Markdown carries the same verdict\nok: Scorecard carries the same verdict\nok: Markdown states P0/P1 counts\nok: Scorecard mirrors audit aggregates\nok: runtime state does not claim PASS\nok: release manifest carries a full commit SHA\n\naudit-consistency: PASS\n"
+    },
+    {
+      "command": [
+        "pnpm",
+        "verify:secrets"
+      ],
+      "startedAt": "2026-10-03T11:06:25.799Z",
+      "durationSeconds": 0.576,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "\n> cvg-trainee-vet@0.1.0 verify:secrets /home/ricardo/cvg-trainee-vet\n> node scripts/verify-secrets.mjs\n\nsecret scan: clean\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "startedAt": "2026-10-03T11:04:59.067318+00:00",
+      "durationSeconds": 0.36,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "vulnerabilityCounts": null
+    },
+    {
+      "command": [
+        "pnpm",
+        "lint"
+      ],
+      "startedAt": "2026-10-03T11:04:59.341224+00:00",
+      "durationSeconds": 7.38,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "\n> cvg-trainee-vet@0.1.0 lint /home/ricardo/cvg-trainee-vet\n> eslint .\n\n",
+      "stdoutSha256": "e0d2d09b7aa5d15c16978a20d39f91f383efd7ec687be1844e73ea110c3bf5db",
+      "vulnerabilityCounts": null
+    },
+    {
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "startedAt": "2026-10-03T11:04:59.357208+00:00",
+      "durationSeconds": 0.4,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "\n> cvg-trainee-vet@0.1.0 typecheck /home/ricardo/cvg-trainee-vet\n> tsc -b\n\n",
+      "stdoutSha256": "6c19977ccdb96bf15664868e3b410d978ab101ce669aff2710d6433d82772ea2",
+      "vulnerabilityCounts": null
+    },
+    {
+      "command": [
+        "pnpm",
+        "audit",
+        "--json"
+      ],
+      "startedAt": "2026-10-03T11:04:59.431381+00:00",
+      "durationSeconds": 1,
+      "exitCode": 1,
+      "result": "FAIL",
+      "summary": "{\"vulnerabilityCounts\": {\"info\": 0, \"low\": 0, \"moderate\": 3, \"high\": 4, \"critical\": 0}}",
+      "stdoutSha256": "9c0dea67dc1d794e6115cdbc1be4c82623b6b864f0cc98eeabe500c08f660b53",
+      "vulnerabilityCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 3,
+        "high": 4,
+        "critical": 0
+      }
+    },
+    {
+      "command": [
+        "pnpm",
+        "audit",
+        "--prod",
+        "--json"
+      ],
+      "startedAt": "2026-10-03T11:04:59.757507+00:00",
+      "durationSeconds": 0.54,
+      "exitCode": 0,
+      "result": "PASS",
+      "summary": "{\"vulnerabilityCounts\": {\"info\": 0, \"low\": 0, \"moderate\": 0, \"high\": 0, \"critical\": 0}}",
+      "stdoutSha256": "2c2f6f4c6e516673b1d58ca45a0e4a072b49473e784ce48d8cf05ada9762eabb",
+      "vulnerabilityCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0
+      }
+    }
+  ],
+  "limitations": [
+    "Global dev dependency audit may remain FAIL from the audited baseline; planning does not remediate dependencies or approve release.",
+    "No application tests rerun for this documentation-only change. Existing runtime evidence remains the prior audit snapshot.",
+    "stdout summaries and digests are recorded; full command stdout is not stored in this planning artifact.",
+    "Conditional dependencies and prior human decisions remain defined in backlog 61; the graph covers unconditional technical dependencies."
+  ],
+  "documents": [
+    {
+      "path": "docs/60_roadmap_repository_remediation_2026-10-03.md",
+      "sha256": "23d09f0969aca3e72740eedf4db76e3310b79c0f99c2afb9d7d4de483bca71df"
+    },
+    {
+      "path": "docs/61_backlog_repository_remediation_2026-10-03.md",
+      "sha256": "8c357db9e56ab348e0fe6b2e47ed93613231cbf6823760c41cf9af77bd31a2cc"
+    },
+    {
+      "path": "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+      "sha256": "3580440719948edad708f873451d81ccf7d6c1a9632dee94f11d179a8ceaec85"
+    },
+    {
+      "path": "BRIEFING/03.BUILD/0301_roadmap.md",
+      "sha256": "2bf2ecb6269a994be40ff4caa7dd70d938b33a4759fc80a5492bff9493da9cee"
+    },
+    {
+      "path": "BRIEFING/03.BUILD/0302_backlog_master.md",
+      "sha256": "f49ca6477044a7a9f1267c72c0e2fdb253ab9a562c9ddb33dceed9ac3dcf019b"
+    },
+    {
+      "path": "docs/99_runtime_state.md",
+      "sha256": "630da53e6d7ac522b7735b5fcdfd506598ef80bfb683e7c0efe5551028669654"
+    },
+    {
+      "path": "docs/20_master_execution_log.md",
+      "sha256": "6154e2b2e079899416126b183876a12e737b70f4055dbd7d902797145dd973a0"
+    },
+    {
+      "path": "docs/30_backlog_master.md",
+      "sha256": "8e3670db7c416a34766a98489c6f148fc61a99ce35d2877267bc49f66e413184"
+    },
+    {
+      "path": "traceability.yml",
+      "sha256": "0c45e2d2144a40badc79cf12e0168e58898c89e1210e57232950bcbad139734f"
+    }
+  ]
+}

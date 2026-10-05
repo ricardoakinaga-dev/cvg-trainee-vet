@@ -1,0 +1,14 @@
+{
+  "name": "live-redis-restart",
+  "command": [
+    "node",
+    "scripts/run-ratelimit-live.mjs",
+    "tests/integration/ratelimit-redis-restart.test.ts"
+  ],
+  "startedAt": "2026-10-03T05:01:56.889671+00:00",
+  "durationSeconds": 2.77,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/live-redis-restart.log",
+  "sha256": "42aae8140c242959336cabe074d37a5b6a19b3b63309cfcafaafef86ce9bafa3"
+}

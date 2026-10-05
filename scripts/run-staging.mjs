@@ -1,14 +1,22 @@
-import { execFile, spawn } from "node:child_process";
+import { execFile } from "node:child_process";
+import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
-/* global clearTimeout, fetch, URL */
+/* global fetch, URL */
 
 import { ephemeralPort, startEmbeddedPostgres } from "./live-embedded-pg.mjs";
+import { prepareOrdinaryExecutionProfile } from "./ordinary-execution-profile.mjs";
+import { createStagingOwnedLifecycle } from "./staging-owned-lifecycle.mjs";
+import { createStagingOwnedChild } from "./staging-owned-child.mjs";
+import {
+  finishEvidenceMeasurement,
+  startEvidenceMeasurement,
+} from "./native-evidence-measurement.mjs";
 import {
   drillBackupRestore,
   drillFailover,
@@ -47,7 +55,7 @@ async function sqlExec(url, statement) {
   const postgres = require("postgres");
   const sql = postgres(url, { max: 1 });
   try {
-    await sql.unsafe(statement);
+    return await sql.unsafe(statement);
   } finally {
     await sql.end();
   }
@@ -85,14 +93,12 @@ async function waitForTcp(host, port, attempts = 50) {
 
 function spawnLogged(name, command, args, env, cwd = root) {
   log(`starting ${name}`);
-  // Detached process groups: `pnpm start` wrappers spawn grandchildren
-  // (sh + node) that must die with the parent — kill(-pid) takes the group.
-  const child = spawn(command, args, {
+  const owned = createStagingOwnedChild(command, args, {
     cwd,
     env: { ...process.env, ...env },
     stdio: ["ignore", "pipe", "pipe"],
-    detached: true,
   });
+  const child = owned.child;
   let output = "";
   child.stdout?.on("data", (chunk) => {
     output += chunk.toString();
@@ -104,34 +110,8 @@ function spawnLogged(name, command, args, env, cwd = root) {
     name,
     child,
     output: () => output,
-    async stop(signal = "SIGTERM") {
-      if (child.exitCode !== null || child.signalCode !== null) return;
-      try {
-        // Negative pid targets the whole group (pnpm/sh/node chains).
-        process.kill(-child.pid, signal);
-      } catch {
-        try {
-          child.kill(signal);
-        } catch {
-          return;
-        }
-      }
-      await new Promise((resolve) => {
-        const timer = setTimeout(() => resolve(), 10000);
-        timer.unref?.();
-        child.once("exit", () => {
-          clearTimeout(timer);
-          resolve();
-        });
-      });
-      if (child.exitCode === null && child.signalCode === null) {
-        try {
-          process.kill(-child.pid, "SIGKILL");
-        } catch {
-          // already gone
-        }
-      }
-    },
+    started: owned.started,
+    stop: owned.stop,
   };
 }
 
@@ -174,11 +154,98 @@ async function findEmbeddedPostgresBinDir() {
   return null;
 }
 
+async function observeRole(url) {
+  const rows = await sqlExec(
+    url,
+    `select current_user as name, rolsuper as superuser,
+    rolbypassrls as "bypassRls", rolcreatedb as "createDatabase", rolcreaterole as "createRole", rolreplication as replication
+    from pg_roles where rolname = current_user`,
+  );
+  if (rows.length !== 1)
+    throw new Error("owned ordinary profile role observation missing");
+  return rows[0];
+}
+
+async function observeOwnedRedis(redis, redisBin, redisUrl) {
+  if (
+    !Number.isSafeInteger(redis.child.pid) ||
+    redis.child.exitCode !== null ||
+    redis.child.signalCode !== null
+  )
+    throw new Error("owned ordinary profile Redis child is not alive");
+  const { stdout } = await execFileAsync(
+    join(dirname(redisBin), "redis-cli"),
+    ["-u", redisUrl, "--raw", "INFO", "server"],
+    { timeout: 10000, maxBuffer: 1024 * 1024 },
+  );
+  const serverPid = Number(stdout.match(/^process_id:(\d+)\r?$/mu)?.[1]);
+  const runId = stdout.match(/^run_id:([a-f0-9]{40})\r?$/mu)?.[1];
+  if (
+    serverPid !== redis.child.pid ||
+    !runId ||
+    redis.child.exitCode !== null ||
+    redis.child.signalCode !== null
+  )
+    throw new Error(
+      "owned ordinary profile Redis endpoint does not belong to its child",
+    );
+  return { serverPid, runId, observedAt: new Date().toISOString() };
+}
+
+async function requireVacantPort(port) {
+  const { createServer } = await import("node:net");
+  await new Promise((resolve, reject) => {
+    const server = createServer();
+    server.once("error", () =>
+      reject(new Error(`owned ordinary profile refuses occupied port ${port}`)),
+    );
+    server.listen(port, "127.0.0.1", () =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  });
+}
+
+async function exitAfterFlush(exitCode) {
+  await Promise.all([
+    new Promise((resolve) => process.stdout.write("", resolve)),
+    new Promise((resolve) => process.stderr.write("", resolve)),
+  ]);
+  // The installed embedded-postgres beforeExit hook otherwise replaces
+  // process.exitCode with zero. Call only after owned teardown has settled.
+  process.exit(exitCode);
+}
+
 async function main() {
+  const recordTestSummary = process.argv.includes("--record-test-summary");
   const mode = process.argv[2] ?? "verify";
+  if (
+    recordTestSummary &&
+    (mode !== "verify" || process.env.CVG_STAGING_DATABASE_URL?.trim())
+  )
+    throw new Error(
+      "owned ordinary profile requires this invocation's embedded PostgreSQL and verify lifecycle",
+    );
+  const measurement = await startEvidenceMeasurement(root);
+  if (recordTestSummary && !measurement.before)
+    throw new Error(
+      "owned ordinary profile requires a clean original checkout",
+    );
+  const invocationId = randomUUID();
+  let ownedPg = null;
+  if (recordTestSummary)
+    for (const port of [3100, 3101, 3112, 3102, 3443, 8888])
+      await requireVacantPort(port);
   const withBrowser = process.argv.includes("--browser");
   const evidenceDir = join(root, "staging-evidence");
   await mkdir(evidenceDir, { recursive: true });
+  for (const file of [
+    "staging-summary.json",
+    "load-summary.json",
+    "otel-summary.json",
+    "k6-summary.json",
+  ]) {
+    await rm(join(evidenceDir, file), { force: true });
+  }
 
   const qdrantUrl = required("CVG_STAGING_QDRANT_URL");
   const otelBin = process.env.CVG_OTEL_COLLECTOR_BIN?.trim() || null;
@@ -190,565 +257,533 @@ async function main() {
   }
 
   const extraProcs = [];
-  const stopExtra = async () => {
-    for (const proc of extraProcs.splice(0).reverse()) {
-      try {
-        await proc.stop("SIGKILL");
-      } catch {
-        // best effort teardown
-      }
-    }
+  const owner = createStagingOwnedLifecycle();
+  const execOwned = (...args) => owner.run(() => execFileAsync(...args));
+  const sqlOwned = (...args) => owner.run(() => sqlExec(...args));
+  const waitHttpOwned = (...args) => owner.run(() => waitForHttp(...args));
+  const waitTcpOwned = (...args) => owner.run(() => waitForTcp(...args));
+  const roleOwned = (...args) => owner.run(() => observeRole(...args));
+  const redisOwned = (...args) => owner.run(() => observeOwnedRedis(...args));
+  const spawnOwned = (...args) =>
+    owner.run(async () => {
+      owner.assertActive();
+      const child = spawnLogged(...args);
+      owner.own(() => child.stop());
+      await child.started;
+      return child;
+    });
+  const signalShutdown = () => {
+    void owner.close().catch(async (error) => {
+      console.error(`[staging] owned teardown failed: ${error.message}`);
+      await exitAfterFlush(1);
+    });
   };
-
-  // 1. PostgreSQL.
-  let appUrl = process.env.CVG_STAGING_DATABASE_URL?.trim();
-  let superUrl;
-  let embeddedDir = null;
-  let stopPg = async () => undefined;
-  if (appUrl === undefined || appUrl.length === 0) {
-    const embedded = await startEmbeddedPostgres(ephemeralPort(55540));
-    embeddedDir = embedded.directory;
-    await sqlExec(
-      embedded.maintenanceUrl,
-      `CREATE ROLE "${APP_ROLE}" WITH LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD '${APP_PASSWORD}'`,
-    );
-    await sqlExec(embedded.maintenanceUrl, `CREATE DATABASE "${DATABASE}"`);
-    superUrl = embedded.dbUrl("postgres", "postgres", DATABASE);
-    await execFileAsync("pnpm", ["db:migrate"], {
-      cwd: root,
-      env: { ...process.env, DATABASE_URL: superUrl },
-      timeout: 240000,
-      maxBuffer: 16 * 1024 * 1024,
-    });
-    for (const statement of [
-      `GRANT CONNECT ON DATABASE "${DATABASE}" TO "${APP_ROLE}"`,
-      `GRANT USAGE ON SCHEMA public TO "${APP_ROLE}"`,
-      `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "${APP_ROLE}"`,
-      `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "${APP_ROLE}"`,
-      `GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO "${APP_ROLE}"`,
-      `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "${APP_ROLE}"`,
-    ]) {
-      await sqlExec(superUrl, statement);
-    }
-    const port = new URL(superUrl).port;
-    appUrl = `postgresql://${APP_ROLE}:${APP_PASSWORD}@127.0.0.1:${port}/${DATABASE}`;
-    stopPg = embedded.stop;
-    log(`disposable PostgreSQL ready (${DATABASE})`);
-  } else {
-    superUrl = process.env.CVG_STAGING_ADMIN_DATABASE_URL?.trim();
-    if (superUrl === undefined || superUrl.length === 0) {
-      throw new Error("CVG_STAGING_ADMIN_DATABASE_URL is required");
-    }
-    await execFileAsync("pnpm", ["db:migrate"], {
-      cwd: root,
-      env: { ...process.env, DATABASE_URL: superUrl },
-      timeout: 240000,
-      maxBuffer: 16 * 1024 * 1024,
-    });
-  }
-
-  // 2. Redis (always managed here: staging requires a real shared backend).
-  const redisBin = await findRedisServer();
-  if (redisBin === null) {
-    throw new Error(
-      "redis-server binary not found (set CVG_REDIS_SERVER_BIN); staging requires a real Redis",
-    );
-  }
-  const redisPort = 6390 + Math.floor(Math.random() * 500);
-  const redis = spawnLogged("redis", redisBin, [
-    "--port",
-    String(redisPort),
-    "--bind",
-    "127.0.0.1",
-    "--save",
-    "",
-    "--appendonly",
-    "no",
-  ]);
-  extraProcs.push(redis);
-  await waitForTcp("127.0.0.1", redisPort);
-  const redisUrl = `redis://127.0.0.1:${redisPort}`;
-  log(`disposable Redis ready (${redisUrl})`);
-
-  // 3. OTel collector (managed when a binary is provided). Reap stale
-  // collectors from killed runs first: they all share the staging config
-  // path and the default :8888 telemetry port.
+  process.on("SIGINT", signalShutdown);
+  process.on("SIGTERM", signalShutdown);
   try {
-    const { stdout } = await execFileAsync("sh", [
-      "-c",
-      "pgrep -af 'otelcol-contrib --config' || true",
+    // 1. PostgreSQL.
+    let appUrl = process.env.CVG_STAGING_DATABASE_URL?.trim();
+    let superUrl;
+    let embeddedDir = null;
+    if (appUrl === undefined || appUrl.length === 0) {
+      const embedded = await owner.acquire(
+        () => startEmbeddedPostgres(ephemeralPort(55540)),
+        (resource) => resource.stop(),
+      );
+      embeddedDir = embedded.directory;
+      await sqlOwned(
+        embedded.maintenanceUrl,
+        `CREATE ROLE "${APP_ROLE}" WITH LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD '${APP_PASSWORD}'`,
+      );
+      await sqlOwned(embedded.maintenanceUrl, `CREATE DATABASE "${DATABASE}"`);
+      superUrl = embedded.dbUrl("postgres", "postgres", DATABASE);
+      await execOwned("pnpm", ["db:migrate"], {
+        cwd: root,
+        env: { ...process.env, DATABASE_URL: superUrl },
+        timeout: 240000,
+        maxBuffer: 16 * 1024 * 1024,
+      });
+      for (const statement of [
+        `GRANT CONNECT ON DATABASE "${DATABASE}" TO "${APP_ROLE}"`,
+        `GRANT USAGE ON SCHEMA public TO "${APP_ROLE}"`,
+        `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "${APP_ROLE}"`,
+        `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "${APP_ROLE}"`,
+        `GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO "${APP_ROLE}"`,
+        `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "${APP_ROLE}"`,
+      ]) {
+        await sqlOwned(superUrl, statement);
+      }
+      const port = new URL(superUrl).port;
+      appUrl = `postgresql://${APP_ROLE}:${APP_PASSWORD}@127.0.0.1:${port}/${DATABASE}`;
+      if (recordTestSummary) {
+        const adminRole = "cvg_staging_measurement_admin";
+        const adminCredential = `cvg-stg-admin-${randomUUID().replaceAll("-", "")}`;
+        await sqlOwned(
+          embedded.maintenanceUrl,
+          `CREATE ROLE "${adminRole}" WITH LOGIN NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD '${adminCredential}'`,
+        );
+        for (const statement of [
+          `GRANT CONNECT ON DATABASE "${DATABASE}" TO "${adminRole}"`,
+          `GRANT USAGE ON SCHEMA public TO "${adminRole}"`,
+          `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "${adminRole}"`,
+          `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "${adminRole}"`,
+          `GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO "${adminRole}"`,
+        ])
+          await sqlOwned(superUrl, statement);
+        ownedPg = {
+          kind: "owned-embedded",
+          invocationId,
+          directory: embedded.directory,
+          applicationUrl: appUrl,
+          adminUrl: embedded.dbUrl(adminRole, adminCredential, DATABASE),
+          operatorUrl: superUrl,
+        };
+      }
+      log(`disposable PostgreSQL ready (${DATABASE})`);
+    } else {
+      superUrl = process.env.CVG_STAGING_ADMIN_DATABASE_URL?.trim();
+      if (superUrl === undefined || superUrl.length === 0) {
+        throw new Error("CVG_STAGING_ADMIN_DATABASE_URL is required");
+      }
+      await execOwned("pnpm", ["db:migrate"], {
+        cwd: root,
+        env: { ...process.env, DATABASE_URL: superUrl },
+        timeout: 240000,
+        maxBuffer: 16 * 1024 * 1024,
+      });
+    }
+
+    // 2. Redis (always managed here: staging requires a real shared backend).
+    const redisBin = await findRedisServer();
+    if (redisBin === null) {
+      throw new Error(
+        "redis-server binary not found (set CVG_REDIS_SERVER_BIN); staging requires a real Redis",
+      );
+    }
+    const redisPort = 6390 + Math.floor(Math.random() * 500);
+    if (recordTestSummary) await requireVacantPort(redisPort);
+    const redis = await spawnOwned("redis", redisBin, [
+      "--port",
+      String(redisPort),
+      "--bind",
+      "127.0.0.1",
+      "--save",
+      "",
+      "--appendonly",
+      "no",
     ]);
-    for (const line of stdout.split("\n")) {
-      if (line.includes("otelcol-staging.yaml")) {
-        const pid = Number(line.split(/\s+/)[0]);
-        if (Number.isSafeInteger(pid)) {
-          try {
-            process.kill(pid, "SIGKILL");
-          } catch {
-            // already gone
-          }
-        }
-      }
-    }
-  } catch {
-    // best effort reaping
-  }
-  let collectorEndpoint = otelEndpoint;
-  let stopCollector = async () => undefined;
-  let startCollector = async () => undefined;
-  const spansFile = join(evidenceDir, "otel-spans.json");
-  await writeFile(spansFile, "");
-  if (otelBin !== null) {
-    const otlpHttpPort = 14318 + Math.floor(Math.random() * 500);
-    const otlpGrpcPort = 15317 + Math.floor(Math.random() * 500);
-    const collectorConfig = join(evidenceDir, "otelcol-staging.yaml");
-    await writeFile(
-      collectorConfig,
-      `receivers:\n  otlp:\n    protocols:\n      http:\n        endpoint: 127.0.0.1:${otlpHttpPort}\n      grpc:\n        endpoint: 127.0.0.1:${otlpGrpcPort}\nprocessors:\n  batch: {}\nexporters:\n  file/traces:\n    path: ${spansFile}\nservice:\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [batch]\n      exporters: [file/traces]\n    metrics:\n      receivers: [otlp]\n      processors: [batch]\n      exporters: [file/traces]\n    logs:\n      receivers: [otlp]\n      processors: [batch]\n      exporters: [file/traces]\n`,
-    );
-    let collector = null;
-    startCollector = async () => {
-      collector = spawnLogged("otelcol", otelBin, [
-        "--config",
+    extraProcs.push(redis);
+    await waitTcpOwned("127.0.0.1", redisPort);
+    const redisUrl = `redis://127.0.0.1:${redisPort}`;
+    const initialRedisObservation = recordTestSummary
+      ? await redisOwned(redis, redisBin, redisUrl)
+      : null;
+    log(`disposable Redis ready (${redisUrl})`);
+
+    // 3. Only collectors spawned and registered by this invocation are owned.
+    let collectorEndpoint = otelEndpoint;
+    let stopCollector = async () => undefined;
+    let startCollector = async () => undefined;
+    const spansFile = join(evidenceDir, "otel-spans.json");
+    await writeFile(spansFile, "");
+    if (otelBin !== null) {
+      const otlpHttpPort = 14318 + Math.floor(Math.random() * 500);
+      const otlpGrpcPort = 15317 + Math.floor(Math.random() * 500);
+      const collectorConfig = join(evidenceDir, "otelcol-staging.yaml");
+      await writeFile(
         collectorConfig,
-      ]);
-      extraProcs.push(collector);
-      await waitForTcp("127.0.0.1", otlpHttpPort, 100);
-    };
-    stopCollector = async () => {
-      if (collector !== null) {
-        await collector.stop("SIGKILL");
-        collector = null;
-      }
-    };
-    await startCollector();
-    collectorEndpoint = `http://127.0.0.1:${otlpHttpPort}/v1/traces`;
-    log(`managed OTel collector ready (${collectorEndpoint})`);
-  }
-
-  const auditSecret =
-    randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "");
-  const tracesEndpoint =
-    collectorEndpoint ??
-    (() => {
-      throw new Error("OTel endpoint unresolved");
-    })();
-  const collection = "cvg_staging_knowledge_v1";
-  const baseEnv = {
-    NODE_ENV: "development",
-    DATABASE_URL: appUrl,
-    AUDIT_CURSOR_SECRET: auditSecret,
-    WEB_ORIGINS: "http://127.0.0.1:3100",
-    CVG_RATE_LIMIT_BACKEND: "redis",
-    CVG_RATE_LIMIT_REDIS_URL: redisUrl,
-    QDRANT_ENABLED: "true",
-    QDRANT_URL: qdrantUrl,
-    QDRANT_COLLECTION: collection,
-    QDRANT_INDEX_VERSION: "v1",
-    EMBEDDING_PROVIDER: "fake",
-    EMBEDDING_MODEL: "cvg-staging-embedding-v1",
-    EMBEDDING_DIMENSION: "64",
-    AI_ENABLED: "false",
-    TRUSTED_PROXIES: "127.0.0.1",
-    OTEL_TRACES_ENABLED: "true",
-    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: tracesEndpoint,
-    OTEL_SERVICE_NAME: "cvg-staging",
-  };
-  const workerEnv = { ...baseEnv };
-
-  // Web build precondition: Next bakes /api rewrites at BUILD time from
-  // CVG_API_INTERNAL_URL. A stale build serves 404 for every proxied call.
-  try {
-    const manifest = JSON.parse(
-      await readFile(join(root, "apps/web/.next/routes-manifest.json"), "utf8"),
-    );
-    const rewrites = [
-      ...(manifest?.rewrites?.beforeFiles ?? []),
-      ...(manifest?.rewrites?.afterFiles ?? []),
-    ];
-    const proxiesApi = rewrites.some(
-      (rule) =>
-        typeof rule.source === "string" &&
-        rule.source.startsWith("/api/v1/") &&
-        typeof rule.destination === "string" &&
-        rule.destination.startsWith("http://127.0.0.1:3101/api/v1/"),
-    );
-    if (!proxiesApi) {
-      throw new Error(
-        "web build has no /api rewrite to 127.0.0.1:3101; rebuild with CVG_API_INTERNAL_URL=http://127.0.0.1:3101",
+        `receivers:\n  otlp:\n    protocols:\n      http:\n        endpoint: 127.0.0.1:${otlpHttpPort}\n      grpc:\n        endpoint: 127.0.0.1:${otlpGrpcPort}\nprocessors:\n  batch: {}\nexporters:\n  file/traces:\n    path: ${spansFile}\nservice:\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [batch]\n      exporters: [file/traces]\n    metrics:\n      receivers: [otlp]\n      processors: [batch]\n      exporters: [file/traces]\n    logs:\n      receivers: [otlp]\n      processors: [batch]\n      exporters: [file/traces]\n`,
       );
+      let collector = null;
+      startCollector = async () => {
+        collector = await spawnOwned("otelcol", otelBin, [
+          "--config",
+          collectorConfig,
+        ]);
+        extraProcs.push(collector);
+        await waitTcpOwned("127.0.0.1", otlpHttpPort, 100);
+      };
+      stopCollector = async () => {
+        if (collector !== null) {
+          await collector.stop("SIGKILL");
+          collector = null;
+        }
+      };
+      await startCollector();
+      collectorEndpoint = `http://127.0.0.1:${otlpHttpPort}/v1/traces`;
+      log(`managed OTel collector ready (${collectorEndpoint})`);
     }
-  } catch (error) {
-    if (error.code === "ENOENT") {
-      throw new Error(
-        "web production build missing; run pnpm --dir apps/web build first",
+
+    const auditSecret =
+      randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "");
+    const tracesEndpoint =
+      collectorEndpoint ??
+      (() => {
+        throw new Error("OTel endpoint unresolved");
+      })();
+    const collection = "cvg_staging_knowledge_v1";
+    const baseEnv = {
+      NODE_ENV: "development",
+      DATABASE_URL: appUrl,
+      AUDIT_CURSOR_SECRET: auditSecret,
+      WEB_ORIGINS: "http://127.0.0.1:3100",
+      CVG_RATE_LIMIT_BACKEND: "redis",
+      CVG_RATE_LIMIT_REDIS_URL: redisUrl,
+      QDRANT_ENABLED: "true",
+      QDRANT_URL: qdrantUrl,
+      QDRANT_COLLECTION: collection,
+      QDRANT_INDEX_VERSION: "v1",
+      EMBEDDING_PROVIDER: "fake",
+      EMBEDDING_MODEL: "cvg-staging-embedding-v1",
+      EMBEDDING_DIMENSION: "64",
+      AI_ENABLED: "false",
+      TRUSTED_PROXIES: "127.0.0.1",
+      OTEL_TRACES_ENABLED: "true",
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: tracesEndpoint,
+      OTEL_SERVICE_NAME: "cvg-staging",
+    };
+    const workerEnv = { ...baseEnv };
+
+    // Web build precondition: Next bakes /api rewrites at BUILD time from
+    // CVG_API_INTERNAL_URL. A stale build serves 404 for every proxied call.
+    try {
+      const manifest = JSON.parse(
+        await readFile(
+          join(root, "apps/web/.next/routes-manifest.json"),
+          "utf8",
+        ),
       );
-    }
-    throw error;
-  }
-
-  // 4. Writers: API x2 + worker + fixture + web + TLS.
-  const writers = [];
-  const dumpWriters = (label) => {
-    for (const proc of [...writers, ...extraProcs]) {
-      const out = proc.output().slice(-2000);
-      console.error(`[staging] ${label} ${proc.name} output tail:\n${out}`);
-    }
-  };
-  const fixtureFile = join(tmpdir(), `cvg-staging-fixture-${process.pid}.json`);
-  async function startWriters() {
-    const apiA = spawnLogged(
-      "api-a",
-      "pnpm",
-      ["--filter", "@cvg/api", "start"],
-      {
-        ...baseEnv,
-        API_HOST: "127.0.0.1",
-        API_PORT: "3101",
-      },
-    );
-    const apiB = spawnLogged(
-      "api-b",
-      "pnpm",
-      ["--filter", "@cvg/api", "start"],
-      {
-        ...baseEnv,
-        API_HOST: "127.0.0.1",
-        API_PORT: "3112",
-      },
-    );
-    const worker = spawnLogged(
-      "worker",
-      "pnpm",
-      ["--filter", "@cvg/worker", "start"],
-      baseEnv,
-    );
-    writers.push(apiA, apiB, worker);
-    await waitForHttp("http://127.0.0.1:3101/health/ready");
-    await waitForHttp("http://127.0.0.1:3112/health/ready");
-    const fixture = spawnLogged(
-      "fixture",
-      "node",
-      ["scripts/real-e2e-fixture-server.mjs"],
-      {
-        ...baseEnv,
-        DATABASE_URL: superUrl,
-        CVG_REAL_E2E_DATABASE_URL: superUrl,
-        CVG_REAL_E2E_FIXTURE_FILE: fixtureFile,
-        CVG_REAL_E2E_FIXTURE_PORT: "3102",
-      },
-    );
-    writers.push(fixture);
-    await waitForHttp("http://127.0.0.1:3102/ready");
-    const web = spawnLogged(
-      "web",
-      "pnpm",
-      [
-        "--dir",
-        "apps/web",
-        "start",
-        "--hostname",
-        "127.0.0.1",
-        "--port",
-        "3100",
-      ],
-      { CVG_API_INTERNAL_URL: "http://127.0.0.1:3101" },
-    );
-    writers.push(web);
-    await waitForHttp("http://127.0.0.1:3100/");
-    const tls = spawnLogged(
-      "tls",
-      "node",
-      ["scripts/staging-tls-terminator.mjs", "3443", "http://127.0.0.1:3101"],
-      {
-        CVG_STAGING_TLS_CERT: join(
-          tmpdir(),
-          `cvg-staging-cert-${process.pid}.pem`,
-        ),
-        CVG_STAGING_TLS_KEY: join(
-          tmpdir(),
-          `cvg-staging-key-${process.pid}.pem`,
-        ),
-      },
-    );
-    writers.push(tls);
-    await waitForTcp("127.0.0.1", 3443);
-    log("writers started (api-a, api-b, worker, fixture, web, tls)");
-  }
-  async function stopWriters() {
-    for (const proc of writers.splice(0).reverse()) {
-      try {
-        await proc.stop();
-      } catch {
-        // best effort teardown
+      const rewrites = [
+        ...(manifest?.rewrites?.beforeFiles ?? []),
+        ...(manifest?.rewrites?.afterFiles ?? []),
+      ];
+      const proxiesApi = rewrites.some(
+        (rule) =>
+          typeof rule.source === "string" &&
+          rule.source.startsWith("/api/v1/") &&
+          typeof rule.destination === "string" &&
+          rule.destination.startsWith("http://127.0.0.1:3101/api/v1/"),
+      );
+      if (!proxiesApi) {
+        throw new Error(
+          "web build has no /api rewrite to 127.0.0.1:3101; rebuild with CVG_API_INTERNAL_URL=http://127.0.0.1:3101",
+        );
       }
-    }
-  }
-  const stopAll = async () => {
-    await stopWriters();
-    await stopExtra();
-    await stopPg();
-  };
-  process.once("SIGINT", () => void stopAll());
-  process.once("SIGTERM", () => void stopAll());
-
-  try {
-    await startWriters();
-  } catch (error) {
-    dumpWriters("boot-failure");
-    throw error;
-  }
-
-  const pgBinDir = await findEmbeddedPostgresBinDir();
-  const pgCtl =
-    pgBinDir === null || embeddedDir === null
-      ? null
-      : { bin: join(pgBinDir, "pg_ctl"), dataDir: join(embeddedDir, "data") };
-  const drillContext = {
-    evidenceDir,
-    appUrl: "http://127.0.0.1:3101",
-    superDatabaseUrl: superUrl,
-    databaseName: DATABASE,
-    qdrantUrl,
-    collection,
-    workerEnv,
-    restartWorker: async () => {
-      const index = writers.findIndex((proc) => proc.name === "worker");
-      if (index !== -1) {
-        const [worker] = writers.splice(index, 1);
-        await worker?.stop("SIGKILL");
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        throw new Error(
+          "web production build missing; run pnpm --dir apps/web build first",
+        );
       }
-      const worker = spawnLogged(
+      throw error;
+    }
+
+    // 4. Writers: API x2 + worker + fixture + web + TLS.
+    const writers = [];
+    const dumpWriters = (label) => {
+      for (const proc of [...writers, ...extraProcs]) {
+        const out = proc.output().slice(-2000);
+        console.error(`[staging] ${label} ${proc.name} output tail:\n${out}`);
+      }
+    };
+    const fixtureFile = join(
+      tmpdir(),
+      `cvg-staging-fixture-${process.pid}.json`,
+    );
+    async function startWriters() {
+      const apiA = await spawnOwned(
+        "api-a",
+        "pnpm",
+        ["--filter", "@cvg/api", "start"],
+        {
+          ...baseEnv,
+          API_HOST: "127.0.0.1",
+          API_PORT: "3101",
+        },
+      );
+      const apiB = await spawnOwned(
+        "api-b",
+        "pnpm",
+        ["--filter", "@cvg/api", "start"],
+        {
+          ...baseEnv,
+          API_HOST: "127.0.0.1",
+          API_PORT: "3112",
+        },
+      );
+      const worker = await spawnOwned(
         "worker",
         "pnpm",
         ["--filter", "@cvg/worker", "start"],
         baseEnv,
       );
-      writers.push(worker);
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-    },
-    stopWriters,
-    startWriters,
-    pgCtl,
-    stopCollector,
-    startCollector,
-  };
-
-  if (mode === "up") {
-    log("staging UP (Ctrl-C to tear down)");
-    console.log(
-      JSON.stringify(
+      writers.push(apiA, apiB, worker);
+      await waitHttpOwned("http://127.0.0.1:3101/health/ready");
+      await waitHttpOwned("http://127.0.0.1:3112/health/ready");
+      const fixture = await spawnOwned(
+        "fixture",
+        "node",
+        ["scripts/real-e2e-fixture-server.mjs"],
         {
-          apiA: "http://127.0.0.1:3101",
-          apiB: "http://127.0.0.1:3112",
-          tls: "https://127.0.0.1:3443",
-          web: "http://127.0.0.1:3100",
-          fixture: "http://127.0.0.1:3102",
-          redis: redisUrl,
-          qdrant: qdrantUrl,
-        },
-        null,
-        2,
-      ),
-    );
-    await new Promise(() => undefined);
-    return;
-  }
-
-  // verify: failure drills first (they restart writers), then the HTTP-level
-  // staging spec, then optionally the browser journey.
-  const fail = async (error) => {
-    console.error(`[staging] FAILED: ${error?.message ?? error}`);
-    dumpWriters("failure");
-    try {
-      await stopAll();
-    } catch {
-      // teardown continues
-    }
-    process.exit(1);
-  };
-  try {
-    await drillReconcile(drillContext);
-    log("drill reconcile PASS");
-    await drillQdrantLoss(drillContext);
-    log("drill qdrant-loss PASS");
-    await drillBackupRestore(drillContext);
-    log("drill backup-restore PASS");
-    await drillFailover(drillContext);
-    log("drill failover PASS");
-    if (otelBin === null) {
-      await writeFile(
-        join(evidenceDir, "drill-otel-outage.json"),
-        `${JSON.stringify({ name: "drill-otel-outage.json", status: "SKIP", reason: "external collector is not stoppable by the runner; use CVG_OTEL_COLLECTOR_BIN for a managed outage proof" }, null, 2)}\n`,
-      );
-      log("drill otel-outage SKIP (external collector)");
-    } else {
-      await drillOtelOutage(drillContext);
-      log("drill otel-outage PASS");
-    }
-  } catch (error) {
-    await fail(error);
-    return;
-  }
-
-  // Optional load baseline (§38-51): runs only when a k6 binary is provided,
-  // never as a push gate. Exports raw summary and a distilled evidence file.
-  const k6Bin = process.env.CVG_K6_BIN?.trim() || null;
-  if (k6Bin !== null) {
-    log("running k6 baseline against api-a");
-    const summaryPath = join(evidenceDir, "k6-summary.json");
-    try {
-      await execFileAsync(
-        k6Bin,
-        ["run", "--summary-export", summaryPath, "tests/load/k6-baseline.js"],
-        {
-          cwd: root,
-          env: { ...process.env, API_BASE_URL: "http://127.0.0.1:3101" },
-          timeout: 600000,
-          maxBuffer: 64 * 1024 * 1024,
+          ...baseEnv,
+          DATABASE_URL: superUrl,
+          CVG_REAL_E2E_DATABASE_URL: superUrl,
+          CVG_REAL_E2E_FIXTURE_FILE: fixtureFile,
+          CVG_REAL_E2E_FIXTURE_PORT: "3102",
         },
       );
+      writers.push(fixture);
+      await waitHttpOwned("http://127.0.0.1:3102/ready");
+      const web = await spawnOwned(
+        "web",
+        "pnpm",
+        [
+          "--dir",
+          "apps/web",
+          "start",
+          "--hostname",
+          "127.0.0.1",
+          "--port",
+          "3100",
+        ],
+        { CVG_API_INTERNAL_URL: "http://127.0.0.1:3101" },
+      );
+      writers.push(web);
+      await waitHttpOwned("http://127.0.0.1:3100/");
+      const tls = await spawnOwned(
+        "tls",
+        "node",
+        ["scripts/staging-tls-terminator.mjs", "3443", "http://127.0.0.1:3101"],
+        {
+          CVG_STAGING_TLS_CERT: join(
+            tmpdir(),
+            `cvg-staging-cert-${process.pid}.pem`,
+          ),
+          CVG_STAGING_TLS_KEY: join(
+            tmpdir(),
+            `cvg-staging-key-${process.pid}.pem`,
+          ),
+        },
+      );
+      writers.push(tls);
+      await waitTcpOwned("127.0.0.1", 3443);
+      log("writers started (api-a, api-b, worker, fixture, web, tls)");
+    }
+    async function stopWriters() {
+      for (const proc of writers.splice(0).reverse()) {
+        try {
+          await proc.stop();
+        } catch {
+          // best effort teardown
+        }
+      }
+    }
+    const stopAll = owner.close;
+
+    try {
+      await startWriters();
     } catch (error) {
-      await fail(
-        new Error(
-          `k6 baseline failed: ${String(error.stderr ?? error.message).slice(0, 400)}`,
+      dumpWriters("boot-failure");
+      throw error;
+    }
+
+    const pgBinDir = await findEmbeddedPostgresBinDir();
+    const pgCtl =
+      pgBinDir === null || embeddedDir === null
+        ? null
+        : { bin: join(pgBinDir, "pg_ctl"), dataDir: join(embeddedDir, "data") };
+    const drillContext = {
+      evidenceDir,
+      appUrl: "http://127.0.0.1:3101",
+      superDatabaseUrl: superUrl,
+      databaseName: DATABASE,
+      qdrantUrl,
+      collection,
+      workerEnv,
+      restartWorker: async () => {
+        const index = writers.findIndex((proc) => proc.name === "worker");
+        if (index !== -1) {
+          const [worker] = writers.splice(index, 1);
+          await worker?.stop("SIGKILL");
+        }
+        const worker = await spawnOwned(
+          "worker",
+          "pnpm",
+          ["--filter", "@cvg/worker", "start"],
+          baseEnv,
+        );
+        writers.push(worker);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      },
+      stopWriters,
+      startWriters,
+      pgCtl,
+      stopCollector,
+      startCollector,
+    };
+
+    if (mode === "up") {
+      log("staging UP (Ctrl-C to tear down)");
+      console.log(
+        JSON.stringify(
+          {
+            apiA: "http://127.0.0.1:3101",
+            apiB: "http://127.0.0.1:3112",
+            tls: "https://127.0.0.1:3443",
+            web: "http://127.0.0.1:3100",
+            fixture: "http://127.0.0.1:3102",
+            redis: redisUrl,
+            qdrant: qdrantUrl,
+          },
+          null,
+          2,
         ),
       );
+      await new Promise(() => undefined);
       return;
     }
-    const summary = JSON.parse(await readFile(summaryPath, "utf8"));
-    // k6 --summary-export flattens each metric at metrics.<name> (counts and
-    // percentiles side by side), not under a .values envelope.
-    const metric = (name) => summary.metrics?.[name] ?? null;
-    const loadSummary = {
-      status: "PASS",
-      profile: "read-heavy + auth-rejected (tests/load/k6-baseline.js)",
-      httpRequests: metric("http_reqs")?.count ?? null,
-      throughputPerSecond: metric("http_reqs")?.rate ?? null,
-      httpP50Ms:
-        metric("http_req_duration")?.["p(50)"] ??
-        metric("http_req_duration")?.med ??
-        null,
-      httpP95Ms: metric("http_req_duration")?.["p(95)"] ?? null,
-      httpP99Ms: metric("http_req_duration")?.["p(99)"] ?? null,
-      readP95Ms: metric("read_latency_ms")?.["p(95)"] ?? null,
-      authRejectedP95Ms: metric("auth_rejected_latency_ms")?.["p(95)"] ?? null,
-      checksFails: metric("checks")?.fails ?? null,
-      failed_checks: metric("checks")?.fails ?? null,
-      // k6 omits counters never incremented: a missing http_5xx_total
-      // means zero 5xx responses (the checks above already forbid them).
-      http_5xx: metric("http_5xx_total")?.count ?? 0,
-      errorsRate: metric("errors")?.rate ?? null,
+
+    // verify: failure drills first (they restart writers), then the HTTP-level
+    // staging spec, then optionally the browser journey.
+    const fail = async (error) => {
+      console.error(`[staging] FAILED: ${error?.message ?? error}`);
+      dumpWriters("failure");
+      try {
+        await stopAll();
+      } catch {
+        // teardown continues
+      }
+      await exitAfterFlush(1);
     };
-    if (
-      (loadSummary.httpRequests ?? 0) === 0 ||
-      (loadSummary.checksFails ?? 1) > 0 ||
-      (loadSummary.http_5xx ?? 0) > 0
-    ) {
-      await fail(new Error("k6 baseline produced failing or empty evidence"));
-      return;
-    }
-    await writeFile(
-      join(evidenceDir, "load-summary.json"),
-      `${JSON.stringify(loadSummary, null, 2)}\n`,
-    );
-    log(
-      `k6 baseline PASS (p95=${loadSummary.httpP95Ms}ms, errors=${loadSummary.errorsRate})`,
-    );
-  } else {
-    await writeFile(
-      join(evidenceDir, "load-summary.json"),
-      `${JSON.stringify({ status: "SKIP", reason: "set CVG_K6_BIN to run the load baseline" }, null, 2)}\n`,
-    );
-  }
-
-  const stagingEnv = {
-    CVG_STAGING_API_A_URL: "http://127.0.0.1:3101",
-    CVG_STAGING_API_B_URL: "http://127.0.0.1:3112",
-    CVG_STAGING_TLS_URL: "https://127.0.0.1:3443",
-    CVG_STAGING_WEB_URL: "http://127.0.0.1:3100",
-    CVG_STAGING_REDIS_URL: redisUrl,
-    CVG_STAGING_QDRANT_URL: qdrantUrl,
-    CVG_STAGING_EVIDENCE_DIR: evidenceDir,
-    CVG_STAGING_OTEL_SPANS_FILE:
-      otelBin !== null ? join(evidenceDir, "otel-spans.json") : "",
-    NODE_TLS_REJECT_UNAUTHORIZED: "0",
-  };
-  try {
-    const child = await execFileAsync(
-      "pnpm",
-      [
-        "exec",
-        "vitest",
-        "run",
-        "--project",
-        "integration",
-        "tests/integration/staging-stack.test.ts",
-      ],
-      {
-        cwd: root,
-        env: { ...process.env, ...stagingEnv },
-        timeout: 600000,
-        maxBuffer: 64 * 1024 * 1024,
-      },
-    );
-    process.stdout.write(child.stdout ?? "");
-  } catch (error) {
-    process.stdout.write(error.stdout ?? "");
-    process.stderr.write(error.stderr ?? "");
-    await fail(error);
-    return;
-  }
-
-  if (otelBin !== null) {
-    const spans = await readFile(
-      join(evidenceDir, "otel-spans.json"),
-      "utf8",
-    ).catch(() => "");
-    const traceIds = new Set(
-      [...spans.matchAll(/"traceId":\s*"([0-9a-f]{32})"/gu)].map((m) => m[1]),
-    );
-    await writeFile(
-      join(evidenceDir, "otel-summary.json"),
-      `${JSON.stringify({ status: spans.length > 0 && traceIds.size > 0 ? "PASS" : "FAIL", bytes: spans.length, distinctTraces: traceIds.size }, null, 2)}\n`,
-    );
-    if (spans.length === 0 || traceIds.size === 0) {
-      await fail(new Error("otel summary: no spans reached the collector"));
-      return;
-    }
-  }
-
-  if (withBrowser) {
-    log("running browser staging-journey spec against staging");
-    // Precondition guard: the spec needs a live fixture server AND its file.
-    // Fail fast here instead of producing cryptic ENOENT/ECONNREFUSED later.
     try {
-      const { readFile: readFixtureFile } = await import("node:fs/promises");
-      const ready = await fetch("http://127.0.0.1:3102/ready");
-      if (!ready.ok) throw new Error("fixture /ready is not ok");
-      const fixtureRaw = await readFixtureFile(fixtureFile, "utf8");
-      const fixtureParsed = JSON.parse(fixtureRaw);
-      if (fixtureParsed.source !== "authoring-publication-v1") {
-        throw new Error("fixture file has unexpected source");
+      await owner.run(() => drillReconcile(drillContext));
+      log("drill reconcile PASS");
+      await owner.run(() => drillQdrantLoss(drillContext));
+      log("drill qdrant-loss PASS");
+      await owner.run(() => drillBackupRestore(drillContext));
+      log("drill backup-restore PASS");
+      await owner.run(() => drillFailover(drillContext));
+      log("drill failover PASS");
+      if (otelBin === null) {
+        await writeFile(
+          join(evidenceDir, "drill-otel-outage.json"),
+          `${JSON.stringify({ name: "drill-otel-outage.json", status: "SKIP", reason: "external collector is not stoppable by the runner; use CVG_OTEL_COLLECTOR_BIN for a managed outage proof" }, null, 2)}\n`,
+        );
+        log("drill otel-outage SKIP (external collector)");
+      } else {
+        await owner.run(() => drillOtelOutage(drillContext));
+        log("drill otel-outage PASS");
       }
     } catch (error) {
-      await fail(new Error(`browser precondition failed: ${error.message}`));
+      await fail(error);
       return;
     }
+
+    // Optional load baseline (§38-51): runs only when a k6 binary is provided,
+    // never as a push gate. Exports raw summary and a distilled evidence file.
+    const k6Bin = process.env.CVG_K6_BIN?.trim() || null;
+    if (k6Bin !== null) {
+      log("running k6 baseline against api-a");
+      const summaryPath = join(evidenceDir, "k6-summary.json");
+      await rm(summaryPath, { force: true });
+      try {
+        await execOwned(
+          k6Bin,
+          ["run", "--summary-export", summaryPath, "tests/load/k6-baseline.js"],
+          {
+            cwd: root,
+            env: { ...process.env, API_BASE_URL: "http://127.0.0.1:3101" },
+            timeout: 600000,
+            maxBuffer: 64 * 1024 * 1024,
+          },
+        );
+      } catch (error) {
+        await fail(
+          new Error(
+            `k6 baseline failed: ${String(error.stderr ?? error.message).slice(0, 400)}`,
+          ),
+        );
+        return;
+      }
+      const summaryBytes = await readFile(summaryPath);
+      const summary = JSON.parse(summaryBytes.toString("utf8"));
+      // k6 --summary-export flattens each metric at metrics.<name> (counts and
+      // percentiles side by side), not under a .values envelope.
+      const metric = (name) => summary.metrics?.[name] ?? null;
+      const loadSummary = {
+        ...(await finishEvidenceMeasurement(
+          measurement,
+          "cvg-load-summary/v1",
+          summaryBytes,
+        )),
+        status: "PASS",
+        profile: "read-heavy + auth-rejected (tests/load/k6-baseline.js)",
+        httpRequests: metric("http_reqs")?.count ?? null,
+        throughputPerSecond: metric("http_reqs")?.rate ?? null,
+        httpP50Ms:
+          metric("http_req_duration")?.["p(50)"] ??
+          metric("http_req_duration")?.med ??
+          null,
+        httpP95Ms: metric("http_req_duration")?.["p(95)"] ?? null,
+        httpP99Ms: metric("http_req_duration")?.["p(99)"] ?? null,
+        readP95Ms: metric("read_latency_ms")?.["p(95)"] ?? null,
+        authRejectedP95Ms:
+          metric("auth_rejected_latency_ms")?.["p(95)"] ?? null,
+        checksFails: metric("checks")?.fails ?? null,
+        failed_checks: metric("checks")?.fails ?? null,
+        // k6 omits counters never incremented: a missing http_5xx_total
+        // means zero 5xx responses (the checks above already forbid them).
+        http_5xx: metric("http_5xx_total")?.count ?? 0,
+        errorsRate: metric("errors")?.rate ?? null,
+      };
+      if (
+        (loadSummary.httpRequests ?? 0) === 0 ||
+        (loadSummary.checksFails ?? 1) > 0 ||
+        (loadSummary.http_5xx ?? 0) > 0
+      ) {
+        await fail(new Error("k6 baseline produced failing or empty evidence"));
+        return;
+      }
+      await writeFile(
+        join(evidenceDir, "load-summary.json"),
+        `${JSON.stringify(loadSummary, null, 2)}\n`,
+      );
+      log(
+        `k6 baseline PASS (p95=${loadSummary.httpP95Ms}ms, errors=${loadSummary.errorsRate})`,
+      );
+    } else {
+      await writeFile(
+        join(evidenceDir, "load-summary.json"),
+        `${JSON.stringify({ ...(await finishEvidenceMeasurement(measurement, "cvg-load-summary/v1")), status: "SKIP", reason: "set CVG_K6_BIN to run the load baseline" }, null, 2)}\n`,
+      );
+    }
+
+    const stagingEnv = {
+      CVG_STAGING_API_A_URL: "http://127.0.0.1:3101",
+      CVG_STAGING_API_B_URL: "http://127.0.0.1:3112",
+      CVG_STAGING_TLS_URL: "https://127.0.0.1:3443",
+      CVG_STAGING_WEB_URL: "http://127.0.0.1:3100",
+      CVG_STAGING_REDIS_URL: redisUrl,
+      CVG_STAGING_QDRANT_URL: qdrantUrl,
+      CVG_STAGING_EVIDENCE_DIR: evidenceDir,
+      CVG_STAGING_OTEL_SPANS_FILE:
+        otelBin !== null ? join(evidenceDir, "otel-spans.json") : "",
+      NODE_TLS_REJECT_UNAUTHORIZED: "0",
+    };
     try {
-      const child = await execFileAsync(
+      const child = await execOwned(
         "pnpm",
-        ["exec", "playwright", "test", "staging-journey"],
+        [
+          "exec",
+          "vitest",
+          "run",
+          "--project",
+          "integration",
+          "tests/integration/staging-stack.test.ts",
+        ],
         {
           cwd: root,
-          env: {
-            ...process.env,
-            CVG_STAGING_BROWSER: "1",
-            CVG_STAGING_EXTERNAL: "1",
-            BASE_URL: "http://127.0.0.1:3100",
-            CVG_REAL_E2E_FIXTURE_FILE: fixtureFile,
-            CVG_REAL_E2E_FIXTURE_PORT: "3102",
-          },
+          env: { ...process.env, ...stagingEnv },
           timeout: 600000,
           maxBuffer: 64 * 1024 * 1024,
         },
@@ -760,67 +795,221 @@ async function main() {
       await fail(error);
       return;
     }
-  }
 
-  await stopAll();
-  const { stdout: stagingSha } = await execFileAsync(
-    "git",
-    ["rev-parse", "HEAD"],
-    {
-      cwd: root,
-    },
-  ).catch(() => ({ stdout: "unknown" }));
-  await writeFile(
-    join(evidenceDir, "staging-summary.json"),
-    `${JSON.stringify(
-      {
-        format: "cvg-staging-summary/v1",
-        sha: stagingSha.trim(),
-        generatedAt: new Date().toISOString(),
-        status: "PASS",
-        stack: [
-          "postgres",
-          "redis",
-          "api-a",
-          "api-b",
-          "worker",
-          "web",
-          "tls",
-          "otel-collector",
-          "qdrant",
-        ],
-        drills: [
-          "reconcile",
-          "qdrant-loss",
-          "backup-restore",
-          "failover",
-          "otel-outage",
-        ],
-        rateLimitBackend: "redis",
-        browser: withBrowser,
-        otelCollector: otelBin !== null || otelEndpoint !== null,
-        // §125.11 canonical component fields. This summary is written only
-        // after every check above passed, so each component is PASS by
-        // construction (fail() exits before reaching here).
-        postgres: "PASS",
-        redis: "PASS",
-        api_instances: 2,
-        worker: "PASS",
-        qdrant: "PASS",
-        web: "PASS",
-        tls: "PASS",
-        otel_collector: "PASS",
-        browser_journey: withBrowser ? "PASS" : "SKIPPED",
-        fault_drills: "PASS",
-      },
-      null,
-      2,
-    )}\n`,
-  );
-  log("staging verify PASS; stack torn down");
+    if (otelBin !== null) {
+      const spans = await readFile(
+        join(evidenceDir, "otel-spans.json"),
+        "utf8",
+      ).catch(() => "");
+      const traceIds = new Set(
+        [...spans.matchAll(/"traceId":\s*"([0-9a-f]{32})"/gu)].map((m) => m[1]),
+      );
+      await writeFile(
+        join(evidenceDir, "otel-summary.json"),
+        `${JSON.stringify({ ...(await finishEvidenceMeasurement(measurement, "cvg-otel-summary/v1", spans)), status: spans.length > 0 && traceIds.size > 0 ? "PASS" : "FAIL", bytes: Buffer.byteLength(spans), distinctTraces: traceIds.size }, null, 2)}\n`,
+      );
+      if (spans.length === 0 || traceIds.size === 0) {
+        await fail(new Error("otel summary: no spans reached the collector"));
+        return;
+      }
+    } else {
+      await writeFile(
+        join(evidenceDir, "otel-summary.json"),
+        `${JSON.stringify({ ...(await finishEvidenceMeasurement(measurement, "cvg-otel-summary/v1")), status: "NOT_EXECUTED", reason: "external collector does not provide a runner-owned spans artifact" }, null, 2)}\n`,
+      );
+    }
+
+    if (withBrowser) {
+      log("running browser staging-journey spec against staging");
+      // Precondition guard: the spec needs a live fixture server AND its file.
+      // Fail fast here instead of producing cryptic ENOENT/ECONNREFUSED later.
+      try {
+        const { readFile: readFixtureFile } = await import("node:fs/promises");
+        const ready = await fetch("http://127.0.0.1:3102/ready");
+        if (!ready.ok) throw new Error("fixture /ready is not ok");
+        const fixtureRaw = await readFixtureFile(fixtureFile, "utf8");
+        const fixtureParsed = JSON.parse(fixtureRaw);
+        if (fixtureParsed.source !== "authoring-publication-v1") {
+          throw new Error("fixture file has unexpected source");
+        }
+      } catch (error) {
+        await fail(new Error(`browser precondition failed: ${error.message}`));
+        return;
+      }
+      try {
+        const child = await execOwned(
+          "pnpm",
+          ["exec", "playwright", "test", "staging-journey"],
+          {
+            cwd: root,
+            env: {
+              ...process.env,
+              CVG_STAGING_BROWSER: "1",
+              CVG_STAGING_EXTERNAL: "1",
+              BASE_URL: "http://127.0.0.1:3100",
+              CVG_REAL_E2E_FIXTURE_FILE: fixtureFile,
+              CVG_REAL_E2E_FIXTURE_PORT: "3102",
+            },
+            timeout: 600000,
+            maxBuffer: 64 * 1024 * 1024,
+          },
+        );
+        process.stdout.write(child.stdout ?? "");
+      } catch (error) {
+        process.stdout.write(error.stdout ?? "");
+        process.stderr.write(error.stderr ?? "");
+        await fail(error);
+        return;
+      }
+    }
+
+    // Optional complete ordinary measurement stays inside the managed stack lifetime.
+    if (recordTestSummary) {
+      try {
+        if (!ownedPg || !initialRedisObservation)
+          throw new Error("owned ordinary profile provenance missing");
+        const applicationRole = await roleOwned(ownedPg.applicationUrl);
+        const adminRole = await roleOwned(ownedPg.adminUrl);
+        const pgObservedAt = new Date().toISOString();
+        const observedRedis = await redisOwned(redis, redisBin, redisUrl);
+        const profile = prepareOrdinaryExecutionProfile({
+          invocationId,
+          sha: measurement.head,
+          startedAt: measurement.startedAt,
+          observedAt: new Date().toISOString(),
+          originalEnvironment: process.env,
+          stagingEnvironment: stagingEnv,
+          qdrantUrl,
+          pg: {
+            ...ownedPg,
+            applicationRole,
+            adminRole,
+            observedAt: pgObservedAt,
+          },
+          redis: {
+            invocationId,
+            url: redisUrl,
+            binary: redisBin,
+            pid: redis.child.pid,
+            alive:
+              redis.child.exitCode === null && redis.child.signalCode === null,
+            initialRunId: initialRedisObservation.runId,
+            ...observedRedis,
+          },
+        });
+        const child = await execOwned(
+          process.execPath,
+          [join(root, "scripts/write-test-summary.mjs")],
+          {
+            cwd: root,
+            env: profile.environment,
+            timeout: 1800000,
+            maxBuffer: 64 * 1024 * 1024,
+          },
+        );
+        process.stdout.write(child.stdout ?? "");
+        const afterApplicationRole = await roleOwned(ownedPg.applicationUrl);
+        const afterAdminRole = await roleOwned(ownedPg.adminUrl);
+        const afterPgObservedAt = new Date().toISOString();
+        const afterRedis = await redisOwned(redis, redisBin, redisUrl);
+        if (afterRedis.runId !== initialRedisObservation.runId)
+          throw new Error(
+            "owned ordinary profile Redis restarted during measurement",
+          );
+        prepareOrdinaryExecutionProfile({
+          invocationId,
+          sha: measurement.head,
+          startedAt: measurement.startedAt,
+          observedAt: new Date().toISOString(),
+          originalEnvironment: process.env,
+          stagingEnvironment: stagingEnv,
+          qdrantUrl,
+          pg: {
+            ...ownedPg,
+            applicationRole: afterApplicationRole,
+            adminRole: afterAdminRole,
+            observedAt: afterPgObservedAt,
+          },
+          redis: {
+            invocationId,
+            url: redisUrl,
+            binary: redisBin,
+            pid: redis.child.pid,
+            alive:
+              redis.child.exitCode === null && redis.child.signalCode === null,
+            initialRunId: initialRedisObservation.runId,
+            ...afterRedis,
+          },
+        });
+      } catch (error) {
+        process.stdout.write(error.stdout ?? "");
+        process.stderr.write(error.stderr ?? "");
+        await fail(error);
+        return;
+      }
+    }
+
+    await stopAll();
+    await writeFile(
+      join(evidenceDir, "staging-summary.json"),
+      `${JSON.stringify(
+        {
+          ...(await finishEvidenceMeasurement(
+            measurement,
+            "cvg-staging-summary/v1",
+          )),
+          status: "PASS",
+          stack: [
+            "postgres",
+            "redis",
+            "api-a",
+            "api-b",
+            "worker",
+            "web",
+            "tls",
+            "otel-collector",
+            "qdrant",
+          ],
+          drills: [
+            "reconcile",
+            "qdrant-loss",
+            "backup-restore",
+            "failover",
+            "otel-outage",
+          ],
+          rateLimitBackend: "redis",
+          browser: withBrowser,
+          otelCollector: otelBin !== null || otelEndpoint !== null,
+          // §125.11 canonical component fields. This summary is written only
+          // after every check above passed, so each component is PASS by
+          // construction (fail() exits before reaching here).
+          postgres: "PASS",
+          redis: "PASS",
+          api_instances: 2,
+          worker: "PASS",
+          qdrant: "PASS",
+          web: "PASS",
+          tls: "PASS",
+          otel_collector: "PASS",
+          browser_journey: withBrowser ? "PASS" : "SKIPPED",
+          fault_drills: "PASS",
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    log("staging verify PASS; stack torn down");
+  } finally {
+    try {
+      await owner.close();
+    } finally {
+      process.off("SIGINT", signalShutdown);
+      process.off("SIGTERM", signalShutdown);
+    }
+  }
 }
 
 await main().catch(async (error) => {
   console.error(`[staging] fatal: ${error.message}`);
-  process.exit(1);
+  await exitAfterFlush(1);
 });

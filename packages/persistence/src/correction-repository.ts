@@ -6,8 +6,10 @@ import {
   type AttemptState,
 } from "@cvg/domain";
 import type {
+  CorrectionCompletionInput,
   CorrectionIdempotencyRecord,
   CorrectionResult,
+  CorrectionTransactionalOperations,
   CorrectionUseCaseDependencies,
   FeedbackReadPort,
   TransactionSecurityContext,
@@ -19,6 +21,10 @@ import {
   PersistenceConflictError,
 } from "./attempt-repository.js";
 import { createAuditRepository } from "./audit-repository.js";
+import {
+  triggerModuleCompletionOnCorrection,
+  type ModuleCompletionTriggerOptions,
+} from "./module-obligation-completion-trigger.js";
 import {
   assessmentIdempotency,
   assessmentResults,
@@ -179,148 +185,180 @@ export function assessmentIdempotencyRowToRecord(
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
+/**
+ * Optional server-side completion wiring for a correction: no summative
+ * approval source means the receipt step is skipped fail-closed inside the
+ * very same transaction.
+ */
+export type CorrectionCompletionOptions = ModuleCompletionTriggerOptions;
+
+function createCorrectionIdempotency(
+  executor: DatabaseExecutor,
+): CorrectionTransactionalOperations["idempotency"] {
+  const idempotency = {
+    find: async (key: string): Promise<CorrectionIdempotencyRecord | null> => {
+      const rows = await executor
+        .select({
+          fingerprint: assessmentIdempotency.fingerprint,
+          response: assessmentIdempotency.response,
+        })
+        .from(assessmentIdempotency)
+        .where(eq(assessmentIdempotency.key, key))
+        .limit(1);
+      const row = rows[0];
+      return row === undefined ? null : assessmentIdempotencyRowToRecord(row);
+    },
+    store: async (
+      key: string,
+      record: CorrectionIdempotencyRecord,
+    ): Promise<void> => {
+      const existing = await executor
+        .select({ fingerprint: assessmentIdempotency.fingerprint })
+        .from(assessmentIdempotency)
+        .where(eq(assessmentIdempotency.key, key))
+        .limit(1);
+      if (existing[0] && existing[0].fingerprint !== record.fingerprint) {
+        throw new PersistenceConflictError(
+          "idempotency key has another fingerprint",
+        );
+      }
+      if (existing[0]) return;
+
+      await executor.insert(assessmentIdempotency).values({
+        key,
+        operation: "correction",
+        fingerprint: record.fingerprint,
+        attemptId: record.result.attempt.attemptId,
+        response: record.result as PersistedCorrectionSnapshot,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1_000),
+      });
+    },
+  };
+  return idempotency;
+}
+
+function createCorrectionOperations(
+  executor: DatabaseExecutor,
+  options: CorrectionCompletionOptions,
+): CorrectionTransactionalOperations {
+  const attemptOperations = {
+    findById: async (attemptId: string): Promise<AttemptState | null> => {
+      const rows = await executor
+        .select({
+          id: attempts.id,
+          participantId: attempts.participantId,
+          activityId: attempts.activityId,
+          status: attempts.status,
+          version: attempts.version,
+          submittedAt: attempts.submittedAt,
+        })
+        .from(attempts)
+        .where(eq(attempts.id, attemptId))
+        .limit(1);
+      const row = rows[0];
+      return row === undefined ? null : attemptRowToState(row);
+    },
+    update: async (state: AttemptState): Promise<void> => {
+      const rows = await executor
+        .update(attempts)
+        .set({
+          status: state.status,
+          version: state.version,
+          submittedAt: state.submittedAt ? new Date(state.submittedAt) : null,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(attempts.id, state.attemptId),
+            eq(attempts.version, state.version - 1),
+          ),
+        )
+        .returning({ id: attempts.id });
+      if (rows.length === 0) {
+        throw new PersistenceConflictError(
+          "attempt version changed concurrently",
+        );
+      }
+    },
+  };
+
+  const resultOperations = {
+    findLatest: async (
+      attemptId: string,
+    ): Promise<AssessmentResultState | null> => {
+      const rows = await executor
+        .select({
+          id: assessmentResults.id,
+          attemptId: assessmentResults.attemptId,
+          version: assessmentResults.version,
+          kind: assessmentResults.kind,
+          score: assessmentResults.score,
+          outcome: assessmentResults.outcome,
+          feedback: assessmentResults.feedback,
+          ruleVersion: assessmentResults.ruleVersion,
+          correctedBy: assessmentResults.correctedBy,
+          correctedAt: assessmentResults.correctedAt,
+        })
+        .from(assessmentResults)
+        .where(eq(assessmentResults.attemptId, attemptId))
+        .orderBy(desc(assessmentResults.version))
+        .limit(1);
+      const row = rows[0];
+      return row === undefined ? null : assessmentResultRowToState(row);
+    },
+    insert: async (result: AssessmentResultState): Promise<void> => {
+      await executor
+        .insert(assessmentResults)
+        .values(assessmentResultStateToRow(result));
+    },
+  };
+
+  const idempotency = createCorrectionIdempotency(executor);
+
+  return {
+    attempts: attemptOperations,
+    results: resultOperations,
+    idempotency,
+    eventPublisher: {
+      publish: async (
+        event: Parameters<
+          CorrectionUseCaseDependencies["eventPublisher"]["publish"]
+        >[0],
+      ): Promise<void> => {
+        await executor.insert(outboxEvents).values(createOutboxInsert(event));
+      },
+    },
+    audit: createAuditRepository(executor),
+    moduleCompletion: {
+      recordAfterCorrection: async (
+        input: CorrectionCompletionInput,
+      ): Promise<void> => {
+        await triggerModuleCompletionOnCorrection(
+          executor,
+          {
+            attemptId: input.attemptId,
+            participantId: input.participantId,
+            scopeId: input.scopeId,
+            actor: input.actor,
+          },
+          options,
+        );
+      },
+    },
+  };
+}
+
 export function createCorrectionUseCaseDependencies(
   db: DatabaseExecutor,
   idFactory: () => string,
+  options: CorrectionCompletionOptions = {},
 ): CorrectionUseCaseDependencies {
-  const operations = (executor: DatabaseExecutor) => {
-    const attemptOperations = {
-      findById: async (attemptId: string): Promise<AttemptState | null> => {
-        const rows = await executor
-          .select({
-            id: attempts.id,
-            participantId: attempts.participantId,
-            activityId: attempts.activityId,
-            status: attempts.status,
-            version: attempts.version,
-            submittedAt: attempts.submittedAt,
-          })
-          .from(attempts)
-          .where(eq(attempts.id, attemptId))
-          .limit(1);
-        const row = rows[0];
-        return row === undefined ? null : attemptRowToState(row);
-      },
-      update: async (state: AttemptState): Promise<void> => {
-        const rows = await executor
-          .update(attempts)
-          .set({
-            status: state.status,
-            version: state.version,
-            submittedAt: state.submittedAt ? new Date(state.submittedAt) : null,
-            updatedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(attempts.id, state.attemptId),
-              eq(attempts.version, state.version - 1),
-            ),
-          )
-          .returning({ id: attempts.id });
-        if (rows.length === 0) {
-          throw new PersistenceConflictError(
-            "attempt version changed concurrently",
-          );
-        }
-      },
-    };
-
-    const resultOperations = {
-      findLatest: async (
-        attemptId: string,
-      ): Promise<AssessmentResultState | null> => {
-        const rows = await executor
-          .select({
-            id: assessmentResults.id,
-            attemptId: assessmentResults.attemptId,
-            version: assessmentResults.version,
-            kind: assessmentResults.kind,
-            score: assessmentResults.score,
-            outcome: assessmentResults.outcome,
-            feedback: assessmentResults.feedback,
-            ruleVersion: assessmentResults.ruleVersion,
-            correctedBy: assessmentResults.correctedBy,
-            correctedAt: assessmentResults.correctedAt,
-          })
-          .from(assessmentResults)
-          .where(eq(assessmentResults.attemptId, attemptId))
-          .orderBy(desc(assessmentResults.version))
-          .limit(1);
-        const row = rows[0];
-        return row === undefined ? null : assessmentResultRowToState(row);
-      },
-      insert: async (result: AssessmentResultState): Promise<void> => {
-        await executor
-          .insert(assessmentResults)
-          .values(assessmentResultStateToRow(result));
-      },
-    };
-
-    const idempotency = {
-      find: async (
-        key: string,
-      ): Promise<CorrectionIdempotencyRecord | null> => {
-        const rows = await executor
-          .select({
-            fingerprint: assessmentIdempotency.fingerprint,
-            response: assessmentIdempotency.response,
-          })
-          .from(assessmentIdempotency)
-          .where(eq(assessmentIdempotency.key, key))
-          .limit(1);
-        const row = rows[0];
-        return row === undefined ? null : assessmentIdempotencyRowToRecord(row);
-      },
-      store: async (
-        key: string,
-        record: CorrectionIdempotencyRecord,
-      ): Promise<void> => {
-        const existing = await executor
-          .select({ fingerprint: assessmentIdempotency.fingerprint })
-          .from(assessmentIdempotency)
-          .where(eq(assessmentIdempotency.key, key))
-          .limit(1);
-        if (existing[0] && existing[0].fingerprint !== record.fingerprint) {
-          throw new PersistenceConflictError(
-            "idempotency key has another fingerprint",
-          );
-        }
-        if (existing[0]) return;
-
-        await executor.insert(assessmentIdempotency).values({
-          key,
-          operation: "correction",
-          fingerprint: record.fingerprint,
-          attemptId: record.result.attempt.attemptId,
-          response: record.result as PersistedCorrectionSnapshot,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1_000),
-        });
-      },
-    };
-
-    return {
-      attempts: attemptOperations,
-      results: resultOperations,
-      idempotency,
-      eventPublisher: {
-        publish: async (
-          event: Parameters<
-            CorrectionUseCaseDependencies["eventPublisher"]["publish"]
-          >[0],
-        ): Promise<void> => {
-          await executor.insert(outboxEvents).values(createOutboxInsert(event));
-        },
-      },
-      audit: createAuditRepository(executor),
-    };
-  };
-
   return Object.freeze({
     idFactory,
-    ...operations(db),
+    ...createCorrectionOperations(db, options),
     transaction: {
       run: async <Result>(
-        work: (current: ReturnType<typeof operations>) => Promise<Result>,
+        work: (current: CorrectionTransactionalOperations) => Promise<Result>,
         context?: TransactionSecurityContext,
       ): Promise<Result> =>
         db.transaction(async (transaction) => {
@@ -328,7 +366,7 @@ export function createCorrectionUseCaseDependencies(
           if (context !== undefined) {
             await setDatabaseSecurityContext(executor, context);
           }
-          return work(operations(executor));
+          return work(createCorrectionOperations(executor, options));
         }),
     },
   });

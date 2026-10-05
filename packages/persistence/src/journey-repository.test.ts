@@ -87,6 +87,22 @@ const workflowRow = {
   updatedAt: new Date("2026-08-10T05:00:00.000Z"),
 };
 
+const receiptRow = {
+  participantId,
+  scopeId,
+  moduleId: "M01",
+  assignmentId,
+  completedAt: "2026-08-10T08:00:00.000Z",
+  completedAssignmentVersion: 1,
+};
+
+const bindingRow = {
+  assignmentId,
+  participantId,
+  scopeId,
+  moduleId: "M01",
+};
+
 const diagnosticRow = {
   id: "88888888-8888-4888-8888-888888888888",
   participantId,
@@ -142,6 +158,8 @@ type FakeDatabaseInput = Readonly<{
   readonly assignmentRows?: readonly (typeof assignmentRow)[];
   readonly workflowRows?: readonly (typeof workflowRow)[];
   readonly diagnosticRows?: readonly (typeof diagnosticRow)[];
+  readonly receiptRows?: readonly (typeof receiptRow)[];
+  readonly bindingRows?: readonly (typeof bindingRow)[];
 }>;
 
 function fakeDatabase(input: FakeDatabaseInput = {}) {
@@ -151,6 +169,8 @@ function fakeDatabase(input: FakeDatabaseInput = {}) {
     input.diagnosticRows ?? [],
     input.assignmentRows ?? [],
     input.workflowRows ?? [],
+    input.receiptRows ?? [],
+    input.bindingRows ?? [],
   ];
   let selectIndex = 0;
   const transaction = {
@@ -232,6 +252,45 @@ describe("participant journey persistence", () => {
     expect(journey.results).toHaveLength(1);
     expect(journey.runtimes).toHaveLength(1);
     expect(journey.diagnosticResults).toHaveLength(1);
+    expect(journey.completionReceipts).toEqual([]);
+    expect(journey.boundAssignmentIds).toEqual([]);
+  });
+
+  it("reads the obligation binding that governs completion authority", async () => {
+    const repository = createParticipantJourneyRepository(
+      fakeDatabase({ bindingRows: [bindingRow] }),
+    );
+
+    const journey = await repository.findParticipantLearningJourney(
+      participantId,
+      [scopeId],
+    );
+
+    expect(journey.boundAssignmentIds).toEqual([assignmentId]);
+    expect(Object.isFrozen(journey.boundAssignmentIds)).toBe(true);
+  });
+
+  it("reads the stored completion receipt under the participant scope context", async () => {
+    const repository = createParticipantJourneyRepository(
+      fakeDatabase({ receiptRows: [receiptRow] }),
+    );
+
+    const journey = await repository.findParticipantLearningJourney(
+      participantId,
+      [scopeId],
+    );
+
+    expect(journey.completionReceipts).toEqual([
+      {
+        participantId,
+        scopeId,
+        moduleId: "M01",
+        assignmentId,
+        completedAt: "2026-08-10T08:00:00.000Z",
+        completedAssignmentVersion: 1,
+      },
+    ]);
+    expect(Object.isFrozen(journey.completionReceipts)).toBe(true);
   });
 
   it("keeps the latest attempt and preserves an activity without attempts", async () => {

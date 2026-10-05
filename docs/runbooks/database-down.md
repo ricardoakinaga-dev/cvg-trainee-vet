@@ -20,8 +20,11 @@ Conectividade vs credencial vs saturação de pool (`db_pool_connections`,
 
 ## Recovery
 
-Restaurar PG 16, aplicar migrations até o head (`verify:migrations`), reabrir pool
-com timeout; ver `disaster-recovery.md` (perda total/corrupção).
+Ver `restore-database.md`/`disaster-recovery.md`: restaurar em destino vazio e
+isolado, identificar schema/journal do snapshot, validar compatibilidade e
+aplicar somente migrations posteriores antes dos checks. `verify:migrations`
+valida o manifesto do repositório, não o estado do banco restaurado. Reabrir o
+pool apenas depois das validações.
 
 ## Verification
 
@@ -29,4 +32,7 @@ com timeout; ver `disaster-recovery.md` (perda total/corrupção).
 
 ## Escalation
 
-Corrupção ou perda → DR completo; RPO/RTO reais exigem AAA-001.
+Corrupção ou perda → DR completo. O alvo aprovado por RNF-015/D-107 é RPO ≤1h
+e RTO ≤4h; métricas locais sintéticas não demonstram capacidade operacional.
+RPO/RTO observados em operação e qualquer uso em produção continuam sujeitos
+a AAA-001.

@@ -1,0 +1,13 @@
+{
+  "name": "verify-aaa-candidate",
+  "command": [
+    "pnpm",
+    "verify:aaa-candidate"
+  ],
+  "startedAt": "2026-10-03T04:54:41.258803+00:00",
+  "durationSeconds": 3.02,
+  "exitCode": 1,
+  "result": "FAIL",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-aaa-candidate.log",
+  "sha256": "f72fbffc3e54b9026845bb1d3b7726a69f4329ef2ad15a5bcee3cab000ff974a"
+}

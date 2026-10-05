@@ -14175,3 +14175,2339 @@ COMPLETED (commit e publicação Git); projeto READY_FOR_NEXT_STEP.
 
 Acompanhar runs remotos same-SHA para RF-02; tag/dispatch candidate, produção,
 deploy, publicação clínica e aprovação AAA-001 continuam fora desta ação.
+
+## 2026-09-11 — AAA-V7 REMOTE CERTIFICATION (docs/52/53/54)
+
+### TIMESTAMP
+
+2026-09-11T17:50:00-0300
+
+### ENGINE
+
+BUILD / AUDIT / RELEASE / RUNTIME CONTROLLER
+
+### PHASE / TASK
+
+AAA-V7-001..009 (HEAD `3cd7bc3`, Node canônico v22.23.2)
+
+### ACTION
+
+Prompts arquivados em docs/52/53/54; baseline 0007. Remoto diagnosticado como UNKNOWN honesto (sem token, API anônima rate-limit 0; nada inferido). Candidate verificado executável (triggers + 90min + conteúdo §22). Criado `config/triple-aaa-gates.json` (G01–G73 SSOT) e fiados verify:triple-aaa, verify:aaa-candidate e release-evidence (piso mutação 0.90→0.95 normativo). Corrigido bug real de arredondamento no verificador (raw-means; self-tests 96.99/94.99); suite 25/25. Review independente v2 fresh: PASS no código (P0/P1 0, 4 P2s; RF-13 remediado com manifest cross-check). Audit v7 REVISE (Eng 94.0/Sec 95.0/Ops 90.8; gates 21/52/0). Audit/pnpm audit high+ e secrets limpos frescos sob Node 22. Veredicto mecânico escrito no bundle (REVISE/STAGING_VERIFIED, sem marca sintética).
+
+### RESULT
+
+TRIPLE AAA — REVISE (8 causas no verificador, todas irredutíveis localmente: remoto/same-SHA, security-summary stale, scores Eng/Ops, RF-02/09). P0=0/P1=0/P2=9/P3=1. `verify:evidence-consistency` e `verify:audit-consistency` PASS. Prontidão STAGING VERIFIED. Sem push/commit nesta rodada.
+
+### STATUS
+
+READY_FOR_NEXT_STEP
+
+### NEXT
+
+Humano: fornecer token (GH_TOKEN/GITHUB_TOKEN) e autorizar `workflow_dispatch`/tag `candidate-*` no SHA congelado; depois rerodar same-SHA, regenerar evidência total, re-review e re-audit. AAA-001 segue pendente.
+
+## 2026-09-17 — Auditoria de construção solicitada pelo usuário
+
+- timestamp: 2026-09-17T01:32:40-03:00
+- escopo: leitura de docs e comparação com implementação; Goal, engineering-framework, orchestrate, gauntlet-loop e runtime-controller.
+- evidência: `docs/audits/construction-assessment-2026-09-17.md`.
+- resultado: 1409 testes PASS/68 skipped; lint/typecheck PASS; format inicialmente FAIL, corrigido somente via Prettier em scripts/verify-triple-aaa.mjs; format e focal 25/25 PASS após ajuste; audit sem vulnerabilidades conhecidas; secrets e diff-check PASS. Node24 fora contrato Node22. Sem novos live/E2E/coverage/mutation/CI remoto.
+- limitações: snapshot inicial da crítica coincidiu; sentinel da crítica final divergiu e o parecer não foi homologado. Não há certificação AAA/produção. Protocolo e alteração de estilo fora do escopo estritamente auditivo explicitados no relatório.
+- status: READY_FOR_NEXT_STEP
+- next_action: revisar A01–A07; priorizar validade da mutação e integração pedagógica antes de regenerar evidência. AAA-001 e autoridade remota continuam pendentes. Sem commit/push/deploy.
+
+## 2026-09-17 — Programa State of Art: remediação SOA-33/36/31 (sprint 1, sem commit)
+
+- timestamp: 2026-09-17T05:50:00-03:00
+- escopo: docs 55/56/57 criados; implementação bounded das fatias de gate de ciclos, métrica SLO e validade do harness de mutação; TDD RED→GREEN; sem alteração de regras humanas, auth, clínica ou reportes.
+- evidência: SOA-33 gate de ciclos com parser TypeScript (`scripts/verify-cycles.mjs`, `tests/integration/cycle-verifier.test.ts` 6/6; contratos extraídos em apps/api/packages — pnpm verify:cycles sem ciclos); SOA-36 histograma p95 bounded com performance.now monotônico e amostras HTTP (`packages/observability/src/{observability,operations}.ts`, `apps/api/src/server.ts`, 32/32 focais; docs/operations/slo.md atualizado); SOA-31 fail-closed (`scripts/verify-mutation-{closure,critical}.mjs` NOT_VERIFIED/exit 1 sem prova histórica; helpers de validação de resultado/identidade + fluxo bounded em root isolado, 20/20 focais).
+- verificação direta do Lead: ciclos 6/6 + gate sem ciclos; server/observability 32/32; mutation-harness 20/20; lint e typecheck exit 0. pnpm verify completo pré-review PASS (1416 testes/68 skipped, cobertura 91,57/86,15/95,94/92,18); re-run completo pós-fixes pendente.
+- pendências: mutation-summary.json histórico (98,84%) não-endorseado; consumidores fora de conformidade até regeneração; mutantes históricos NOT_VERIFIED; SOA-29 skip inventory; A02/A03/A05(trustedProxies, deadline)/A07; re-review independente fresh; atualização de traceability (SOA-20260917-CYCLES-SLO permanece in_progress).
+- status: IN_PROGRESS
+
+- next_action: concluir segunda revisão fresh, validar docs/traceability e continuar pelo produtor de bounded manifest.
+- status: IN_PROGRESS
+- next_action: SOA-06/13 (A02 integração somativa); depois skip inventory, A05 restante, A03, A07; re-run pnpm verify completo e re-review fresh.
+
+## 2026-09-17 — Programa State of Art: regressão completa + reconciliação SOA-06 + investigação SOA-15 (sem commit)
+
+- timestamp: 2026-09-17T09:30:00-03:00
+- escopo: Goal retomado; scouts read-only cobriram docs/ (55/56/57, 99, auditoria, arquitetura/decisões/segurança/operações/runbooks/qualidade, histórico/auditorias); regressão completa com exit honesto; reconciliação documental Lead-owned; investigação A02 sem inventar produto.
+- evidência: `pnpm verify` exit 0 (comando sem pipe; `; echo VERIFY_EXIT:$?`): 207 arquivos/1441 testes PASS, 36/68 skipped, cobertura 91,57/86,15/95,94/92,18; Node 22.23.2 (PATH) / 22.22.0 (ci-contract), pnpm 10.33.0; gates format/ci-contract/lint/typecheck/coverage-floor/evidence-consistency/contract/worker/migrations/secrets/traceability/architecture/routes/complexity/cycles/dead-code/security/otel/release-evidence/documentation/product-definition/exposure PASS. SOA-15: `evaluateSummativeAssessment`/`Eligibility` sem consumidores em apps/packages-application/worker/tests; `StartAttemptCommand` sem modalidade/versão; `AttemptActivityPort` só `isAvailable`; contrato UC-006/RF-041/043–047/RN-020–022/026 e SPEC 0106 StartAttempt localizados; wiring agora inventaria modalidade — proposta mínima pendente.
+- reconciliação: docs/99 checkpoint 09:30 (corrige next SOA-06/13→SOA-14/15, contagens 1441/68, Nodes, exit 0); docs/57 checkpoint (SOA-31 IN_PROGRESS, 1441/68, investigação A02, correção de encaminhamento); docs/56 IN_PROGRESS; docs/30 AUD-0917 A01/A02/A05/A06/A07 IN_PROGRESS com achados; sem commit/push/deploy; sem decisão humana assumida.
+- pendências: proposta RED de modalidade somativa sem tocar quiz; SOA-29 skip inventory + `curriculum.http.test.ts:723`; A05 trustedProxies/deadline; A03 inventário B-07/24 módulos; A07 same-SHA; re-review fresh com sentinel estável; traceability SOA-20260917-CYCLES-SLO segue in_progress.
+- status: IN_PROGRESS
+- next_action: desenhar RED de elegibilidade por modalidade (SOA-15) + fechar SOA-29; depois A05 restante, A03, A07; re-review fresh.
+
+## 2026-10-01 — Auditoria estática do repositório
+
+### TIMESTAMP
+
+2026-10-01T21:24:53-03:00
+
+### ENGINE
+
+AUDIT ESTÁTICA / RUNTIME CONTROLLER
+
+### PHASE / TASK
+
+AUDIT-REPOSITORY-STATIC-20261001
+
+### ACTION
+
+Inventário dos 81 arquivos de `docs/`; leitura dos documentos de continuidade, planejamento, auditorias, scorecards, arquitetura, segurança, decisões e operação; inspeção estática de código, workflows, manifests, boundaries, testes/configuração e diffs locais no HEAD `3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff`. Worktree no início: 40 arquivos rastreados modificados e 23 não rastreados.
+
+### RESULT
+
+Relatório `docs/audits/repository-audit-2026-10-01.md` criado com 28 notas consultivas e 9 achados. Confirmados estaticamente: candidate workflow ainda usa `--write-summary`, cobertura exclui TSX/web, o harness não valida todos os componentes de caminhos e reutiliza um digest entre fontes, `real-runtime.spec.ts` é sempre ignorado e as regras somativas não têm consumidor de runtime encontrado. AAA-001, H-EDITORIAL, H-OPS e provas remotas permanecem pendentes.
+
+### LIMITAÇÕES
+
+Nenhum teste, lint, typecheck, build, scanner, serviço live, browser, migration ou workflow remoto foi executado. `git diff --check` passou. A validação `pnpm verify` de 2026-09-17 é histórica e não foi promovida a evidência atual. Esta rodada não é auditoria operacional de runtime.
+
+### NEXT
+
+Abrir task bounded para compatibilizar o workflow candidate com o harness de mutação; depois tratar denominador TSX, contenção/digest do harness e seleção da suíte E2E real. Preservar decisões humanas e seguir SOA-14/15.
+
+### STATUS
+
+READY_FOR_NEXT_STEP (auditoria estática concluída; remediações não executadas).
+
+## 2026-10-01 — Roadmap e backlog de remediação
+
+Fonte: auditoria estática docs/audits/repository-audit-2026-10-01.md.
+
+Foram criados docs/58_roadmap_repository_remediation_2026-10-01.md e
+docs/59_backlog_repository_remediation_2026-10-01.md. O plano cobre os nove
+achados, organiza a execução em fases e mapeia as 28 dimensões para
+AUDIT-REM-01–10 ou para o backlog SOA existente, sem duplicar suas tasks.
+H-EDITORIAL e H-OPS/AAA-001 permanecem WAITING_HUMAN_APPROVAL; H-LIVE e
+H-REMOTE seguem como autorizações independentes. Os masters BUILD 0300–0302
+receberam crosslinks; o checkpoint 2026-10-01 foi atualizado em docs/56–57 e
+no state; docs/30 e traceability.yml receberam a trilha correspondente.
+
+Nenhum código foi alterado. Testes, lint, typecheck, build, scanners, banco,
+browser, runtime e CI remoto não foram executados. A última evidência de
+execução continua sendo a de 2026-09-17 e não certifica este worktree.
+
+## 2026-10-01 — Início da implementação da remediação
+
+- timestamp: 2026-10-01T22:23:41-03:00
+- task: `REMEDIATION-EXEC-20261001` / `AUDIT-REM-01–05`
+- evidência de planejamento: `.agent/plans/2026-10-01-repository-remediation-execution.md`, `.agent/plans/2026-10-01-remediation-quality-bar.json` e `.orchestrate/repository-remediation-state.json`.
+- ação: iniciada a execução autorizada; critérios congelados; ownership separado para workflow, cobertura, harness e Playwright; worktree pré-existente preservado. Gauntlet continuará a run existente depois do rebaseline explícito, sem sobrescrever bar ou run.
+- gates: H-EDITORIAL, H-OPS/AAA-001, H-LIVE, H-REMOTE e H-CONTENT permanecem pendentes; nenhuma execução externa/live ou publicação realizada.
+- verificação: ainda não executada nesta etapa; resultado é planejamento de execução, não evidência de implementação.
+- status: IN_PROGRESS
+- next_action: iniciar RED→GREEN para AUDIT-REM-01–05, começando pelo contrato/producer do bounded manifest.
+
+## 2026-10-01 — Decisões humanas e primeira fatia de execução
+
+- timestamp: 2026-10-01T22:34:50-03:00
+- decisões recebidas de Ricardo: autorrevisão permitida no MVP; manter PRD/RNF-015/D-107 em RPO ≤1h e RTO ≤4h; autorizar Docker local efêmero para PostgreSQL 16/Qdrant com dados sintéticos, testes e cleanup.
+- H-EDITORIAL: registrado adendo SPEC `0191_adendo_decisao_autorrevisao_mvp.md`; `ReviewAuthoringContent` agora permite self-review somente quando `principalId == approvedClinicalApproverId` configurado pelo servidor. Preflight, capability, escopo, persistência/auditoria e gate separado de publicação foram preservados.
+- RED/GREEN: `source /home/ricardo/.nvm/nvm.sh && nvm exec 22.23.2 pnpm exec vitest run --project unit packages/application/src/authoring-use-cases.test.ts`; RED reproduziu `Author cannot approve the authored content` (1 falha esperada, 9 passaram); após a mudança, GREEN passou 1 arquivo/10 testes.
+- REM-03/04: lane adicionou casos de symlink, traversal, duas fontes/digests e restauração; GREEN relatado 2 arquivos/25 testes em Node 24, portanto repetição no Node 22 e review independente permanecem pendentes.
+- REM-05: seleção Playwright comum/real/staging corrigida e listada; Prettier e `git diff --check` passaram na lane; runtime real não foi iniciado.
+- documentação operacional atualizada para restore → migrations posteriores, alvos RPO/RTO aprovados e limites do teste de clone atual.
+- gates restantes: REM-01 depende de uma origem real e rastreável para o bounded manifest; REM-02 está em execução; H-REMOTE, AAA-001 e H-CONTENT não foram autorizados.
+- status: IN_PROGRESS
+- next_action: integrar e repetir focal REM-02–05 em Node 22; concluir a origem do manifest antes de alterar o workflow candidate; executar somente provas live locais sintéticas autorizadas.
+
+## 2026-10-01 — AUDIT-REM-07A: revisão clínica distinta e autorrevisão MVP
+
+- timestamp: 2026-10-01T23:32:00-03:00
+- decisão aplicada: um `CLINICAL_APPROVER` ativo com escopo pode revisar conteúdo de outro autor sem corresponder ao `approvedClinicalApproverId` global; autorrevisão continua exigindo igualdade com o valor configurado pelo servidor. Publicação continua restrita à identidade configurada e aos gates existentes.
+- contrato: `BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0191_adendo_decisao_autorrevisao_mvp.md` detalha o limite; SPEC 0106 §9 já registra que revisores distintos são permitidos.
+- implementação: `packages/application/src/authorization.ts`, `content-review-queue-use-cases.ts`, `authoring-use-cases.ts` e `apps/api/src/features/content/content.handler.ts`; a fila segue filtrando por autor quando a conta tem apenas `AUTHOR`, e a projeção desabilita autorrevisão sem identidade configurada.
+- TDD: RED reproduziu 6 falhas e 49 aprovações; GREEN passou 5 arquivos/55 testes focais no Node 22.23.2. Artefatos RED/GREEN preservados em `.agent/artifacts/remediation/`.
+- verificação adicional: build de `@cvg/application`, typecheck de `@cvg/api`, Prettier dos arquivos alterados e `git diff --check` passaram. `tests/e2e/authoring-review.spec.ts` passou 5/5 com fixture local. Playwright listou 45 specs comuns e 47 no modo real (`real-runtime.spec.ts` só entra com `CVG_RUN_REAL_E2E=true`); runtime real não foi iniciado.
+- revisão: parecer técnico independente fresh está em andamento; manter AUDIT-REM-07A IN_PROGRESS até incorporar o resultado.
+- limites: sem conteúdo publicado, serviço live, execução remota, commit, push ou deploy. H-CONTENT, H-REMOTE e AAA-001 seguem independentes.
+- próximo passo: incorporar achados da revisão independente e continuar REM-01–05; REM-01 ainda requer produtor rastreável do bounded manifest.
+- status: IN_PROGRESS
+
+## 2026-10-01 — AUDIT-REM-07A: clarificação após primeira crítica independente
+
+- timestamp: 2026-10-01T23:46:00-03:00
+- primeira revisão fresh: sem achados P0/P1; um P2 consultivo pediu confirmar se `CLINICAL_APPROVER` sem `MODERATOR`/`ADMIN` deve poder solicitar ajustes.
+- resolução contratual: SPEC 0111 mantém `APPROVE_CLINICAL_CONTENT` separado de `MODERATE_CONTENT`; 0191 e SPEC 0106 explicitam que revisor clínico distinto pode aprovar conteúdo de outro autor, enquanto `SOLICITAR_AJUSTES` requer `MODERATE_CONTENT` (`MODERATOR`/`ADMIN`).
+- regressões: 56/56 testes focais passaram em Node 22.23.2; cobrem autorização de aprovação e publicação, separação de ajustes, self-review com identidade configurada divergente, campos de identidade forjados, escopos cruzados e filtro por autor.
+- artefato da primeira crítica: `.agent/artifacts/remediation/editorial-independent-review-20261001.md`; segunda revisão fresh da matriz clarificada em andamento.
+- limitações: H-CONTENT mantém publicação bloqueada; nenhum serviço live, workflow remoto, commit, push ou deploy foi iniciado. REM-01–05 seguem em andamento.
+- próximo passo: concluir a segunda revisão fresh e validar documentação/rastreabilidade; depois prosseguir na origem verificável do bounded manifest.
+- status: IN_PROGRESS
+
+## 2026-10-02 — REM-01–05 e hold editorial: revalidação integrada
+
+- timestamp: 2026-10-02T02:21:00-03:00
+- task: `REMEDIATION-EXEC-20261001` / `AUDIT-REM-01–05`, `AUDIT-REM-07A`, `AUDIT-REM-08`.
+- toolchain: Node 22.23.2, pnpm 10.33.0, Vitest 4.1.11; HEAD permanece `3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff`; worktree segue sujo e sem commit.
+- REM-01: producer implementado com `git archive HEAD`, install/build/Stryker na árvore isolada; controles do produtor devem coincidir com HEAD, e hashes vinculam os arquivos de teste, configuração e gate. Resumo, manifesto, três relatórios e dois fechamentos compartilham candidato/run ID. Triple AAA reconstrói a cadeia corrente; bundle estrito exige o run ID. O producer real não foi executado porque alterações locais diferem de HEAD.
+- REM-03/04 e run-ID: cinco integrações de manifesto, harness, release evidence e Triple AAA passaram `63/63`; um teste de replay/missing-run falha fechado. Persistência editorial passou `26/26`, incluindo tentativa interna de transição direta para `PUBLICADO` sem writes. A suíte editorial focal mantém `65/65` e E2E sintético de autoria `5/5` registrados.
+- Checks locais PASS: `pnpm typecheck`, `pnpm format:check`, `pnpm verify:ci-contract` (Node CI 22.22.0/pnpm 10.33.0), `pnpm verify:release-evidence`, sintaxe dos scripts e `git diff --check`.
+- REM-02: `pnpm test:coverage` exit 1 depois de `209` arquivos, `1461` testes PASS e `68` skips; cobertura 76,24% statements / 66,22% branches / 79,09% functions / 77,20% lines, contra pisos 90/85/90/90. `verify:coverage-floor` confirmou 174 fontes incluídas/207 excluídas e os mesmos quatro floors vermelhos. Nenhum threshold foi reduzido.
+- E2E real: Playwright lista 45 testes comuns e 47 no modo real; probe sem fixture/runtime falhou fechado. E2E browser→API→PostgreSQL não foi executado nesta rodada. Sem workflow remoto, publicação, deploy, push ou promoção de evidência histórica.
+- revisão independente integrada de proveniência e hold editorial: solicitada, resultado ainda pendente. H-CONTENT, H-REMOTE e AAA-001 continuam independentes; `AUDIT-REM-01–05`, `AUDIT-REM-07A` e o gate global permanecem `IN_PROGRESS`.
+- evidência detalhada: `.agent/artifacts/remediation/remediation-verification-20261002.md` e `.agent/artifacts/remediation/editorial-publication-hold-review-20261002.md`.
+- next_action: incorporar parecer fresh, resolver achados se houver e executar `verify:traceability`/`git diff --check` após reconciliar estado, backlog e manifesto.
+- status: IN_PROGRESS
+
+## 2026-10-02 — Fechamento do P2 no gate standalone de release
+
+- timestamp: 2026-10-02T02:32:00-03:00
+- revisão: o crítico fresh `Fermat` encontrou inicialmente um P2: o validador
+  standalone strict verificava campos e formatos, mas não recomputava a cadeia
+  de mutação; evidence-consistency também aceitava run ID autodeclarado quando
+  faltava a variável corrente.
+- correção: `validateBundle` strict agora exige `CVG_MUTATION_CANDIDATE_ID` do
+  ambiente, revalida summary/manifest/reports/closures contra o HEAD e não expõe
+  argumento CLI manual de run ID. `verify-evidence-consistency` exige
+  `requireExpectedRunId`. O caminho synthetic fixture permanece explicitamente
+  marcado e não é usado pelo gate real.
+- TDD: RED reproduzido por remoção temporária da reconstrução: 1 falha/7 skips
+  na regressão strict por falta da rejeição de proveniência; GREEN após
+  restauração do guard: 1/1.
+- verificação: integração focada de manifesto/harness/release/Triple AAA 63/63;
+  repositório de persistência editorial 26/26; `pnpm typecheck`,
+  `pnpm format:check`, `verify:ci-contract`, `verify:release-evidence`,
+  `verify:traceability`, `verify:documentation`, JSON do ledger, sintaxe e
+  `git diff --check` passaram. O crítico reavaliou o caminho e retornou PASS,
+  sem P0/P1/P2 restante no escopo.
+- limite: o diretório da árvore candidata fica no runner e não é enviado nos
+  artifacts; recomputação após o job precisa reconstruí-lo pelo SHA. O Stryker
+  real não foi executado no worktree dirty. Cobertura continua abaixo dos pisos
+  e os gates H-REMOTE/H-CONTENT/AAA-001 não foram alterados.
+- next_action: concluir reconciliação de state/log/backlog/traceability com o
+  parecer PASS, executar os gates documentais finais e manter REM-01/02 em
+  andamento até candidato committed/Stryker e cobertura nos floors.
+- status: IN_PROGRESS
+
+## 2026-10-02 — Gates documentais finais da rodada REM
+
+- timestamp: 2026-10-02T02:37:00-03:00
+- resultado: após a re-review fresh `PASS` do crítico, foram repetidos os focais
+  finais sob Node 22.23.2: manifesto/harness/release/Triple AAA `63/63`,
+  persistência editorial `26/26`; typecheck, `format:check`, contrato CI,
+  release evidence self-test, traceability, documentation, sintaxe Node,
+  validação JSON do ledger e `git diff --check` PASS.
+- estado do gate global: a cobertura completa corrente continua FAIL nos quatro
+  floors inalterados; 1461 testes passaram, 68 foram skipped, 76,24/66,22/79,09/
+  77,20 de cobertura ante 90/85/90/90. REM-02 segue aberto.
+- estado das tasks: AUDIT-REM-07A concluída como remediação local; REM-01–05 e
+  AUDIT-REM-07B/08 seguem IN_PROGRESS pelas dependências e limites registrados.
+- limites: nenhum Stryker foi executado para o worktree porque os controles
+  divergem de HEAD; nenhum workflow remoto, commit, push, deploy ou publicação.
+  H-CONTENT, H-REMOTE e AAA-001 continuam separados. O candidato arquivado não
+  é enviado no pacote, então validação posterior requer reconstruir a árvore
+  pelo SHA.
+- evidência: `.agent/artifacts/remediation/remediation-verification-20261002.md`,
+  `.agent/artifacts/remediation/editorial-publication-hold-review-20261002.md`.
+- next_action: trabalhar REM-02 mantendo floors, depois reavaliar REM-03/04 com
+  uma revisão específica de contenção/restauração; executar producer Stryker
+  somente contra um candidato committed compatível.
+- status: IN_PROGRESS
+
+## 2026-10-02 — Follow-up producer filesystem REM-03/04
+
+- timestamp: 2026-10-02T03:10:00-03:00
+- escopo: somente `scripts/discover-candidate-mutation.mjs` e a integração
+  `tests/integration/mutation-producer-filesystem.test.ts`; closure harness/CLI,
+  testes existentes e `.gauntlet/` não foram alterados.
+- implementação: saídas são abertas por caminhos relativos a descritores de
+  diretório Linux com `O_NOFOLLOW`; cada pai é validado contra o caminho físico
+  esperado antes/depois das escritas e todos os alvos usam criação exclusiva.
+  A execução registra identidade de inode e, em falha, remove apenas arquivos
+  e diretórios vazios que ela própria criou. A raiz candidata temporária é
+  removida em falha e mantida em sucesso.
+- TDD: RED reproduziu a criação sob symlink externo e resíduos de saídas/raiz
+  após falha no segundo escopo. GREEN focal em Node 22.23.2:
+  `tests/integration/mutation-producer-filesystem.test.ts` passou 4/4,
+  cobrindo symlink de `reports/`, troca do pai durante install, limpeza tardia
+  com sentinel preexistente e retenção da árvore em sucesso.
+- evidência/limite: integração usa repositório Git efêmero e `pnpm` simulado;
+  producer Stryker real não executado porque os controles locais diferem de
+  `HEAD`. Descritores ancoram operações e detectam trocas observáveis, mas a API
+  pública de filesystem do Node não fornece `openat2`; persiste janela mínima
+  para rename simultâneo entre validação e syscall pelo mesmo UID.
+- sem commit, push, serviço remoto ou alteração de `.gauntlet/`.
+- next_action: continuar REM-02 sem reduzir floors; manter REM-03/04 aberto
+  para revisão independente integrada e rodar o producer apenas contra
+  candidato committed compatível.
+- status: IN_PROGRESS
+
+## 2026-10-02 — E2E PostgreSQL real descartável e hardening de proveniência
+
+- timestamp: 2026-10-02T03:57:20-03:00
+- REM-03/04: uma revisão fresh encontrou P2 na leitura de proveniência que
+  reabria caminhos após `lstat`/`realpath`, além de leituras FIFO sem limite no
+  CLI/producer. As leituras de relatório, manifesto CLI e controles do producer
+  agora usam descritores `O_NOFOLLOW|O_NONBLOCK`; a suíte focal de três arquivos
+  passou 29/29 em Node 22.23.2, incluindo symlink de relatório e FIFO de
+  manifesto. A terceira revisão independente está em andamento; nenhum PASS é
+  alegado. A janela de rename simultâneo pelo mesmo UID segue documentada.
+- REM-05: Playwright listou 45 testes/8 arquivos no modo comum e 46/9 no modo
+  real. Com build configurado para o proxy e PostgreSQL 16 descartável, a
+  jornada `real-runtime.spec.ts` passou 1/1: convite, atividade sintética
+  pré-provisionada, tentativa, resposta, submissão, retomada e evidência
+  persistida no browser→web/proxy→API→PostgreSQL. REM-05 foi concluída
+  localmente; isso não representa workflow remoto nem produção.
+- Segurança do conteúdo: a fixture usa somente dados sintéticos na base
+  descartável e provisiona diretamente a atividade como estado publicado; não
+  executa revisão nem publicação editorial. H-CONTENT permanece ativo.
+- Cleanup: após shutdown, contas, convites, sessões, versões de conteúdo,
+  atividades/itens/atribuições, tentativas/respostas, idempotência e outbox
+  estavam em zero. Dez eventos de auditoria sintéticos foram retidos pelo
+  trigger append-only até a remoção do container `--rm`; o container foi
+  removido e as portas 3100–3102/15433 ficaram livres.
+- REM-02 permanece abaixo dos floors 90/85/90/90 (última medição: 76,24/66,22/
+  79,09/77,20; 1461 testes PASS, 68 skips). REM-01 aguarda candidato committed
+  compatível para executar o Stryker real. Sem commit, push, dispatch remoto ou
+  publicação. `.gauntlet/` não foi aberto nem alterado nesta execução.
+- evidência: `.agent/artifacts/remediation/remediation-verification-20261002.md`,
+  suítes `tests/integration/mutation-harness-candidate.test.ts`,
+  `tests/integration/mutation-bounded-manifest.test.ts`,
+  `tests/integration/mutation-producer-filesystem.test.ts` e
+  `tests/e2e/real-runtime.spec.ts`.
+- next_action: receber o parecer fresh REM-03/04, reconciliar os gates
+  documentais finais, continuar REM-02 sem reduzir os floors e executar o
+  producer Stryker somente contra candidato committed compatível.
+- status: IN_PROGRESS
+
+## 2026-10-02 — RED/GREEN root containment e fechamento documental
+
+- timestamp: 2026-10-02T04:17:40-03:00
+- TDD REM-03/04: RED do teste de root rebinding retornou código 0 quando era
+  esperado `HARNESS_ERROR` (1 falha/20 skipped). RED da fixture sem proveniência
+  emitiu `KILLED` (1 falha/20 skipped). GREEN fixa a identidade dev/inode da
+  raiz, reabre o parent sob o descritor original e recusa restauração depois
+  de deslocamento; a fixture sem proveniência emite `TEST_ONLY_KILLED` sem
+  identidade do candidato. Resultado CLI é gravado em temporário sincronizado
+  e publicado por link exclusivo.
+- Verificação: três suítes focais passaram 31/31 em Node 22.23.2; typecheck,
+  ESLint sobre apps/packages/scripts/tests e configs raiz, Prettier,
+  traceability, documentation, ci-contract, product-definition, exposure,
+  secrets, `node --check`, JSON do ledger e diff-check (excluindo `.gauntlet/`)
+  passaram. Revisor independente fresh dos fixes atuais está em andamento.
+- Estado: REM-03/04 continua IN_PROGRESS até parecer independente; REM-05
+  concluída localmente com E2E PostgreSQL descartável 1/1; REM-02 permanece
+  vermelho nos pisos congelados. REM-01 aguarda candidato committed para
+  Stryker real. H-CONTENT, H-REMOTE e AAA-001 permanecem gates.
+- Sem commit, push, dispatch remoto, deploy ou publicação. `.gauntlet/` não foi
+  aberto nem alterado.
+- next_action: aguardar/reconciliar a crítica fresh REM-03/04; seguir com
+  cobertura sem baixar floors e com Stryker somente contra candidato committed.
+- status: IN_PROGRESS
+
+### Atualização REM-03/04 — 2026-10-02 (04:43)
+
+- A revisão fresh encontrou P1 de runner inputs mutáveis após a validação de
+  proveniência e P2 de substituição da raiz validada por diretório comum.
+  RED confirmou que testes alterados podiam sustentar um kill e que a closure
+  executava sob a raiz substituta; um caso misto também mantinha `KILLED`
+  aninhado sem proveniência.
+- GREEN mantém a lease do diretório até o `finally`, ancora o cwd do Vitest ao
+  descritor aberto, captura e compara os digests de todos os
+  `MUTATION_RUNNER_INPUT_FILES` (ou testes/configuração no modo test-only) após
+  baseline e cada mutante, verifica sources após restauração e para no primeiro
+  `HARNESS_ERROR`. Todos os resultados de kill sem proveniência são marcados
+  `TEST_ONLY_KILLED`. Três suítes focadas passaram 34/34 em Node 22.23.2.
+- Typecheck, ESLint focal, Prettier/`format:check`, sintaxe, contrato CI,
+  rastreabilidade, documentação, product-definition, exposure, secrets,
+  consistência de auditoria, self-test de release evidence e diff-check (com
+  `.gauntlet/` excluído) passaram. A revisão independente fresh deste estado
+  está pendente; a janela mínima de rename pelo mesmo UID segue documentada.
+- REM-02 continua abaixo dos floors 90/85/90/90; REM-01 ainda aguarda candidato
+  committed compatível para Stryker real. REM-05 permanece concluída localmente
+  com PostgreSQL 16 descartável 1/1. Sem commit, push, dispatch remoto, deploy
+  ou publicação clínica; H-CONTENT, H-REMOTE e AAA-001 permanecem ativos.
+- Estado: IN_PROGRESS. Próxima ação: receber o parecer fresh REM-03/04 e
+  atualizar a evidência antes de avançar qualquer claim de fechamento.
+
+### Atualização REM-03/04 — 2026-10-02 (05:06)
+
+- O revisor fresh Bohr retornou NOT PASS (high): `--config` absoluto ainda
+  podia carregar uma configuração de diretório substituto entre verificações
+  do caminho. RED reproduziu o carregamento do teste substituto após rename
+  temporário da raiz, apesar do cwd vinculado ao descritor.
+- GREEN rejeita configuração absoluta com cwd descriptor-backed. A closure
+  estrita agora também converte o entrypoint Vitest para caminho relativo e
+  seleciona o reporter relativo ao candidato; somente test-only permite
+  ferramentas externas marcadas como confiáveis. O teste move a raiz, planta
+  config/test substitutos, exige recusa dos caminhos absolutos e valida config,
+  Vitest e reporter relativos ao FD. As três suítes focadas passaram 35/35.
+- ESLint focal, typecheck, Prettier, sintaxe Node e diff-check com
+  `.gauntlet/` excluído passaram sob Node 22.23.2. Nova revisão fresh está em
+  andamento. Snapshots por leitura não detectam alterações transitórias
+  revertidas antes do checkpoint; a limitação de mesmo UID permanece explícita.
+- REM-02 continua abaixo dos floors 90/85/90/90; REM-01 aguarda candidato
+  committed compatível para Stryker real; REM-05 permanece concluída localmente
+  com PostgreSQL 16 descartável 1/1. Sem commit, push, dispatch remoto, deploy
+  ou publicação clínica; H-CONTENT, H-REMOTE e AAA-001 permanecem ativos.
+- Estado: IN_PROGRESS. Próxima ação: incorporar a revisão fresh do uso de
+  caminhos relativos e validar novamente os gates documentais.
+
+### Atualização REM-03/04 — 2026-10-02 (05:21)
+
+- A revisão independente fresh Bernoulli concluiu **NOT PASS — P2**, sob a
+  hipótese de testes candidatos adversariais no mesmo UID. Confirmou que os
+  caminhos relativos de config/Vitest/reporter e a raiz presa ao descritor
+  fecham o redirecionamento para uma árvore substituta. Encontrou que código
+  de teste pode descobrir `--outputFile` e run ID, substituir o relatório antes
+  da leitura do harness e modificar/restaurar runner inputs entre checkpoints.
+- O reviewer não executou testes nem alterou arquivos. `docs/59` liga REM-03/04
+  ao threat model, mas não define esse código como confiável nem exclui o
+  adversário. Foi perguntado ao usuário se devemos isolar os testes do mesmo UID
+  ou formalizar a confiança nesse código com a limitação correspondente; nenhum
+  dos dois escopos será presumido.
+- A evidência focal existente permanece 35/35, mas não cobre a adulteração
+  recém apontada. REM-03/04 segue sem PASS. REM-02 continua abaixo dos pisos
+  90/85/90/90 e REM-01 aguarda candidato committed compatível para Stryker.
+- Estado: WAITING_HUMAN_APPROVAL para a decisão de threat model; sem commit,
+  push, dispatch remoto, deploy ou publicação clínica. `.gauntlet/` não foi
+  aberto nem alterado.
+- next_action: receber a escolha de escopo, executar a remediação correspondente
+  com RED/GREEN e obter nova revisão fresh; prosseguir depois com gates focais e
+  documentação sem promover status ou pisos.
+
+### Validação do checkpoint — 2026-10-02 (05:26)
+
+- Após registrar o NOT PASS Bernoulli, passaram em Node 22.23.2: `verify:traceability`,
+  `verify:documentation`, `verify:audit-consistency`, `verify:ci-contract`,
+  `verify:release-evidence`, Prettier nos documentos alterados e
+  `git diff --check` (excluindo `.gauntlet/`). O JSON do ledger Orchestrate
+  parseia. Nenhum teste de código foi executado nesta validação documental.
+- Status permanece WAITING_HUMAN_APPROVAL para a decisão de threat model;
+  nenhum PASS de REM-03/04 foi promovido.
+
+### Sincronização do estado — 2026-10-02 (05:29)
+
+- Os estados correntes de REM-03/04 foram alinhados para
+  WAITING_HUMAN_APPROVAL no runtime, nos dois backlogs e no ledger Orchestrate.
+- Após a sincronização, `verify:traceability`, `verify:documentation`,
+  `verify:audit-consistency`, Prettier dos documentos, parse do JSON e
+  `git diff --check` passaram sob Node 22.23.2. Nenhum teste de código foi
+  executado; aguarda-se a decisão objetiva do usuário sobre o threat model.
+
+### Continuidade REM-02 — 2026-10-02 (06:15)
+
+- O projeto Vitest Browser/Chromium agora cobre cinco rotas web. `pnpm test:browser`
+  passou 24/24; o novo cenário de autoria validou erro 503, retenção do rascunho
+  sintético e reenvio com a mesma chave de idempotência. A suíte do denominador
+  passou 3/3; inventário preserva 174 fontes incluídas e floors 90/85/90/90.
+- Cobertura integrada: 215 arquivos, 1506 testes PASS, 68 skipped; exit 1
+  exclusivamente pelas métricas 82,77% statements / 72,66% branches / 84,77%
+  functions / 83,97% lines. Ganho frente à medição de 02:12:
+  +6,53/+6,44/+5,68/+6,77 pp. `typecheck`, ESLint focado, `format:check`,
+  `verify:ci-contract` e inventário passaram sob Node 22.23.2.
+- Auditoria visual local: Playwright 11/11 em cinco rotas e três larguras;
+  screenshots selecionados foram inspecionados. Operações fica densa em mobile,
+  sem falha observada de navegação ou leitura; nenhum redesenho amplo entrou
+  nesta task.
+- Estado: REM-02 permanece IN_PROGRESS e abaixo dos pisos, sem reduzir limiares.
+  REM-03/04 continua WAITING_HUMAN_APPROVAL pela decisão same-UID; a revisão
+  Bernoulli NOT PASS — P2 não foi convertida em PASS. REM-01, H-REMOTE,
+  AAA-001 e H-CONTENT continuam com seus gates separados. Sem commit, push,
+  dispatch remoto, deploy ou publicação clínica.
+
+### Continuidade REM-02 — 2026-10-02 (06:22)
+
+- Adicionado cenário sintético de suspensão de participante no painel de
+  operações. A suíte Browser Chromium passou 25/25 em cinco arquivos, incluindo
+  o PATCH escopado e o refresh para estado suspenso. Typecheck, Prettier,
+  CI contract, secret scan, rastreabilidade, inventário 174/212 e teste do
+  denominador 3/3 passaram sob Node 22.23.2.
+- Reexecução integrada: 215 arquivos, 1507 testes PASS e 68 skipped; cobertura
+  83,06% / 73,24% / 85,16% / 84,26%. `test:coverage` e
+  `verify:coverage-floor` terminam exit 1 porque todos os floors congelados
+  ainda falham. Ganho acumulado desde 02:12: +6,82/+7,02/+6,07/+7,06 pp.
+- Estado: REM-02 segue IN_PROGRESS; operações continua como a rota web com
+  maior lacuna de cobertura. REM-03/04 segue WAITING_HUMAN_APPROVAL pela
+  decisão same-UID. Sem commit, push, dispatch, deploy ou publicação clínica.
+
+### Continuidade REM-02 — 2026-10-02 (06:30)
+
+- A regressão do painel operacional agora cobre cancelamento de desativação:
+  após negar a confirmação, a conta continua ativa e nenhuma requisição PATCH é
+  feita. Suíte de operações 4/4; Browser completo 26/26. Typecheck,
+  `format:check`, CI contract e secret scan passaram sob Node 22.23.2.
+- Cobertura integrada: 215 arquivos, 1508 testes PASS e 68 skipped;
+  83,07% statements / 73,27% branches / 85,21% functions / 84,28% lines.
+  `verify:coverage-floor` confirma inventário 174/212 e falha somente nos
+  quatro pisos inalterados. Ganho desde 02:12: +6,83/+7,05/+6,12/+7,08 pp.
+- Estado: REM-02 IN_PROGRESS. REM-03/04 WAITING_HUMAN_APPROVAL pela escolha
+  same-UID; fresh critic não disponível nesta fatia, nenhum veredito PASS
+  registrado. Sem commit, push, dispatch, deploy ou publicação clínica.
+
+### Checkpoint Gauntlet — 2026-10-02 (06:35)
+
+- Mantido o run existente `aaa-2026-09-06-r1`; rebaseline aplicado após o
+  conjunto corrente de código e evidência, sem trocar o quality bar. O
+  verificador retornou `valid: true`, `errors: []` com `--check-drift`; fase
+  `FIX_RETEST` e status `ACTIVE` permanecem.
+- A tentativa de criar reviewer independente fresh foi bloqueada pelo limite
+  de threads (`agent thread limit reached`). Nenhum parecer ou PASS independente
+  foi inventado. Gauntlet e REM-02 continuam abertos; próximo passo é obter
+  critic fresh para R05 e continuar cenários de cobertura dirigidos.
+- Status CVG: WAITING_HUMAN_APPROVAL por decisão same-UID REM-03/04; cobertura
+  continua abaixo dos floors. Sem commit, push, dispatch remoto, deploy ou
+  publicação clínica.
+
+### Estado de evidência Gauntlet — 2026-10-02 (06:39)
+
+- `validate --check-drift` confirma fingerprint atual sem erros, mas o campo
+  `evidence_freshness` permanece `STALE`: não foi registrada uma rodada com
+  crítica independente current. O spawn R05 retornou `agent thread limit
+  reached`; nenhum reviewer foi simulado ou substituído por auto-review.
+- O Gauntlet continua ACTIVE em FIX_RETEST. Próxima ação: registrar uma nova
+  rodada somente quando houver critic fresh e executar novamente os gates que
+  mudarem; cobertura global permanece abaixo de 90/85/90/90.
+
+### Continuidade REM-02 — 2026-10-02 (06:43)
+
+- Adicionado o ramo de confirmação positiva para desativação: PATCH escopado,
+  estado `DEACTIVATED`, revogação projetada e ação de reativação. Browser
+  completo passou 27/27; foco de operações 5/5. Typecheck, Prettier, CI
+  contract, secret scan e teste do denominador passaram.
+- Cobertura integrada passou 1509 testes e teve 68 skips; 83,07/73,29/85,21/
+  84,28. `verify:coverage-floor` continua exit 1; floors e inventário 174/212
+  não mudaram. Ganho desde 02:12: +6,83/+7,07/+6,12/+7,08 pp.
+- Estado: REM-02 IN_PROGRESS, Gauntlet evidence `STALE` até crítica fresh; o
+  serviço recusou novo agent por limite de threads. REM-03/04 mantém a decisão
+  same-UID pendente. Sem commit, push, dispatch, deploy ou publicação clínica.
+
+### Checkpoint final documental e Gauntlet — 2026-10-02 (06:49)
+
+- Após sincronizar estado, log, backlog, artefato e rastreabilidade, Prettier,
+  `verify:traceability`, `verify:documentation`, `verify:audit-consistency`,
+  `verify:product-definition`, `verify:exposure`, `verify:secrets`,
+  `verify:ci-contract` e `git diff --check` passaram.
+- O run existente `aaa-2026-09-06-r1` permanece ACTIVE em `FIX_RETEST`;
+  `validate --check-drift` retornou `valid: true`, sem erros. A evidência segue
+  `STALE` porque não há round com crítica fresh; o spawn R05 foi bloqueado pelo
+  limite de threads. Nenhum veredito Gauntlet PASS foi declarado.
+- Métricas e gates não mudaram: Browser 27/27; integração 1509 testes PASS,
+  68 skipped; coverage 83,07/73,29/85,21/84,28 contra floors 90/85/90/90.
+  Estado global `WAITING_HUMAN_APPROVAL` mantém a decisão same-UID pendente.
+
+### Continuidade REM-02 — 2026-10-02 (07:20)
+
+- Browser Mode passou 33/33 em cinco arquivos, incluindo criação de rascunho
+  sintético: request POST e idempotency key verificados, campos de identidade
+  e estado público ausentes do payload, status `RASCUNHO`, ações clínicas
+  indisponíveis, publicação bloqueada e recovery limpo após sucesso.
+- Typecheck, ESLint focado, `format:check`, `verify:secrets` e `git diff
+  --check` passaram. A cobertura integrada executou 215 arquivos: 1515 testes
+  PASS, 68 skipped em 36 arquivos. Métricas 85,66/77,80/88,64/86,94 continuam
+  abaixo dos pisos congelados 90/85/90/90. `verify:coverage-floor` confirmou
+  174 fontes incluídas/212 excluídas e os quatro pisos vermelhos. A página de
+  autoria está em 66,92/62,45/58,20/69,51.
+- REM-02 segue `IN_PROGRESS`; Gauntlet `aaa-2026-09-06-r1` continua ACTIVE em
+  `FIX_RETEST`, com `evidence_freshness: STALE` e sem critic fresh devido ao
+  limite de threads. REM-03/04 mantém o P2 same-UID e decisão humana pendente.
+  `verify:evidence-consistency` falhou fechado por ausência de
+  `CVG_MUTATION_CANDIDATE_ID`; o producer real aguarda candidato committed
+  compatível. Sem commit, push, dispatch, deploy ou publicação clínica.
+
+### Sincronização de estado — 2026-10-02 (07:27)
+
+- A sincronização de runtime state, backlog, plano, artefato, estado de
+  orquestração e traceability foi verificada com Prettier, traceability,
+  documentation, audit-consistency, product-definition, exposure, CI contract,
+  secret scan e `git diff --check`: todos PASS. JSON de orquestração também foi
+  parseado e o estado REM-02 continua `IN_PROGRESS`.
+- `verify:evidence-consistency` permanece FAIL por ausência do run ID corrente
+  exigido pelo produtor Stryker, ainda sem execução em candidato committed
+  compatível. A cobertura global permanece abaixo dos pisos; não há critic
+  fresh nem decisão same-UID. Nenhum PASS global é declarado.
+
+### Rebaseline Gauntlet — 2026-10-02 (07:29)
+
+- Após a sincronização documental, o run existente `aaa-2026-09-06-r1` foi
+  rebaselined para o fingerprint corrente; `validate --check-drift` retornou
+  `valid: true`, sem erros. O status segue ACTIVE, fase `FIX_RETEST`,
+  `evidence_freshness: STALE` e 7 rounds: nenhum critic fresh foi registrado.
+  Este rebaseline não é um novo round, review ou PASS.
+
+### Continuidade REM-02 — 2026-10-02 (07:37)
+
+- Adicionada jornada Chromium de feedback do participante: convite sintético,
+  ativação, leitura vazia da lista, envio autorizado e projeção pública do
+  ticket. O teste verifica request body, `credentials: include`, estado visível
+  e ausência de `participantId`/`scopeId`. Browser completo: 34/34.
+- Typecheck, ESLint focado, `format:check`, secret scan e `git diff --check`
+  passaram. Cobertura integrada: 215 arquivos, 1516 testes PASS e 68 skipped
+  em 36 arquivos; 85,88/77,95/88,99/87,18 contra pisos congelados
+  90/85/90/90. O inventário 174/212 passou; as quatro métricas continuam
+  vermelhas. REM-02 permanece aberto.
+- Gates documentais passaram, exceto `verify:evidence-consistency`, que falha
+  fechado sem `CVG_MUTATION_CANDIDATE_ID`. A mudança alterou o fingerprint após
+  o último rebaseline; revalidar depois desta sincronização. Critic R05 está
+  indisponível pelo limite de agentes e a decisão same-UID segue pendente.
+  Sem commit, push, dispatch, deploy ou publicação clínica.
+
+### Checkpoint Gauntlet — 2026-10-02 (07:42)
+
+- Após atualizar runtime state, backlog, plano, evidência e traceability, o
+  run `aaa-2026-09-06-r1` foi rebaselined. `validate --check-drift` retornou
+  `valid: true`, sem erros. Continua ACTIVE/FIX_RETEST/STALE em sete rounds;
+  nenhum critic fresh ou novo round foi registrado.
+
+### Continuidade REM-02 — 2026-10-02 (08:07)
+
+- Browser Mode passou 38/38 em cinco arquivos. Três novas jornadas sintéticas
+  cobrem acompanhamento individual e limite formativo, leitura escopada de
+  histórico/prévia de contestação, e relatórios agregados de educação
+  continuada/reflexão com filtros de módulo e status. Requests preservam
+  `credentials: include`; IDs de participante/revisor e escopo não vazam nas
+  projeções cobertas.
+- Typecheck, ESLint focal, Prettier focal, secret scan e `git diff --check`
+  passaram. Cobertura integrada: 215 arquivos, 1520 testes PASS e 68 skipped
+  em 36 arquivos. Statements 87,36% (9402/10762), branches 81,89%
+  (8205/10019), functions 91,15% (2071/2272), lines 88,71% (8977/10119).
+  `test:coverage` e `verify:coverage-floor` falham nos três pisos ainda abaixo
+  de 90/85/90/90; inventário continua 174 incluídas/212 excluídas.
+- `verify:evidence-consistency` continua FAIL fechado sem ID de mutation run
+  real. Gauntlet `aaa-2026-09-06-r1` permanece ACTIVE/FIX_RETEST/STALE em sete
+  rounds; fingerprint stale até sincronização/rebaseline, sem critic fresh.
+  Decisão same-UID REM-03/04 continua humana. Sem commit, push, dispatch,
+  deploy ou publicação clínica.
+
+### Sincronização documental e Gauntlet — 2026-10-02 (08:16)
+
+- Runtime state, backlog, plano, artefato, traceability e ledger de
+  orquestração foram sincronizados às evidências REM-02. Prettier dos arquivos
+  de código e documentos, traceability, documentation, audit-consistency,
+  product-definition, exposure, CI contract, secrets, JSON e diff-check
+  passaram.
+- `verify:coverage-floor` confirma 174 incluídas/212 excluídas; functions
+  passa em 91,15%, enquanto statements/branches/lines permanecem abaixo dos
+  pisos. `verify:evidence-consistency` segue FAIL fechado sem mutation run ID
+  real e não inventado.
+- O run `aaa-2026-09-06-r1` foi rebaselined após a sincronização; `validate
+  --check-drift` retornou `valid: true`, sem erros. Continua ACTIVE em
+  `FIX_RETEST`, freshness STALE, round count 7; nenhum critic ou round novo.
+  Estado global WAITING_HUMAN_APPROVAL; sem commit, push, dispatch, deploy ou
+  publicação clínica.
+
+### Continuidade REM-02 — 2026-10-02 (08:32)
+
+- Browser Mode passou 39/39 em cinco arquivos. A nova jornada parte de uma
+  sessão ativa com tentativa `SALVA` e resposta sintética já persistida,
+  confirma a retomada preenchida, salva uma atualização e conclui a reflexão.
+  Também valida percurso, perfil digital, diagnóstico formativo e runtime M01,
+  sem expor os campos internos projetados.
+- Typecheck, ESLint focal, Prettier focal, secret scan e `git diff --check`
+  passaram. A cobertura integrada executou 215 arquivos: 1521 testes PASS e
+  68 skipped em 36 arquivos. Statements 87,53% (9421/10762), branches
+  82,41% (8257/10019), functions 91,59% (2081/2272), lines 88,88%
+  (8994/10119). `verify:coverage-floor` confirma 174 fontes incluídas e
+  212 excluídas; só functions atinge o piso. `pnpm test:coverage` encerra
+  exit 1 porque statements, branches e lines continuam abaixo dos pisos
+  congelados 90/85/90/90.
+- REM-02 permanece IN_PROGRESS. O fingerprint do Gauntlet é atualizado após a
+  sincronização; o run permanece ACTIVE/FIX_RETEST/STALE em sete rounds e o
+  rebaseline não adiciona review nem veredito. `verify:evidence-consistency`
+  continua condicionado a um mutation run ID genuíno de candidato committed
+  compatível. A decisão humana same-UID REM-03/04 permanece aberta.
+  Sem commit, push, dispatch, deploy ou publicação clínica.
+
+### Validação documental — 2026-10-02 (08:36)
+
+- `typecheck`, ESLint focal, `format:check`, Prettier focal dos arquivos de
+  código/documentação, secret scan, `git diff --check`, traceability,
+  documentation, audit-consistency, product-definition, exposure, CI contract
+  e parse do ledger JSON passaram.
+- `verify:coverage-floor` confirma inventory 174/212; functions passa em
+  91,59%, enquanto statements 87,53%, branches 82,41% e lines 88,88%
+  continuam abaixo dos pisos imutáveis. `verify:evidence-consistency` falha
+  somente pelo mutation run ID corrente ausente; o candidato committed
+  compatível ainda não existe neste worktree.
+- O Gauntlet `aaa-2026-09-06-r1` permanece ACTIVE/FIX_RETEST/STALE em sete
+  rounds. O helper oficial rebaselined o fingerprint sincronizado e
+  `validate --check-drift` retornou `valid: true`, sem erros. O rebaseline não
+  cria critic, round ou veredito fresh. O estado global permanece
+  WAITING_HUMAN_APPROVAL; decisão same-UID REM-03/04 não recebida.
+
+### Checkpoint Gauntlet — 2026-10-02 (08:43)
+
+- Após sincronizar estado, log, backlog, plano, artefato e traceability, o
+  helper oficial rebaselined `aaa-2026-09-06-r1` e
+  `validate --check-drift` retornou `valid: true`, sem erros.
+- O run permanece ACTIVE/FIX_RETEST/STALE em sete rounds. A rebaseline
+  sincroniza o fingerprint; não acrescenta critic, round, evidência fresh ou
+  veredito. REM-02 continua IN_PROGRESS e same-UID REM-03/04 aguarda decisão
+  humana.
+
+### Continuidade REM-02 — 2026-10-02 (09:08)
+
+- Browser Chromium passou 46/46 em cinco arquivos. Foram adicionadas jornadas
+  sintéticas da fila editorial escopada somente leitura, exportação CSV com
+  BOM UTF-8 e neutralização de fórmula, auditoria somente leitura (duas páginas
+  por cursor, contrato inválido com retry, estados 401/403 redigidos),
+  recuperação confirmada de conta ativa e reenvio escopado de convite. Nenhum
+  código de produção mudou.
+- Typecheck, ESLint focal, Prettier focal, `format:check`, secret scan e
+  `git diff --check` passaram. Cobertura integrada executou 215 arquivos:
+  1528 testes PASS e 68 skipped em 36 arquivos. Statements 88,40%
+  (9514/10762), branches 84,03% (8419/10019), functions 92,47% (2101/2272) e
+  lines 89,76% (9083/10119). Os pisos permanecem 90/85/90/90; functions
+  passa e statements, branches e lines seguem abaixo. Inventário: 174 incluídas,
+  212 excluídas.
+- `verify:coverage-floor` confirmou os três gaps; `verify:evidence-consistency`
+  validou o resumo de cobertura e falhou somente pela ausência de um mutation
+  run ID real de candidato committed compatível. Nenhuma evidência sintética
+  foi criada. REM-02 continua IN_PROGRESS.
+- O helper do Gauntlet retornou `valid: true` sem drift antes da sincronização
+  documental; o rebaseline/validate final pós-sync fica para a próxima ação.
+  O run permanece ACTIVE/FIX_RETEST/STALE em sete rounds, sem review fresh.
+  Decisão humana same-UID REM-03/04 segue pendente; sem commit, push,
+  dispatch, deploy ou publicação clínica.
+
+### Validação documental e Gauntlet — 2026-10-02 (09:12)
+
+- Traceability, documentation, audit-consistency, product-definition,
+  exposure, CI contract, Prettier focal dos documentos, `format:check`,
+  secret scan, JSON do ledger e `git diff --check` passaram após a
+  sincronização. Typecheck e ESLint focal também passaram; Browser 46/46.
+- `verify:coverage-floor` confirma inventário 174/212 e falha apenas nos
+  pisos congelados de statements (88,40%), branches (84,03%) e lines
+  (89,76%); functions 92,47% passa. `verify:evidence-consistency` confirma
+  cobertura, scorecard e auditoria; falha somente porque não há mutation run
+  ID real de candidato committed compatível.
+- O helper oficial rebaselineou `aaa-2026-09-06-r1`; `validate
+  --check-drift` retornou `valid: true`, sem erros. O run permanece
+  ACTIVE/FIX_RETEST/STALE em sete rounds, sem critic fresh, novo round ou
+  veredito PASS. REM-02 segue IN_PROGRESS e o estado global
+  WAITING_HUMAN_APPROVAL pela escolha same-UID REM-03/04 ainda aberta.
+
+### Continuidade REM-02 — 2026-10-02 (09:43)
+
+- Browser Chromium passou 48/48 em cinco arquivos sob Node 22.23.2. A nova
+  jornada de autoria simula a negação 403 de uma solicitação de ajustes e
+  confirma mensagem genérica, detalhe do servidor redigido e ausência de
+  decisão/publicação. Typecheck, ESLint e Prettier focais passaram.
+- Cobertura integrada executou 215 arquivos: 1530 testes PASS e 68 skipped em
+  36 arquivos. Statements 88,52% (9527/10762), branches 84,15% (8431/10019),
+  functions 92,56% (2103/2272) e lines 89,89% (9096/10119). Inventário
+  mantém 174 fontes incluídas e 212 excluídas; functions passa, os outros três
+  pisos 90/85/90/90 permanecem abaixo. `verify:coverage-floor` confirma os
+  pisos abertos; `verify:evidence-consistency` falha somente sem mutation run
+  ID genuíno de candidato committed compatível.
+- Traceability, documentation, audit-consistency, product-definition,
+  exposure, CI contract, `format:check`, Prettier focal documental, secrets,
+  JSON e diff-check passaram sob Node 22.23.2.
+- `verify:coverage-floor` confirma o inventário 174/212 e falha nos três
+  pisos abertos. `verify:evidence-consistency` confirma o resumo e falha
+  somente sem mutation run ID real de candidato committed compatível.
+- O helper oficial rebaselineou `aaa-2026-09-06-r1`; `validate
+  --check-drift` retornou `valid: true`. O run permanece
+  ACTIVE/FIX_RETEST/STALE em sete rounds, sem critic fresh, novo round ou
+  PASS. REM-02 segue IN_PROGRESS e REM-03/04 continua aguardando decisão
+  humana same-UID. Sem commit, push, dispatch remoto, deploy ou publicação
+  clínica.
+
+### Continuidade REM-02 — 2026-10-02 (10:22)
+
+- Browser Mode passou 57/57 em cinco arquivos sob Node 22.23.2. Nove novos
+  cenários sintéticos exercitam: 403 na prévia de impacto sem exibir resultado;
+  retomar triagem após resposta do usuário, expor transições permitidas em
+  tratamento e nenhuma transição para tickets terminais; iniciar nova tentativa
+  somente quando a remediação é prioritária e aponta para atividade iniciável;
+  abrir a atividade-alvo e atualizar o deep link; recuperar uma atividade após
+  503 mantendo a versão anterior visível; e retomar diagnóstico B-07 após
+  falha transitória ao ler a sessão atual. Nenhum dado real foi usado.
+- Typecheck, ESLint focal e Prettier passaram. Cobertura integrada executou
+  215 arquivos: 1539 testes PASS, 68 skipped e 36 arquivos skipped. Statements
+  89,04% (9583/10762), branches 84,65% (8482/10019), functions 92,82%
+  (2109/2272), lines 90,43% (9151/10119). O inventário mantém 174 fontes
+  incluídas/212 excluídas. Functions e lines atingem os pisos; statements e
+  branches seguem abaixo de 90/85/90/90. `verify:coverage-floor` confirma essa
+  diferença. `verify:evidence-consistency` valida cobertura e falha somente
+  pela ausência do mutation run ID genuíno de candidato committed compatível.
+- REM-02 permanece IN_PROGRESS; sem mudança em código de produção, pisos ou
+  exclusões. REM-03/04 aguarda decisão same-UID; a crítica R05 fresh continua
+  indisponível pelo limite de threads. Rebaseline e `validate --check-drift`
+  serão executados depois da sincronização documental. Sem commit, push,
+  dispatch, deploy ou publicação clínica.
+
+### Validação documental e Gauntlet — 2026-10-02 (10:28)
+
+- Traceability, documentation, audit-consistency, product-definition,
+  exposure, CI contract, secrets, repository format, Prettier focal, JSON e
+  `git diff --check` passaram após sincronizar o checkpoint REM-02.
+- `verify:coverage-floor` confirma inventário 174/212, functions 92,82% e
+  lines 90,43% dentro dos pisos; statements 89,04% e branches 84,65% seguem
+  abertos. `verify:evidence-consistency` valida a cobertura e falha somente
+  pela ausência do mutation run ID genuíno de candidato committed compatível.
+- O helper oficial rebaselineou `aaa-2026-09-06-r1`; `validate
+  --check-drift` retornou `valid: true`, sem erros. O run permanece ACTIVE /
+  `FIX_RETEST` / `STALE` em sete rounds, sem critic fresh, round novo ou
+  veredito PASS. REM-02 continua IN_PROGRESS; estado global
+  WAITING_HUMAN_APPROVAL pela decisão same-UID REM-03/04 pendente.
+
+### Continuidade REM-02 — 2026-10-02 (11:09)
+
+- Browser Chromium passou 61/61 em cinco arquivos sob Node 22.23.2. A fatia
+  acrescenta retry de histórico de feedback após JSON inválido, filtro de
+  status e navegação cursorada seguinte/anterior. Typecheck, ESLint focal,
+  Prettier e diff-check focal passaram.
+- Cobertura integrada: 215 arquivos, 1543 testes PASS e 68 skipped em 36
+  arquivos; statements 90,03% (9690/10762), branches 85,31% (8548/10019),
+  functions 94,71% (2152/2272) e lines 91,24% (9233/10119). `verify:coverage-floor`
+  passou com inventário 174 incluídas/212 excluídas e pisos inalterados.
+- `verify:evidence-consistency` valida a cobertura e auditoria, falhando um
+  gate porque não há mutation run ID genuíno de candidato committed compatível.
+  REM-02 segue IN_PROGRESS; Gauntlet permanece ACTIVE/FIX_RETEST/STALE em sete
+  rounds sem critic R05 fresh. REM-03/04 aguarda decisão humana same-UID.
+  Nenhum código de produção, commit, push, dispatch, deploy ou publicação
+  clínica nesta fatia.
+
+### Fechamento local de AUDIT-REM-02 — 2026-10-02 (11:31)
+
+- O primeiro critic R05 fresh retornou REVISE P2: a navegação para a página
+  anterior não tinha asserção da query de status. O teste agora registra o
+  tamanho da lista de requisições antes do clique e exige que uma requisição
+  posterior contenha `status=TRIADO` sem cursor. O teste focal passou 1/1;
+  Browser completo passou 61/61.
+- Typecheck, ESLint focal, Prettier focal, `git diff --check` e cobertura
+  integrada passaram. Foram 215 arquivos, 1543 testes PASS/68 skipped;
+  statements 90,03% (9690/10762), branches 85,31% (8548/10019), functions
+  94,71% (2152/2272), lines 91,24% (9233/10119). `verify:coverage-floor`
+  PASS, 174 incluídas/212 excluídas.
+- O follow-up critic R05 fresh retornou PASS no snapshot corrigido, sem achados
+  P0–P2 no delta Browser limitado. O reviewer fez leitura estática e não rodou
+  testes; a execução local é registrada separadamente acima.
+- AUDIT-REM-02 fica COMPLETED localmente. `verify:evidence-consistency` ainda
+  falha no gate global que exige mutation run ID genuíno de candidato committed
+  compatível. REM-03/04 continua WAITING_HUMAN_APPROVAL pela decisão same-UID.
+  O Gauntlet global permanece ACTIVE/FIX_RETEST/STALE em sete rounds; sem
+  commit, push, dispatch, deploy ou publicação clínica.
+
+### Continuidade AUDIT-REM-06/07B/09 — 2026-10-02 (12:00)
+
+- **AUDIT-REM-06:** rastreio de UC-006/RF/RN e SPEC 0104/0106/0107 confirmou
+  que não há contrato aprovado para modalidade, versão congelada, conclusão do
+  módulo, item selecionado ou histórico somativo no `StartAttempt`. Foi
+  registrada proposta de boundary server-side e pergunta objetiva em
+  `docs/decisions/2026-10-02-rem06-summative-eligibility.md`. A task aguarda
+  decisão; nenhum código, persistência ou contrato público foi alterado.
+- **AUDIT-REM-07B:** runbooks e pacote AAA-001 agora distinguem o alvo aprovado
+  RNF-015/D-107 (RPO ≤1h/RTO ≤4h) da recomendação D3 RPO ≤24h, ainda proposta.
+  AAA-001 continua gate de aceite operacional/produção; evidência local segue
+  identificada como sintética.
+- **AUDIT-REM-09:** runbooks esclarecem pré-condições, abort e ordem restore→
+  migrations posteriores. Inspeção independente confirmou que o verificador
+  atual clona uma origem migrada no head `0054` e valida marcador, enquanto
+  `verify:migrations` confere somente o manifesto SQL/journal do repositório.
+  `rtoMs` cobre apenas dump, criação de destino, restore e leitura do marcador;
+  não é RTO operacional. Snapshot histórico, migrations posteriores,
+  owners/grants/RLS e drill descartável seguem pendentes.
+- Foram atualizados backlog, ledger de orquestração, ExecPlan, manifesto de
+  rastreabilidade, estado e artefatos focais. Não houve restore/migration live,
+  alteração de código de produto, teste, commit, push, dispatch, deploy ou
+  publicação nesta fatia.
+- **Status global:** `WAITING_HUMAN_APPROVAL` por REM-06 e REM-03/04; o trabalho
+  independente de REM-09 continua localmente.
+
+### Correção do contrato de evidência de restore — 2026-10-02 (12:31)
+
+- **AUDIT-REM-09:** a revisão fresh anterior encontrou P2: o tempo parcial de
+  dump/criação do destino/restore/leitura do marcador era emitido como `rtoMs`.
+  O produtor e o gate agora usam `cvg-restore-summary/v2` e
+  `verificationDurationMs`; o gate falha fechado para v1, alias `rtoMs`, campo
+  ausente, duração negativa ou fracionária. `staging-drills.mjs` mantém seu
+  `rtoMs` separado, pois mede o drill de retorno dos escritores e readiness.
+- **TDD:** os cinco casos inválidos falharam antes da correção; após a mudança,
+  `tests/integration/triple-aaa-verifier.test.ts` passou 31/31, incluindo o
+  helper produtor e as rejeições do consumidor. Typecheck, ESLint focal,
+  Prettier focal, scan de segredos, sintaxe dos scripts, verify:documentation,
+  verify:traceability e `git diff --check` passaram.
+- A revisão fresh do delta v2 ainda será registrada após o parecer. Nenhum
+  restore PostgreSQL live, fixture histórica, migration pós-snapshot ou drill
+  operacional foi executado; REM-09 continua `IN_PROGRESS`.
+- O runtime state, backlog, plano, traceability e ledger de orquestração foram
+  sincronizados. Estado global permanece `WAITING_HUMAN_APPROVAL` por REM-06 e
+  REM-03/04; não houve commit, push, deploy, workflow remoto ou publicação.
+
+### Follow-up do critic — same-SHA e isolamento de restore — 2026-10-02 (12:48)
+
+- A re-review independente encontrou dois P2 no contrato recém-versionado:
+  `restore-summary.sha` não estava no gate same-SHA e o consumidor aceitava
+  `targetIsolated=false` / `markerVerified=false` com `integrity_verified=true`.
+- RED reproduziu os casos. O contrato v2 agora exige SHA hexadecimal de 40
+  caracteres, marcador verificado, destino isolado e integridade derivada dos
+  dois; o produtor só emite `status=PASS` quando ambos são verdadeiros. A SHA do
+  restore entrou no invariant §125.4 e no gate executor.
+- A suíte Triple AAA focal passou 35/35; typecheck, ESLint focal, Prettier,
+  verify:documentation, verify:traceability, verify:audit-consistency,
+  verify:product-definition, verify:secrets, sintaxe, JSON de orquestração e
+  `git diff --check` passaram após as alterações. Novo critic fresh solicitado;
+  nenhuma aprovação integrada é inferida enquanto o parecer está pendente.
+- Não houve restore PostgreSQL live. REM-09 segue `IN_PROGRESS` para fixture de
+  snapshot histórico, migrations pós-snapshot, owners/RLS e drill descartável.
+  Estado global permanece `WAITING_HUMAN_APPROVAL`; sem commit, push, deploy ou
+  alteração em produção.
+
+### Fechamento do contrato v2 — 2026-10-02 (13:07)
+
+- O G45 foi iterativamente alinhado à checklist manual e ao gate executor para
+  exigir v2, `PASS`, SHA same-SHA/fresh, marcador, destino isolado, integridade,
+  inteiro seguro não negativo e a ressalva de duração parcial sem RTO
+  operacional.
+- O critic fresh final retornou `PASS` para a paridade §125.13/§23/G45; o
+  fingerprint antes/depois coincidiu. Suíte Triple AAA 35/35 e verificações
+  focais registradas acima passaram. Esse resultado não certifica o Gauntlet
+  global nem conclui REM-09.
+- **Próxima ação:** fixture sintética no PostgreSQL 16 descartável: snapshot
+  no journal `0053`, restore isolado e aplicação da migration `0054`, com
+  verificação do journal e policies RLS. Proprietários/grants e drill mais
+  amplo permanecem em aberto. Global `WAITING_HUMAN_APPROVAL` por REM-06 e
+  REM-03/04; sem commit, push, deploy ou produção.
+
+### AUDIT-REM-09 — drill histórico `0053 → restore → 0054` (2026-10-02, 13:25)
+
+- Implementados `scripts/restore-migration-compatibility.mjs`,
+  `scripts/verify-restore-migrations.mjs`,
+  `tests/integration/restore-migrations.test.ts` e o comando
+  `pnpm verify:restore-migrations`. O planejador rejeita journal fora de
+  ordem, timestamps incompatíveis, gaps, hashes divergentes, ledger vazio e
+  migrações desconhecidas.
+- RED reproduziu ausência do executor e aceitação de ordem/timestamps
+  inválidos. GREEN passou 4/4 com Node 22.23.2. O drill direto em PG16
+  descartável parou em `0053_aaa_content_integrity`, restaurou custom dump
+  em destino isolado e aplicou só `0054_aaa_content_indexer_service`.
+- PASS: marcador; prefixo completo Drizzle de hash/timestamp; head alvo igual
+  ao head do repositório; quatro policies do indexer; RLS enabled/forced nas
+  tabelas de conteúdo; owner das duas tabelas igual ao role restaurador
+  `NOSUPERUSER NOBYPASSRLS`. Duração foi 1.764 ms em
+  `verificationDurationMs`, parcial e sem interpretação de RTO. Cleanup
+  removeu cluster, bancos e arquivos. Script não leu `DATABASE_URL` nem
+  acessou serviço externo.
+- Limitação observada: migrations históricas aplicadas com role sem
+  `BYPASSRLS` reproduziram recursão na policy `learning_activities` durante
+  migration `0030`; o snapshot sintético foi criado como `postgres`. A
+  migration `0054` pós-restore passou com o role dedicado sem superuser/bypass.
+  O principal de migration aprovado em ambiente real ainda deve ser confirmado.
+- Runbook, docs/30, backlog 59, BUILD 0302, traceability, ExecPlan, estado,
+  ledger de orquestração e este artefato foram sincronizados. Restam validação
+  de constraints/grants, abort para snapshot incompatível/corrompido e
+  confirmação do principal operacional. REM-09 permanece `IN_PROGRESS`.
+- Após a sincronização passaram typecheck, ESLint focal, Prettier focal,
+  `verify:documentation`, `verify:traceability`, `verify:audit-consistency`,
+  `verify:product-definition`, `verify:secrets`, `verify:migrations`, JSON do
+  ledger e `git diff --check`.
+- Estado global `WAITING_HUMAN_APPROVAL` por REM-06 e REM-03/04; Gauntlet
+  fica STALE até revisão/sincronização. Sem banco externo, commit, push, deploy,
+  publicação ou alteração de produção.
+
+### Follow-up P1/P2 de AUDIT-REM-09 — 2026-10-02 (14:07)
+
+- A crítica fresh do drill histórico encontrou P1: a identidade do cluster não
+  era vinculada à conexão TCP antes das operações DDL. O P2 apontou que o gate
+  conferia presença de policies, sem comprovar tabela, comando, roles ou
+  predicados.
+- RED/GREEN: teste novo reproduziu aceitação de predicate com `NOT`; o caso
+  `COALESCE` também foi adicionado à suíte. O helper valida permissividade,
+  tabela, comando, `public`,
+  contexto `content-indexer`, publicação e vínculo da versão. Rejeita `NOT`,
+  `OR`, `CASE` e funções fora da allowlist. A forma canônica com agrupamento
+  `AND`/`WHERE` do catálogo PG16 está coberta pelo drill real.
+- O cluster local agora escuta só em socket Unix sob diretório temporário
+  privado, valida PID/diretório antes de DDL e confirma `inet_client_addr()`
+  nulo. O writer local delega ao executor isolado. Um erro de aspas no valor
+  vazio de `listen_addresses` foi detectado antes de readiness e DDL e corrigido.
+- `CVG_RUN_RESTORE_MIGRATION_DRILL=true` nos testes de migration/policy passou
+  7/7 em Node 22.23.2. Execução direta retornou PASS: `targetIsolated=true`,
+  `privateSocketVerified=true`, snapshot `0053`, restore e migration `0054`,
+  marker, journal/head, RLS, policies, owners e role validados. Duração:
+  `verificationDurationMs=1645` para o fixture completo, parcial e sem valor
+  de RTO. Cluster, bancos e temporários foram removidos.
+- Sincronizados runtime state, runbook, DR, SPEC 0113, backlog 30/59, BUILD
+  0302, traceability, plano, artefato e ledger. Faltam gates documentais finais
+  e critic fresh integrado; depois será usado o helper oficial para
+  sincronizar o Gauntlet. REM-09 permanece `IN_PROGRESS`, global
+  `WAITING_HUMAN_APPROVAL`; grants/constraints, abort de snapshot inválido,
+  principal operacional e prova de produção seguem sem evidência.
+
+### Escopo da policy de publicação — AUDIT-REM-09 (2026-10-02, 14:27)
+
+- Revisão adicional do validador encontrou um caso P2 de subconsulta decoy: a
+  versão anterior aceitava os vínculos `content_id`/`version` numa `EXISTS` e
+  `status='PUBLICADO'` em outra. Um teste RED reproduziu a aceitação.
+- GREEN exige que os três predicados fiquem na mesma subconsulta `EXISTS` de
+  `content_versions`, associada pelo alias `version_record`; a fixture positiva
+  agora reproduz a expressão de catálogo real do PostgreSQL 16. O teste de
+  policy passou 3/3.
+- A suíte opt-in de migration/policy PostgreSQL 16 passou 7/7. Execução direta
+  confirmou `PASS`, `targetIsolated=true`, `privateSocketVerified=true`,
+  marcador, journal/head, RLS, policies, owners e role. Duração do fixture:
+  `verificationDurationMs=1695`, medição parcial sem valor de RTO. Cleanup
+  removeu cluster, bancos e temporários.
+- Atualizados runbook, DR, SPEC 0113, backlog 30/59, BUILD 0302, runtime,
+  traceability, artefato, plano e ledger. Nova crítica fresh read-only e sync
+  do helper Gauntlet pendentes. REM-09 fica `IN_PROGRESS`; estado global
+  `WAITING_HUMAN_APPROVAL`. Sem origem externa, produção, commit ou deploy.
+
+### AUDIT-REM-09 — comparação integral das policies (2026-10-02, 14:42)
+
+- Um novo caso RED confirmou que uma subconsulta `EXISTS` decoy com
+  `status='PUBLICADO'` permitia aceitar a policy de `content_versions` sem
+  proteger o status da própria linha. O helper foi alterado para comparar a
+  expressão completa normalizada do catálogo PostgreSQL 16. Em
+  `ai_suggestions`, a expressão exige `content_id`, `version` e status
+  publicado na mesma `EXISTS`.
+- A primeira execução estrita revelou que o fixture positivo omitia parênteses
+  emitidos pelo catálogo; a consulta descartável confirmou a forma real e o
+  fixture foi alinhado. Em Node 22.23.2, testes focais passaram 3/3 e a
+  integração opt-in passou 7/7.
+- O drill direto retornou PASS para snapshot `0053`, restore isolado e
+  migration `0054`; `targetIsolated`, `privateSocketVerified`, marcador,
+  journal/head, RLS, policies, owners e papel foram verificados. A duração foi
+  `verificationDurationMs=1668` para o fixture completo, sem valor de RTO;
+  cluster, bancos e temporários foram removidos.
+- Critic fresh read-only e sincronização do helper Gauntlet permanecem
+  pendentes. REM-09 ainda precisa evidência de grants/constraints, aborto de
+  snapshot incompatível e aprovação do principal de migration. Estado global
+  `WAITING_HUMAN_APPROVAL`; sem acesso externo, produção, commit ou deploy.
+
+### AUDIT-REM-09 — preservação de casts no comparador (2026-10-02, 14:50)
+
+- Uma regressão RED mostrou que retirar globalmente `::text` aceitava uma
+  expressão `status::text` que não coincide com a policy catalogada. O helper
+  agora preserva casts e normaliza apenas espaços, pontuação e caixa fora de
+  literais SQL. GREEN passou o caso novo; teste focal 3/3.
+- A integração opt-in PG16 passou 7/7 em Node 22.23.2. O drill direto retornou
+  PASS, `targetIsolated=true`, `privateSocketVerified=true` e verificações de
+  marcador/journal/RLS/policies/owners/role; `verificationDurationMs=1664`
+  mede o fixture completo, sem valor de RTO. Cleanup removido.
+- O crítico fresh e o sync oficial do Gauntlet seguem pendentes. REM-09 ainda
+  carece grants/constraints autorizados, abort de snapshot incompatível e
+  confirmação do principal operacional; estado global permanece
+  `WAITING_HUMAN_APPROVAL`.
+
+### Gates finais antes da crítica fresh — AUDIT-REM-09 (2026-10-02, 14:57)
+
+- Em Node 22.23.2 passaram typecheck, ESLint focal, Prettier nos arquivos
+  alterados do escopo, `verify:documentation`, `verify:traceability`,
+  `verify:audit-consistency`, `verify:product-definition`,
+  `verify:migrations` (55 migrations até `0054`), `verify:secrets` e
+  `git diff --check`.
+- O JSON do ledger de orquestração foi parseado; seu formato compacto ficou
+  fora da verificação Prettier focal. O estado Gauntlet permanece stale por
+  drift intencional até a revisão fresh e o sync oficial pelo helper.
+
+### Tentativa de crítica fresh sem veredito — AUDIT-REM-09 (2026-10-02, 15:08)
+
+- Um revisor fresh-context recebeu escopo read-only e ficou em `running` por
+  aproximadamente seis minutos, sem produzir relatório ou hash. Após pedido
+  explícito de conclusão, foi encerrado ainda em `running`; nenhum PASS/REVISE
+  foi inferido.
+- Verifiquei o fingerprint oficial antes/depois: `594920cbd4cb7c80e50e4d78eade6376309713e099dd939e9ba845f17ddc17a1`. O hash do escopo coincide
+  (`4f4caefbe78df62bf3de28ccd89f55e412a138ec1149e92f924e613167cf9934`), assim
+  como o hash do `git status` e os 148 caminhos.
+- O Gauntlet permanece `ACTIVE/FIX_RETEST/STALE`; o delta local continua
+  aguardando nova crítica independente responsiva. Não houve edição pelo
+  revisor nem rebaseline após a tentativa.
+
+### Revalidação dos registros após a tentativa — 2026-10-02 (15:10)
+
+- Após atualizar estado, backlog, artefato e traceability para deixar explícita
+  a ausência de veredito, `verify:documentation`, `verify:traceability`,
+  `verify:audit-consistency`, Prettier focal, parse JSON e `git diff --check`
+  passaram novamente. O estado global continua `WAITING_HUMAN_APPROVAL`.
+
+### Preflight de archive e aborto antes do banco-alvo — AUDIT-REM-09 (2026-10-02, 15:24)
+
+- A integração RED exigiu `snapshotPreflightVerified` e
+  `corruptSnapshotAbortVerified`; a execução falhou porque o drill ainda criava
+  o destino sem inspecionar o archive.
+- O executor agora executa `pg_restore --list` e extrai/decomprime o dump custom
+  válido para SQL temporário privado antes da criação do banco-alvo. A cópia
+  sintética com magic header adulterado é rejeitada pelo mesmo preflight; a
+  consulta ao catálogo confirma que o destino segue ausente. O arquivo de
+  extração é removido em sucesso ou falha.
+- `restore-migrations.test.ts` passou 4/4 com PostgreSQL 16 opt-in; a suíte
+  migration/policy combinada passou 7/7 em Node 22.23.2. O drill direto passou
+  em `verificationDurationMs=1730` para o fixture integral, sem valor de RTO.
+  Cleanup removeu cluster descartável, bancos e temporários.
+- Runbooks, SPEC 0113/0118, backlog, traceability, artefato REM-09 e plano
+  foram sincronizados. O escopo não cobre incompatibilidade semântica de
+  schema, backup externo, grants/constraints autorizados ou principal de
+  migration aprovado. A revisão fresh anterior segue sem veredito; Gauntlet
+  permanece `ACTIVE/FIX_RETEST/STALE`, sem rebaseline.
+- Estado global continua `WAITING_HUMAN_APPROVAL`; REM-09 segue `IN_PROGRESS`.
+  Nenhum banco externo, produção, commit, push ou deploy foi utilizado.
+
+### Gates pós-sincronização — AUDIT-REM-09 (2026-10-02, 15:28)
+
+- Node 22.23.2: typecheck, ESLint focal, Prettier focal, documentação,
+  traceability, audit-consistency, product-definition, migrations (55 até
+  `0054`), secrets, sintaxe, parse do ledger e `git diff --check` passaram.
+- A suíte opt-in final de migration/policy passou 7/7 em 2 arquivos; o drill
+  direto já registrado em 1.730 ms continuou com resultado PASS antes da
+  sincronização. Nenhum acesso externo ou dado real foi usado.
+- A revisão independente fresh continua necessária; o estado oficial Gauntlet
+  permanece `ACTIVE/FIX_RETEST/STALE` até receber veredito válido.
+
+### Integridade das críticas fresh e próxima fatia — AUDIT-REM-09 (2026-10-02, 15:47)
+
+- C1 retornou APPROVE, mas executou a suíte e mudou somente o cache ignorado
+  `node_modules/.vite/vitest/.../results.json`. O fingerprint Gauntlet divergiu
+  (`7e509a79…` para `91ff3be6…`), embora o hash do diff Git tenha permanecido
+  `404dfacb…`; pelo contrato read-only, a revisão é INVALID. Cache preservado.
+- C2 usou pacote fresh sem comandos que escrevessem cache, permaneceu running
+  por ~150 s e foi encerrada após pedido/interrupção sem veredito. Fingerprint
+  pré/pós igual (`91ff3be6…`). Nenhum review PASS aceito; Gauntlet stale.
+- Próxima implementação segura: teste de paridade das constraints catalogadas
+  nas tabelas `content_versions` e `ai_suggestions` do fixture `0053` para o
+  destino restaurado. Grants e principal privilegiado ficam sem decisão até
+  haver contrato operacional aprovado.
+- Estado geral `WAITING_HUMAN_APPROVAL`; REM-09 segue `IN_PROGRESS`. Sem
+  banco externo, produção, commit, push ou deploy.
+
+### Paridade do catálogo e gates finais — AUDIT-REM-09 (2026-10-02, 16:05)
+
+- RED/GREEN completou a comparação estrutural do restore entre a origem
+  sintética `0053` e o alvo após `0054`, para `content_versions` e
+  `ai_suggestions`: colunas, constraints catalogadas/validadas e índices.
+  A evidência não extrapola para outras tabelas, grants ou snapshots externos.
+- A integração `restore-migrations` passou 4/4; migration/policy passou 7/7
+  com Vitest `--no-cache`, mantendo o SHA do cache persistente
+  `6013aaa8f1bb8d6ac472f678d1a2328e30c40de66b01d195c9a5656c48035ef8`. O drill
+  descartável PG16 retornou PASS com preflight e aborto de header corrompido
+  verdadeiros, `constraintsVerified=true` e `verificationDurationMs=1762`.
+- Typecheck, ESLint focal, Prettier, `verify:documentation`,
+  `verify:traceability`, `verify:audit-consistency`,
+  `verify:product-definition`, `verify:migrations` (55 até `0054`),
+  `verify:secrets`, `node --check`, parse do ledger JSON e `git diff --check`
+  passaram em Node 22.23.2. O ledger manteve JSON compacto e válido.
+- Próximo passo: crítica fresh bounded para R10/R11 com fingerprint completo
+  pré/pós e teste permitido somente com `--no-cache`. REM-09 continua
+  `IN_PROGRESS`; semantic snapshot incompatibility, grants/principal, prova
+  operacional e decisões humanas seguem abertos. Gauntlet permanece
+  `ACTIVE/FIX_RETEST/STALE`; sem rebaseline, commit, push, deploy ou acesso
+  externo.
+
+### Rejeição de divergência estrutural — AUDIT-REM-09 (2026-10-02, 16:26)
+
+- A revisão do critério R10 e do SPEC 0118 §32 confirmou oracle local apenas
+  para o catálogo das duas tabelas. Em TDD, o teste RED falhou pela ausência
+  do comparador; GREEN extraiu `restoreIntegrityCatalogMatches`, integrado ao
+  drill. Casos cobrem catálogo igual e diferenças de tipo, constraint, índice,
+  coluna ausente, constraint não validada e índice não utilizável.
+- Teste focal restore passou 6/6, com teste PG16 skipped sem opt-in. A suíte
+  opt-in migration/policy passou 10/10 com `--no-cache`; cache Vitest SHA
+  preservado em `6013aaa8f1bb8d6ac472f678d1a2328e30c40de66b01d195c9a5656c48035ef8`.
+  Drill direto PG16 descartável retornou PASS, todos os flags de preflight e
+  catálogo verdadeiros, `verificationDurationMs=1774`.
+- A crítica fresh C3 foi encerrada sem veredito após cerca de 150 s. Fingerprint
+  oficial completo pré/pós coincidiu em
+  `1175c8824ab98a2924e53d5c97764065a320118c81304cf41cbd5b540393b4c9`.
+  Nenhum parecer foi aceito; Gauntlet permanece `ACTIVE/FIX_RETEST/STALE`.
+- Resta incompatibilidade semântica de archive legível/journal válido sem
+  fixture e oracle contratados, além de grants, constraints do banco restante,
+  principal de migration e prova operacional. REM-09 continua `IN_PROGRESS`;
+  estado global `WAITING_HUMAN_APPROVAL`. Sem acesso externo, produção, commit,
+  push ou deploy.
+
+### Correção do audit de dependências de produção — 2026-10-02 (16:38)
+
+- `pnpm audit --prod` encontrou 11 advisories: crítico em Next.js e dez em
+  `undici` transitivo. Após confirmar as versões corrigidas nos advisories
+  oficiais, `apps/web` passou para `next@16.3.6` e o override de produção de
+  `undici` passou a `7.29.1`; lockfile foi atualizado e validado com install
+  congelado. O audit final não reporta vulnerabilidades conhecidas.
+- `pnpm lint`, `pnpm typecheck`, typechecks de web/integrations, teste
+  `operations.browser` 23/23, verify de migrations/secrets, Prettier e gates
+  documentais passaram. O typecheck da web revelou uma asserção TS estreita no
+  teste sintético de exportação; ela foi corrigida lendo o Blob capturado pelo
+  spy, sem mudar a cobertura funcional.
+- Evidência registrada em
+  `.agent/artifacts/remediation/dependency-audit-remediation-20261002.md` e
+  `traceability.yml`. A correção é local e não altera o estado global
+  `WAITING_HUMAN_APPROVAL`; Gauntlet continua `ACTIVE/FIX_RETEST/STALE`, sem
+  veredito fresh. Nenhum deploy, commit ou push.
+
+### Revalidação canônica pós-sincronização — 2026-10-02 (16:44)
+
+- Sob Node 22.23.2 e pnpm 10.33.0, passaram audit de produção (zero avisos),
+  lint, typecheck do workspace, format check, documentation, traceability,
+  audit-consistency, product-definition, exposure, CI contract, migrations
+  (55 até `0054`) e secrets. Prettier focal dos documentos alterados, parse do
+  ledger, `node --check` do helper e `git diff --check` também passaram.
+- A primeira chamada ambiental usou Node 24, fora do engine declarado; seus
+  resultados não foram usados. Lint, format e verificações foram repetidos sob
+  Node 22.23.2. O typecheck canônico sob Node 22 também passou.
+- A nova entrada de traceability e o artefato do audit de dependências foram
+  incluídos. Próxima ação: crítica fresh, bounded e read-only; até parecer
+  válido, Gauntlet permanece `ACTIVE/FIX_RETEST/STALE` e nenhuma evidência é
+  promovida. REM-09 continua `IN_PROGRESS`; gates humanos permanecem abertos.
+
+### Crítica fresh C4 bounded — 2026-10-02 (16:48)
+
+- Reviewer fresh sealed aprovou o delta anterior: catálogo restore das duas
+  tabelas e pin de dependências. Confirmou que o runbook limita o restore a
+  fixture sintética e que o verificador separado de origem externa só valida
+  marcador. Fingerprint oficial completo pré/pós igual:
+  `38bdac60a9ef3aa8144d6369abe0fdf252141436c5719daeb388daf41629ce6b`.
+- O parecer não promove REM-09 nem o Gauntlet global, e não abrange alterações
+  posteriores. Sem rebaseline; `ACTIVE/FIX_RETEST/STALE` continua correto.
+
+### TDD de incompatibilidade estrutural com journal válido — AUDIT-REM-09 (16:54)
+
+- RED: a integração opt-in falhou porque o resultado do drill não afirmava a
+  rejeição de um archive semanticamente incompatível. GREEN: o drill cria uma
+  segunda archive custom com uma coluna extra em `content_versions`, sem
+  modificar o journal persistido `0053`; archive/list/decode e prefixo são
+  válidos, `0054` é aplicada e a comparação do catálogo rejeita o alvo.
+- Sob Node 22.23.2, `restore-migrations.test.ts` passou 7/7; drill direto PG16
+  passou com `semanticSnapshotMismatchRejected=true`, todos os demais flags
+  verdadeiros e `verificationDurationMs=2172`. Origem, alvo(s), role, cluster e
+  arquivos temporários são descartáveis e removidos.
+- O cenário comprova um drift de coluna controlado nas duas tabelas cobertas;
+  não estende a prova a archives externos ou schemas arbitrários. REM-09 segue
+  `IN_PROGRESS`; solicitar C5 fresh para esse novo delta. Gauntlet permanece
+  stale e não foi rebaselineado.
+
+### Gates pós-sincronização do cenário semântico — 2026-10-02 (17:03)
+
+- Sob Node 22.23.2/pnpm 10.33.0, a suíte migration/policy opt-in passou 10/10;
+  lint, typecheck do workspace, `format:check`, Prettier dos documentos,
+  documentation, traceability, audit-consistency, product-definition, exposure,
+  CI contract, migrations (55 até `0054`), secrets e `pnpm audit --prod`
+  passaram. O audit não encontrou vulnerabilidades conhecidas.
+- `node --check scripts/verify-restore-migrations.mjs`, parse do ledger JSON e
+  `git diff --check` passaram. Próxima ação: crítica C5 fresh/read-only com
+  fingerprint oficial pré/pós; não rebaselinear por inferência. O reviewer C4
+  cobre somente o delta anterior e mantém o status global stale.
+
+### Crítica fresh C5 — AUDIT-REM-09 (2026-10-02, 17:09)
+
+- Peirce revisou estaticamente o cenário de archive com journal válido `0053`
+  e drift estrutural; retornou `APPROVE`, sem achados. Verificou preflight,
+  restore, aplicação de `0054`, prefixo, rejeição de catálogo, cleanup e
+  limites documentais. Nenhum teste foi executado pelo reviewer.
+- Fingerprint oficial completo pré/pós coincidiu em
+  `673584d9c4ed3c2674a2fc53a6a99456212d899859ad840759fb541826c2a6da`;
+  escopo repository+state, 43.357 entradas, HEAD inalterado. Sem mutação e sem
+  rebaseline. A aprovação é deste delta limitado, não do Gauntlet global nem de
+  REM-09; permanecem gates humanos, grants, archive externo e operação.
+
+### Matriz local de grants no drill de restore — AUDIT-REM-09 (2026-10-02, 17:24)
+
+- RED adicionou quatro sinais ao contrato do resultado e falhou porque o drill
+  não verificava privilégios efetivos do app role. GREEN reaproveita
+  `roleProvisionSql` do provisionador local e compara todos os grants de tabela
+  efetivos da schema pública contra `applicationTablePrivileges`.
+- O fixture confirmou `knowledge_documents` sem acesso, app role sem ownership,
+  sem capacidades administrativas e default-deny em relação criada após o
+  provisionamento. A integração `restore-migrations`, policy e
+  `migration-governance` passou 40/40 com `--no-cache`; o drill PG16 direto
+  passou com `applicationGrantMatrixVerified`,
+  `applicationRoleLeastPrivilegeVerified`,
+  `applicationRoleDefaultPrivilegesDenied` e
+  `applicationRoleHasNoOwnership` verdadeiros; duração `2186 ms`.
+- A checagem cobre apenas o provisionador local no fixture descartável. Não
+  valida grants/owners produtivos nem decide o principal operacional de
+  migration. Lint, typecheck, `format:check`, Prettier focal, documentation,
+  traceability, audit-consistency, product-definition, exposure, CI contract,
+  migrations, secrets, audit-prod, ledger JSON e diff-check passaram. A única
+  falha é `verify:evidence-consistency`, que exige mutation run ID genuíno de
+  candidato committed; coverage e audit passam. Próxima etapa: crítica fresh
+  bounded com fingerprint completo, sem rebaseline global.
+
+### Credenciais temporárias do fixture e revalidação — AUDIT-REM-09 (17:37)
+
+- A revisão final detectou que senhas aleatórias dos roles sintéticos seriam
+  passadas ao `psql` em argumentos de processo. O drill agora as entrega por
+  arquivo SQL temporário em diretório privado, modo `0600`, removido no cleanup.
+- PostgreSQL 16 direto passou com os quatro flags de grant/least-privilege e
+  `verificationDurationMs=2230`. Migration, policy e migration-governance
+  passaram 40/40 com `--no-cache`; lint, typecheck, `format:check` e sintaxe
+  também passaram.
+- Os grants verificados continuam limitados à matriz do provisionador local;
+  nenhum segredo real, grant produtivo ou principal operacional foi usado.
+  Repetir gates documentais pós-sync e solicitar crítica fresh com fingerprint
+  completo antes de avançar; não rebaselinear o Gauntlet.
+
+### Gates pós-hardening e pré-crítica — AUDIT-REM-09 (17:40)
+
+- Depois de mover o SQL de provisionamento para arquivo temporário `0600`,
+  migration/policy/governance passou 40/40; drill direto PG16 passou em
+  2.230 ms. Lint, typecheck, formato do código, Prettier focal, documentation,
+  traceability, audit-consistency, product-definition, exposure, CI contract,
+  migrations, secrets, audit-prod, JSON do ledger e diff-check passaram.
+- `verify:evidence-consistency` passou cobertura e audit, falhando somente
+  pela ausência do mutation run ID real de candidato committed. A próxima ação
+  é crítica C6 bounded read-only com fingerprint oficial completo pré/pós;
+  Gauntlet continua `ACTIVE/FIX_RETEST/STALE` sem rebaseline.
+
+## 2026-10-02 — Crítica C6 e follow-up de diagnóstico — AUDIT-REM-09 / REM-08
+
+### TIMESTAMP
+
+2026-10-02T18:03:36-03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Remediação local de restore, proveniência e continuidade
+
+### SPRINT / TASK
+
+`REMEDIATION-EXEC-20261001` — `AUDIT-REM-09`, `AUDIT-REM-08`
+
+### ACTION
+
+A crítica fresh C6 da matriz local de grants retornou `REVISE` P2: o `stderr`
+de `psql` poderia ecoar SQL com credenciais sintéticas ao falhar. O reviewer
+também apontou falta de uma asserção específica para linhas malformadas no
+catálogo. O fingerprint oficial completo pré/pós coincidiu em
+`17f5373ca79eb7ffd36fb864427fc210a3dac4123a73f08da528a341fa9ef12a`, escopo
+repository+state, HEAD `3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff`; a crítica não
+executou comandos/testes. Foi criado RED para o formatador ausente; GREEN agora
+suprime `stderr` na invocação de provisionamento e cobre não-vazamento e linhas
+malformadas. Os docs 55–59, scorecard v7, rastreabilidade e checkpoints também
+foram reconciliados sem criar nova scorecard ou alterar evidência histórica.
+
+### RESULT
+
+Em Node 22.23.2, restore-migrations focal passou 10/10 com um teste live
+condicionalmente ignorado; restore/policy/migration-governance passou 42/42 com
+`--no-cache`. Drill PostgreSQL 16 descartável retornou PASS com todos os flags
+verdadeiros e `verificationDurationMs=2215`. O parecer C6 vale somente para o
+snapshot pré-correção; revisão fresh do follow-up e gates finais pós-sync ainda
+pendem. O efeito é local/sintético e não prova grants produtivos, compatibilidade
+arbitrária de backup ou principal operacional aprovado.
+
+### DECISIONS
+
+Preservar `WAITING_HUMAN_APPROVAL`; manter REM-08/09 em andamento e o Gauntlet
+`ACTIVE/FIX_RETEST/STALE`. Manter scorecard v7 somente como histórico; não
+rebaselinear por inferência. `verify:evidence-consistency` continua exigindo
+mutation run ID genuíno de candidato committed.
+
+### NEXT ACTION
+
+Executar lint/typecheck/formato e gates documentais/rastreabilidade, capturar
+fingerprint oficial completo e solicitar crítica fresh read-only da correção.
+Depois registrar o resultado, fechar o índice de proveniência sem self-hash e
+continuar REM-09 apenas com critérios autorizados.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-02 — Gates pós-sync do follow-up C6
+
+### TIMESTAMP
+
+2026-10-02T18:10:10-03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER / GAUNTLET LOOP
+
+### PHASE
+
+Remediação local de restore e proveniência
+
+### SPRINT / TASK
+
+`REMEDIATION-EXEC-20261001` — `AUDIT-REM-09`, `AUDIT-REM-08`
+
+### ACTION
+
+Após o ajuste de stderr e a sincronização de docs, passaram lint, typecheck,
+format:check, Prettier focal, documentation, traceability, audit-consistency,
+product-definition, exposure, CI contract, migrations (55 até `0054`), secrets,
+sintaxe dos scripts, parse do ledger JSON e `git diff --check`. A suíte focal
+passou 10/10 com um teste live condicionalmente ignorado; restore/policy/
+migration-governance passou 42/42 com `--no-cache`; o drill descartável PG16
+passou com `verificationDurationMs=2215` e todos os sinais esperados. O secret
+scan passou após encurtar a credencial falsa no teste; nenhum segredo real foi
+usado.
+
+### RESULT
+
+`verify:evidence-consistency` valida coverage e audit, mas falha apenas porque
+não há mutation run ID genuíno de candidato committed. Este impedimento não foi
+contornado. A crítica fresh pós-correção de stderr ainda estava pendente; o
+Gauntlet permaneceu `ACTIVE/FIX_RETEST/STALE`.
+
+### NEXT ACTION
+
+Capturar fingerprint oficial completo do snapshot estabilizado e pedir review
+fresh bounded read-only do delta corrigido. Registrar o parecer, sem
+rebaseline global; completar hashes atuais e proveniência REM-08.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-02 — Review Kepler e cobertura do call-site — AUDIT-REM-09
+
+### TIMESTAMP
+
+2026-10-02T18:24:46-03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Hardening local de restore e proveniência
+
+### SPRINT / TASK
+
+`REMEDIATION-EXEC-20261001` — `AUDIT-REM-09` / `AUDIT-REM-08`
+
+### ACTION
+
+A crítica fresh Kepler retornou `REVISE` P2: a regressão anterior testava o
+formatador diretamente e não cobria a opção no call-site de provisionamento.
+O fingerprint oficial completo pré/pós coincidiu em
+`02afceb869730af4291e3c5e9fff255a63521bc7652e736e36b552a2e7437455`, escopo
+repository+state, HEAD inalterado `3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff`.
+O reviewer não executou comandos/testes. RED reproduziu ausência do módulo de
+runner; GREEN extraiu runner injetável e função de provisionamento, usados
+também pelo drill. O teste força falha sintética de `psql` com senha falsa em
+stderr e verifica erro retornado, ausência de cause e ausência da senha em
+argv.
+
+### RESULT
+
+Node 22.23.2: restore-migrations focal passou 10/10 com um skip live
+condicional; restore/policy/migration-governance passou 42/42 com
+`--no-cache`; drill PostgreSQL 16 direto retornou PASS em 2.226 ms com todos os
+flags verdadeiros. Lint/typecheck/formato e gates documentais ainda precisavam
+ser repetidos após a extração. A evidência permanece local e sintética.
+
+### DECISIONS
+
+Registrar o REVISE com fingerprint correspondente, sem chamar isso de aprovação
+global. REM-09 continua `IN_PROGRESS`; REM-08 continua sem nova scorecard; o
+Gauntlet permanece `ACTIVE/FIX_RETEST/STALE`.
+
+### NEXT ACTION
+
+Executar lint/typecheck/format, gates documentais/rastreabilidade, CI/migrations/
+secrets, sintaxe, ledger JSON e diff-check. Depois obter fingerprint oficial
+completo e pedir crítica fresh bounded do caminho de falha injetado.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-02 — Gates pós-extração do runner — AUDIT-REM-09 / REM-08
+
+### TIMESTAMP
+
+2026-10-02T18:29:32-03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER / GAUNTLET LOOP
+
+### PHASE
+
+Hardening local de restore e proveniência
+
+### SPRINT / TASK
+
+`REMEDIATION-EXEC-20261001` — `AUDIT-REM-09`, `AUDIT-REM-08`
+
+### ACTION
+
+Após extrair `createRestoreToolRunner` e `runRoleProvisioningCommand`,
+lint/typecheck/format, Prettier focal, documentation, traceability,
+audit-consistency, product-definition, exposure, CI contract, migrations,
+secrets, syntax, ledger JSON e `git diff --check` passaram. A suíte opt-in
+restore/policy/migration-governance passou 42/42; o drill direto PG16 passou
+em 2.226 ms com todos os flags verdadeiros. A regressão percorre runner e
+call-site e confirma que stderr com senha sintética não aparece na mensagem
+propagada, causa nem argv.
+
+### RESULT
+
+`verify:evidence-consistency` confirma coverage e audit, falhando somente pela
+ausência do mutation run ID genuíno de candidato committed. Não há PASS
+independente para o código extraído; a crítica fresh seguinte está pendente.
+
+### NEXT ACTION
+
+Capturar fingerprint oficial completo do snapshot estabilizado e solicitar
+review fresh bounded read-only do caminho de falha injetado; registrar o
+resultado sem rebaseline. Depois atualizar hashes da proveniência REM-08.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-02 — Gates documentais pós-extração — AUDIT-REM-08/09
+
+### TIMESTAMP
+
+2026-10-02T18:36:46-03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER / GAUNTLET LOOP
+
+### PHASE
+
+Remediação local de restore e proveniência
+
+### SPRINT / TASK
+
+`REMEDIATION-EXEC-20261001` — `AUDIT-REM-08`, `AUDIT-REM-09`
+
+### ACTION
+
+Os novos registros do log append-only foram colocados no fim em ordem
+cronológica, preservando as entradas históricas anteriores. Prettier focal,
+`verify:documentation`, `verify:traceability`, `verify:audit-consistency`, parse
+do ledger JSON e `git diff --check` passaram. Esta rodada documental usou Node
+v24.20.0, fora da faixa declarada do projeto; os testes focais de implementação
+e o drill do runner foram executados anteriormente sob Node 22.23.2.
+
+### RESULT
+
+`verify:evidence-consistency` continua passando coverage/audit e bloqueado pela
+ausência de mutation run ID genuíno de candidato committed. A revisão fresh do
+runner injetável e do call-site ainda está pendente; nenhum PASS independente
+foi inferido. REM-08/09 seguem `IN_PROGRESS` e o Gauntlet `ACTIVE/FIX_RETEST/STALE`.
+
+### NEXT ACTION
+
+Capturar o fingerprint oficial completo repository+state e solicitar crítica
+estática fresh, bounded e read-only de `scripts/restore-tool-runner.mjs`, da
+chamada de provisionamento e da regressão de falha injetada. Registrar o
+veredito válido, sem rebaseline global, e então fechar o inventário de hashes
+correntes da reconciliação REM-08.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-02 — Review C7 e correção do catálogo de restore — AUDIT-REM-09
+
+### TIMESTAMP
+
+2026-10-02T18:51:27-03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Hardening local de restore e proveniência
+
+### SPRINT / TASK
+
+`REMEDIATION-EXEC-20261001` — `AUDIT-REM-09` / `AUDIT-REM-08`
+
+### ACTION
+
+A crítica fresh C7 encontrou P2 em `restoreIntegrityCatalogMatches`: catálogos
+de origem e destino idênticos, mas com rows de coluna/constraint/índice
+incompletas, podiam retornar compatíveis. Fingerprint oficial repository+state
+pré/pós coincidiu em
+`183b1b9810604a6187f7306d2138fb84004de40129febf940e7be8353e7b3807`; o reviewer
+não escreveu arquivos nem executou testes. RED reproduziu o aceite indevido.
+GREEN valida formato/tipos de campos, tabelas permitidas e chaves únicas; a
+regressão compara pares igualmente incompletos e com tipos errados.
+
+### RESULT
+
+Sob Node 22.23.2, restore-migrations/policy/migration-governance passou 42
+testes e ignorou um teste live condicionalmente. `tsc -b`, lint focal e
+Prettier focal passaram. O drill descartável PostgreSQL 16 passou com todos os
+flags e `verificationDurationMs=2192`. O P2 está corrigido localmente; a crítica
+fresh do snapshot corrigido ainda está pendente.
+
+### DECISIONS
+
+Manter REM-09 `IN_PROGRESS`, REM-08 sem scorecard nova e o Gauntlet
+`ACTIVE/FIX_RETEST/STALE`. `verify:evidence-consistency` continua exigindo um
+mutation run ID genuíno de candidato committed; nenhuma rebaseline foi feita.
+
+### NEXT ACTION
+
+Sincronizar registros e repetir gates após a correção, capturar fingerprint
+oficial completo e solicitar outra crítica fresh read-only do comparador e do
+teste de catálogo malformado. Depois fechar hashes atuais da proveniência
+REM-08, sem inferir aprovação global.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-02 — Gates pós-correção C7 — AUDIT-REM-08/09
+
+### TIMESTAMP
+
+2026-10-02T18:57:36-03:00
+
+### ENGINE
+
+BUILD / RUNTIME CONTROLLER / GAUNTLET LOOP
+
+### PHASE
+
+Hardening local de restore e proveniência
+
+### SPRINT / TASK
+
+`REMEDIATION-EXEC-20261001` — `AUDIT-REM-08`, `AUDIT-REM-09`
+
+### ACTION
+
+Após sincronizar a correção C7, Node 22.23.2 passou restore-migrations,
+restore-policy-contract e migration-governance: 42 testes PASS e 1 teste live
+condicionalmente ignorado. O drill direto PostgreSQL 16 retornou PASS com
+todos os flags e `verificationDurationMs=3313`, duração técnica parcial que
+não representa RTO. Lint, `tsc -b`, `format:check`, Prettier, CI contract,
+secrets, traceability, migrations, product-definition, exposure, documentation,
+audit-consistency, parse do ledger JSON e `git diff --check` passaram.
+
+### RESULT
+
+`verify:evidence-consistency` permanece aberto pela ausência de mutation run ID
+genuíno de candidato committed; coverage e audit são aprovados pelo verificador.
+Nenhuma revisão independente válida cobre a correção C7 ainda. REM-08/09 seguem
+`IN_PROGRESS`; Gauntlet `ACTIVE/FIX_RETEST/STALE`, sem rebaseline.
+
+### NEXT ACTION
+
+Capturar fingerprint oficial completo repository+state deste checkpoint e
+solicitar crítica fresh read-only do comparador de catálogos e da regressão
+para rows incompletas ou de tipos inválidos nos dois lados. Registrar somente
+o resultado cujo fingerprint pré/pós coincidir; atualizar depois o inventário
+de hashes da proveniência REM-08.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-02 — Review C8 e correção de nome vazio — AUDIT-REM-09
+
+### TIMESTAMP
+
+2026-10-02T19:03:54-03:00
+
+### ENGINE
+
+BUILD / GAUNTLET LOOP / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE
+
+Hardening local de restore e proveniência
+
+### SPRINT / TASK
+
+`REMEDIATION-EXEC-20261001` — `AUDIT-REM-09` / `AUDIT-REM-08`
+
+### ACTION
+
+A review fresh C8 encontrou P2: `restoreIntegrityCatalogMatches` aceitava
+`tableNames: [""]` com rows source/target iguais e nome de tabela vazio. O
+fingerprint oficial repository+state pré/pós coincidiu em
+`cc3fd50ba26b1a3a41da59328e7c31f0de2917e0d0e54a5c46796e221dbf0041`; Faraday não
+executou testes nem escreveu arquivos. RED reproduziu `true`; GREEN passou a
+validar cada `tableNames` com `isNonEmptyString`, e uma regressão exercita o par
+de catálogos igualmente vazio.
+
+### RESULT
+
+Após C9, Node 22.23.2 passou restore-migrations/policy/migration-governance com
+43 testes PASS e 1 teste live condicionalmente ignorado. Lint, `tsc -b`,
+`format:check`, Prettier, CI contract, secrets, traceability, migrations,
+product-definition, exposure, documentation, audit-consistency, JSON e
+diff-check passaram. Drill direto PostgreSQL 16 retornou PASS com todos os
+flags e `verificationDurationMs=2343`. O P2 está corrigido localmente; a review
+fresh do snapshot atualizado ainda está pendente.
+
+### DECISIONS
+
+Manter REM-09 `IN_PROGRESS`, REM-08 sem scorecard nova, Gauntlet
+`ACTIVE/FIX_RETEST/STALE` e estado `WAITING_HUMAN_APPROVAL`. `verify:evidence-
+consistency` segue aberto por mutation run ID genuíno ausente de candidato
+committed. Nenhuma rebaseline foi feita.
+
+### NEXT ACTION
+
+Sincronizar os registros, repetir gates documentais pós-sync, capturar
+fingerprint oficial completo e pedir uma nova crítica fresh read-only do
+comparador incluindo o nome vazio e as regressões de linha malformada. Registrar
+somente verdict com fingerprint pré/pós coincidente e depois fechar o
+inventário de hashes REM-08.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-02 — checkpoint de retomada C9 (19:17)
+
+### ACTION
+
+Consolidado o checkpoint após a correção C9 de `tableNames` vazio. As suítes
+restore/policy/migration-governance registradas passaram 43 testes com um skip
+live condicional; o drill PG16 passou em 2.343 ms, intervalo técnico parcial,
+sem valor de RTO. Gates de código e documentação pós-sync estão registrados no
+estado prevalente. Worktree continua dirty e preservado, sem commit.
+
+### RESULT
+
+Estado continua `WAITING_HUMAN_APPROVAL`; Gauntlet global `ACTIVE/FIX_RETEST/STALE`.
+Nenhuma rebaseline ou scorecard nova. `verify:evidence-consistency` continua
+aberta pela falta de mutation run ID genuíno de candidato committed.
+
+### NEXT ACTION
+
+Na retomada, capturar fingerprint oficial completo repository+state e executar
+review fresh, read-only e bounded C10 do comparador, seus casos vazios,
+malformados/duplicados e caller. Exigir fingerprint pré/pós coincidente para
+validar o parecer; depois concluir o inventário de hashes correntes REM-08.
+
+### STATUS
+
+WAITING_HUMAN_APPROVAL
+
+## 2026-10-03 — Auditoria documental e runtime local do repositório
+
+### TIMESTAMP
+
+2026-10-03T02:17:00-03:00
+
+### ENGINE
+
+AUDIT ENGINE / ENGINEERING FRAMEWORK / ORCHESTRATE / RUNTIME CONTROLLER
+
+### PHASE / TASK
+
+Auditoria local solicitada — `AUDIT-REPOSITORY-20261003`.
+
+### ACTION
+
+A solicitação de auditoria substituiu, nesta rodada, a retomada C10 como escopo
+ativo; nenhuma remediação do produto foi iniciada. Foram inventariados/processados
+os 85 arquivos iniciais de docs (1.619.627 bytes/40.445 linhas), com leitura
+semântica em três lanes e percurso assistido dos 339 blocos do log histórico.
+PRD/SPEC/BUILD, código, contratos, migrations, testes, CI e rastreabilidade
+foram confrontados. Rodaram gates, coverage, PostgreSQL/RLS/restore, Redis,
+build/E2E e reproduções locais controladas sob Node 22.23.2/pnpm 10.33.0.
+Somente bancos/serviços novos e descartáveis com dados sintéticos receberam
+fixtures; nenhuma alteração de produto, commit, push ou deploy.
+
+### RESULT
+
+Relatório `docs/audits/repository-audit-2026-10-03.md`: 51 notas consultivas,
+A01–A34, evidências/limites, fases AUDIT e plano de remediação. Coverage:
+1.571 PASS/69 skips em 217 arquivos, 90,03/85,31/94,71/91,24 e floor PASS.
+PG18 provisionado: 245 PASS/2 FAIL/16 skips (contrato idFactory e gate editorial
+de fixture); RLS PASS. Restore PG16 0053→0054 PASS sintético, não RTO. Redis
+descartável 5/5 + restart 2/2 PASS, após uma tentativa SKIP exit 0 corretamente
+classificada NOT_EXECUTED. E2E comum 45/45; modo real 30 PASS/16 FAIL, com
+jornada participante real PASS e configuração incompatível das specs staff
+mockadas. Build, lint, typecheck e formato passaram.
+
+Audit global: 4 high/3 moderate em dev tooling; audit produção 0. Complexidade
+FAIL (3 budgets), traceability release FAIL (dirty), evidence-consistency FAIL
+(mutation run ID ausente), candidate FAIL (8 gates) e Triple AAA REVISE
+(10 pendências). Gates estruturais de docs/PRD/rotas/migrations/secrets/ciclos
+passaram. As reproduções controladas confirmaram conflito de replay por horário,
+timeout IA encapsulado como unknown, DOMINIO_DIGITAL com duas respostas abertas
+ausentes, retenção 7/30/90, ordem delete→upsert atrasado e CAS mapeado para 500.
+Freshness retornou true com 69 paths rastreados de runtime modificados.
+
+Fechamento documental em 2026-10-03T02:24:00-03:00: documentation,
+traceability estrutural, audit-consistency, secrets e diff-check pós-registro
+PASS, com logs `final-*.log` e respectivos registros/digests na pasta de
+evidência. Prettier focal do relatório/manifesto YAML PASS. O manifesto JSON
+da auditoria vincula notas, inventário/leitura inicial e comandos; não atesta
+release nem elimina os FAILs técnicos descritos. Revisão de status confirmou
+somente duas novas entradas: relatório e diretório de evidência; as entradas
+anteriores foram preservadas.
+
+### DECISIONS
+
+Auditoria concluída como entrega; repositório REVISE. Acrescentados itens de
+revisão ao backlog e vínculo próprio ao manifesto, preservando as entradas
+anteriores. A scorecard v7 permanece histórica; isto não é rebaseline AAA nem
+review C10 do Gauntlet. Boundaries REM-03/04, REM-06, REM-08/09, H-REMOTE,
+RF-02/RF-09, AAA-001 e H-CONTENT não foram promovidos. Resultados estáticos,
+reproduções com adapters e serviços live são distinguidos no relatório.
+
+### NEXT ACTION
+
+Abrir fatia BUILD bounded `AUDIT-20261003-REPLAY` para A13, corrigindo identidade
+e replay HTTP sem alterar regras de produto. A01 e A02 devem ser fechados antes
+de release; demais achados seguem a ordem/critério de pronto do relatório.
+Retomada C10/REM-08 permanece pendente no programa anterior.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — entrega `AUDIT-REPOSITORY-20261003` COMPLETED;
+programa global mantém decisões humanas pendentes e repositório REVISE.
+
+## 2026-10-03 — Roadmap e backlog após auditoria do repositório
+
+### TIMESTAMP
+
+2026-10-03T07:59:11-03:00
+
+### ENGINE
+
+BUILD ENGINE (planejamento) / RUNTIME CONTROLLER
+
+### PHASE / TASK
+
+Planejamento documental solicitado — PLAN-AUDIT-20261003.
+
+### ACTION
+
+Lidos estado/log/backlog, skills build-engine/runtime-controller, auditoria
+A01–A34, planos 58/59 e masters BUILD. Confirmados SPEC 0190, 0390/0391 e
+gates documentais 04–08. Produzidos docs/60 e docs/61, com sete fases R0–R6,
+12 sprints mais S0, 34 tasks dos achados e dez de continuidade/validação.
+Cada task contém origem, dono por papel, o que/onde/como, dependências,
+teste e pronto, somados a revisão/evidência/rollback comuns. Os onze épicos
+do backlog mestre e itens REM/SOA foram relacionados, sem duplicar fechamento.
+
+### RESULT
+
+Entrega PLAN-AUDIT-20261003 COMPLETED; próximas correções permanecem sem
+implementação nova. 0300–0302, backlog operacional, estado e traceability
+vinculam os documentos. Evidência de validação em
+docs/audits/repository-remediation-plan-2026-10-03-validation.json, com
+cobertura A01–A34, dependências, links, arquivos e checks documentais.
+O manifesto da auditoria anterior permanece imutável e identifica seu
+snapshot de controle anterior, não os novos registros de planejamento.
+
+Validação em 2026-10-03T08:06:25-03:00: 44 definições completas, mapeamento principal
+A01–A34 sem falta/duplicação, todas as tasks presentes uma vez nas fases,
+15 links locais válidos e dependências técnicas sem ciclos. Prettier dos
+docs 60/61 com override do ignore, lint, typecheck, documentação,
+traceability, audit-consistency, secrets e diff-check PASS. Audit produção
+0; audit global permanece FAIL com 4 high/3 moderate dev, trabalho futuro
+T06. Nenhuma suíte de aplicação foi repetida para a mudança documental.
+
+### DECISIONS
+
+Usar o plano 60/61 para seleção das correções desta auditoria, mantendo
+requisitos PRD/SPEC e decisões aprovadas como superiores. Não estimar datas
+sem capacidade/reprodução. Nenhuma implementação, scorecard, commit, CI
+remota, deploy ou publicação foi executada. Decisões somativas/same-UID e
+gates H-REMOTE/H-CONTENT/AAA-001 preservados; não bloquear o núcleo ou a
+documentação por dependência que pertença somente a outro boundary.
+
+### NEXT ACTION
+
+G01 (preflight atual) → T13 (replay), quando a execução for selecionada.
+Concluir sprints somente com testes, review/auditoria, relatório e backlog;
+follow-up editorial/E2E e demais tasks seguem suas dependências.
+
+### STATUS
+
+READY_FOR_NEXT_STEP — PLAN-AUDIT-20261003 COMPLETED como planejamento;
+repositório REVISE e remediações técnicas/humanas permanecem abertas.
+
+## 2026-10-03 — Início da implementação integral do roadmap/backlog auditados
+
+### TIMESTAMP
+
+2026-10-03T11:29:23.000Z
+
+### ENGINE
+
+BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
+
+### PHASE / TASK
+
+EXEC-AUDIT-20261003; G01 concluído; R1/S1.1/T13 selecionado.
+
+### ACTION / RESULT
+
+Pedido explícito de implementar todas as melhorias do plano. Estado/log/backlog,
+instruções/skills, critérios e contratos recuperados. G01 PASS: documentation e
+CI contract; 645 arquivos auditados conferidos, código sem delta e traceability
+com delta documental esperado. Barra AR03-v1 congela os 44 Pronto; ExecPlan
+integral preserva R0–R6. Resume Gauntlet identificou goal/bar coincidentes e
+drift explícito, sem apagar evidência antiga. Lead executa replay; builders
+disjuntos tratam autoria/CI. A autorização local não decide boundary somativo,
+same-UID, publicação clínica ou aceite operacional.
+
+### NEXT ACTION / STATUS
+
+T13 RED/GREEN e frentes independentes; críticas fresh por escopo e integração.
+IN_PROGRESS — objetivo integral ativo; nenhuma sprint/phase promovida.
+
+## 2026-10-03T12:10:00Z — Implementação e primeiro critic da remediação
+
+- ENGINE: BUILD/GAUNTLET/ORCHESTRATE/ENGINEERING FRAMEWORK/DESIGN DIRECTOR/RUNTIME CONTROLLER.
+- TASKS: T13/T14/T15/T16/T32/T33; CI T03/T04/T05/T09/T10; T07.
+- RESULTADO: replay exclui tempos gerados pelo servidor da identidade, mantendo compatibilidade estrita com registros antigos; RED 4 falhas/GREEN 20 unit. HTTP com clock variável PASS. Browser com resposta perdida e edição pendente passou 12/12; retomada autorizada e recuperação preservando edição passou 15/15. E2E API/PG descartável 1/1 prova dois requests concorrentes, perda após commit, retry e reload; 2 eventos outbox e snapshots idempotentes preservados. Novo GET da tentativa usa proprietário/escopo no servidor e lock PG para snapshot coerente; gabarito/fontes não participam da projeção.
+- AUTORIA: builder T33/T16/T32 reportou RED/GREEN 24/24; vínculo interno principal/sessão exigiu RED 3 falhas/GREEN 24 unit/contrato/HTTP. Refactor e critic editorial ainda pendentes; hold clínico preservado.
+- CRITIC: CRITIC-CI-IDENTITY-AR03-20261003-FRESH-01, I1, fork=false; REJECT, sentinel 11 arquivos pré=pós verificado pelo Lead. Patches ficaram fora de identity/freshness; REVISE/nota insuficiente ainda permitiam readiness; scanner não aplicável em push/schedule era recusado. T05 PASS local. Builder retomado para round 2, sem ampliar a barra.
+- EVIDÊNCIA: `.agent/artifacts/remediation-20261003/`, incluindo logs RED/GREEN, `replay-real-e2e.json`, `authoring-report.json`, `critic-ci-ar03-report.md` e `critic-ci-ar03-evidence.json`.
+- PRÓXIMA AÇÃO: refactor/checks/review fresh e PG focal; integrar CI round 2; continuar R1/S1.2 e fases restantes.
+- STATUS: IN_PROGRESS integral. Nenhuma sprint/phase/release, evidência remota ou publicação clínica aprovada por este checkpoint.
+
+## 2026-10-03T12:43:00Z — Integração strict, runtime e terceiro round CI
+
+- EXEC-AUDIT-20261003 IN_PROGRESS integral; nenhum fechamento de phase/release.
+- PG focal 4/4 e E2E browser→API→PG18.4 1/1: concorrência, resposta perdida, retry, reload, audit/outbox preservados. CSS lateral desktop/mobile real legível; critic core I1 fresh em andamento.
+- O caminho produtivo de sessão omitia sessionId após a leitura PG. RED 2/GREEN 27 agora cobre autenticação/rotação e mantém binding interno, sem exposição na sessão pública.
+- CI R2 REJECT: configuração/arquivos ignorados, completude de digests/summaries e caminho RLS no job de promoção. Sentinel histórico 11 pré=pós confere com pre independente do Lead; novos deltas R3 são posteriores. Ownership release-evidence e CI typings transferido explicitamente, com alterações anteriores preservadas.
+- T01 RED PG real registrado; T08 strict root tests sem exclusões, probe idFactory rejeitado e comando oficial ligado. T12 PASS sintético do runner antigo com SHA unknown é inválido; novo runner deve registrar NOT_EXECUTED/nonzero quando não executa. Builders têm ownership disjunto; controles somente Lead.
+- T06 audit RED 4 high/3 moderate, pins patched e lockfile atualizados, instalação/audit/regressão pendentes. T26 e guard CI T08 têm RED. Sanitização de literal conhecido sintético do artefato critic-ci-ar03 foi registrada com hashes antigo/novo; veredito/findings preservados e secrets global clean.
+- Evidência: `.agent/artifacts/remediation-20261003/`; próximo passo instalação coordenada/Green/critics, T02/T25 e demais fases. H-CONTENT/H-REMOTE/AAA-001 e decisões específicas preservadas.
+
+## 2026-10-03T13:24:00Z — Provas focais, recibo editorial e próximas frentes
+
+- EXEC-AUDIT-20261003 permanece IN_PROGRESS integral; nenhum gate de release promovido.
+- T01 handoff PG18.4 2/2 sem skips, root strict 75/75 arquivos e foco 88 PASS/1 restore opcional SKIP; hashes próprios conferidos. T12 contrato 9/9 e Redis host NOT_EXECUTED/exit2, sem evidência real Redis neste checkpoint.
+- T06 instalação coordenada concluída; audit global/produtivo zero e regressão do harness 41/41. Build/checks integrados pós-frentes permanecem pendentes. T26 RED 5/GREEN 32 de causas encapsuladas, limites de retry preservados.
+- T25 RED HTTP, primeiro GREEN falhou por dist anterior (log preservado), build aplicação e GREEN 22/22; PG18.4 concorrente 1/1 comprova um commit/um 409, um evento e um audit.
+- Critic core I1 REJECT em T32: UI exigia registro privado completo embora API retorne recibo reduzido. RED 1/23 PASS reproduzido; GREEN 25/25 agora confirma justificativa, rejeita campos privados e mantém recibo após erro ao recarregar fila. Lint focal/web strict/diff PASS; review fresh pós-correção ainda necessário. Prova E2E real atual deve vincular fontes/build/dependências, sem relabel de histórico.
+- CI R3 I1 REJECT: cobertura stale reidentificada, self-run sem vínculo ao executante, fase/auth/provenance incompletos no strict, identidades OTel/load e formatos opcionais, audit negativo contradiz readiness. 151 testes PASS não anulam achados; Lead confirmou 18 hashes pré=pós=atual antes de R4. Remote CI NOT_RUN/G08.
+- R2 T17/T18/T19 tem fontes/contratos próprios em implementação. PG storage + binding ausente passou, mas nativePublishedAttemptEvaluation NOT_PROVEN; deny-by-default preservado. Fixtures HTTP e journey alinhados a 30 dias/data 2026-09-09. Não há fallback para draft atual. T21/T22 têm pacote worker delimitado antes de retorno do builder a CI R4.
+- Evidência: `.agent/artifacts/remediation-20261003/lead-shared-fixtures-and-authoring-receipt.json`, reports/handoffs/logs citados no runtime. Próximo: CI R4, adapter nativo/snapshot T18, integração strict e E2E/review atuais, demais 44 tasks.
+
+## 2026-10-03T13:36:14Z — T11 e contratos compartilhados curriculares
+
+- T11 IN_PROGRESS: índice `docs/00_current_index.md`/`docs/current-index.json` publicado com ponteiros mutáveis correntes e digests fixos da auditoria histórica/barra. Validator usa somente único primeiro checkpoint prevalente; RED 7 falhas/1 PASS, GREEN 12/12 com histórico preservado. Lint focal/documentation/traceability/audit-consistency/secrets/diff PASS; review fresh pendente.
+- Lead aplicou apenas literals compartilhados autorizados: journey day7→30/data2026-09-09T05 e catalog spacedReviewDays7/30/90→30/60/90; fixture HTTP já30/data2026-09-09T01. Export decoder curricular acordado; produtor SINGLEraw/MULTIPLEJSON/TEXTplain exige seleção congelada.
+- PG curricular atual prova storage/negação sem binding, não avaliação nativa. Manifesto de forma/blueprint precisa origem servidor/publicação autorizada; nenhum draft atual ou PUBLICADO constante vira prova.
+- Probe de complexidade encontrou função curricular transitória167>150; owner notificado para extração coesa, sem elevar limite. Log FAIL preservado; não é claim de regressão global verde.
+- Evidência: `.agent/artifacts/remediation-20261003/current-continuity-{red.log,green-hardened.log,static-verified.log}` e `lead-shared-fixtures-and-authoring-receipt.json`. Próximo: review read-only T11/T32, T02 e integração nativa T18/CI R4. Objetivo integral IN_PROGRESS.
+
+## 2026-10-03T14:20:28Z — Handoff R2 conferido e correções após review
+
+- EXEC-AUDIT-20261003 IN_PROGRESS integral. Lead verificou 40 hashes sem divergência no handoff c060f2a1bc6999e4da8b18c37f36b1ff4b2bc0d6b0fc65d0170ca8156ba3e62d. Contagem corrigida pelo raw: 11 arquivos/117 testes PASS, não 111; seis novos casos Lead da jornada já entraram na medição. Nove fontes executáveis: 91.26% linhas/87.46% branches/93.93% funções; decoder 100% em todas.
+- PG curricular final genuíno18.4 1/1 sem skips, appNOSUPER/NOBYPASS e adminNOSUPER/BYPASS separado; prova storage/versionamento/RLS e missing binding sem save. nativePublishedAttemptEvaluation NOT_PROVEN. R1 handoff permanece imutável; fonte publicada/snapshot atômico/chaves/read-save fenced/main T18 ainda necessários.
+- Jornada T17 parcial RED 6/GREEN 17: atividade obrigatória autorizada e correção humana precedem retenção; não inventa target ausente/cross-scope. Retenção 30/60/90 mantém templates sem prova RASCUNHO/empty, sem publicação clínica.
+- Review fresh T11/T32 REJECT preservado com sentinel independente16/16 conferido antes das correções. Política agora fixa âncoras históricas/barra além do índice e rejeita calendário impossível: RED 4/GREEN 16. Recibo permanece após Carregar autoria falho: RED 1/GREEN 25 browser. Novo review pendente.
+- T02 seleção CLI real/staging exclusiva RED 2/GREEN 3; mock proxy cookie retirado desses modos. R5 prepara MODERATOR real/API cookie/PG e matrizes deny em /operations, mesmo arquivo real-runtime; build/PG/E2E custoso só após freeze coordenado das fontes/config/dependências.
+- Produtor oficial de cobertura usa medição original/CI executante/digest raw; raw anterior é removido antes do child. Native staging/load/OTel/multi-instance preservam SHA medido no início, checam no fim, formatos explícitos e raw digest; checkout dirty/nogit/HEAD alterado deixa sha null/NOT_VERIFIED de provenance. Contratos focais22/22, lint e strict root PASS; cobertura global/carga/OTel/Redis reais não executados por esses contratos.
+- Gate integrado de produção FAIL2 por três erros TS exclusivamente no fixture worker reliability.test.ts (getTime never/PENDING versus PROCESSING). Log lead-integration-1405-checks.log preservado; owner notificado, sem editar fonte congelada concorrente. Worker checkpoint38/38 ainda exige strict/lint/PG real/review.
+- Evidência: .agent/artifacts/remediation-20261003/r2-curriculum-lead-handoff-verification.json, r2-curriculum-handoff.json, r2-curriculum-handoff-coverage.log, r2-curriculum-final-postgres.log, critic-continuity-receipt-r1-report.md/sentinel.json, current-continuity-r2-{red,green}.log, authoring-recall-r2-{red,green}.log, journey-partial-mastery-{red,green}.log, e2e-profile-selection-{red-isolated,green}.log, native-producer-{wiring-red,green,static-verified}.log. Sem autoaceite, promoção de phase/release, commit/push/deploy ou publicação. Próximo: critics fresh, CI R4, freeze/runtime R5, native T18 e demais 44 tasks.
+
+## 2026-10-03T14:52:49Z — Reviews independentes e runtime negativo preservado
+
+- Objetivo integral EXEC-AUDIT-20261003 IN_PROGRESS. T11 COMPLETED no recorte documental após fresh critic ACCEPT: 21 probes próprios e 16 canônicos; Lead conferiu 16 hashes pré/pós/current independentes contra seu baseline e bytes atuais. Same-UID G03/candidato G05 não são aceites implícitos.
+- T32 REJECT3: cliente aceita non-2xx com success envelope, decoder aceita rationale ausente e 30 de fevereiro. Canônicos browser25/25/web83/83/API14/14 passaram, mas sete asserts independentes falharam. Persistência HTTP/PG atual NOT_RUN. Report/sentinel negativos preservados, correção/review posteriores obrigatórios.
+- Currículo R2: critic aceita domínio/dashboard T17, contrato T18 trusted-reader/HTTP409 sem save e funções T19 sintéticas. REJECT4: prioridade entre runtimes na jornada, target remediation sem assignment correto, runtime humano antigo após conclusão autoritativa e assertion catalog.test7/30/90. Run independente190PASS/4FAIL/1nativePGSKIP; Lead conferiu30 hashes pré/pós/current. 117PASS histórico não substitui seleção corrente vermelha; nativePublishedAttemptEvaluation NOT_PROVEN.
+- CI R4 checkpoint205/205 com lint/formato/strict/secrets/diff focais; Lead verificou64 hashes sem divergência. Owner encerrou todos os processos e congelou15paths. Única transferência worker: annotation OutboxEventRecord[] aplicada sem alterar dados/assertions; pnpm typecheck produção/web/root atual PASS e worker3/3. Demais7 fontes worker permanecem congeladas; PG/fence/lease/review pendentes.
+- R5 RED genuíno: fullbuild0, PG18.4 appNOSUPER/NOBYPASS/adminNOSUPER/BYPASS, Playwright1FAIL esperado por convite staff ausente, cleanup0 e fontes/build/deps pré=pós. GREEN atual é FAIL: participant1PASS/staff1FAIL/0skip, APIRequestContext não envia cookie Secure em127HTTP; nova limpeza tentou DELETE audit imutável e deixou accounts4. Launcher0 inconsistente decorre de async-exit-hook antes da saída; será corrigido no runner após flush/teardown. Nenhum falso PASS.
+- Teardown read-only posterior confirma cluster/diretório ausentes e portas PG/runtime recusando conexão, sem relabel do cleanup original FAILED. Quatro PNGs participante são parciais; staff PNGs não executados. Reparos autorizados somente fixture/spec/runner, browser HTTP real sem fakeauth, auditoria retida até destruição do cluster; novo freeze obrigatório antes da execução.
+- Lead preparou .agent/plans/2026-10-03-native-attempt-evaluation.md: associação publicada/blueprint completo explícitos, bindings imutáveis/atômicos ao start, respostas vinculadas, RLS privada, leitura/save fenced na mesma transação e main nativo. Não há schema/migration/publicação aplicada por esse plano.
+- Evidência: .agent/artifacts/remediation-20261003/critic-continuity-receipt-r2-independent-report.md/sentinel.json, critic-curriculum-r2-report.md/sentinel.json, lead-independent-reviews-r2-verification.json, r4-ci-checkpoint-before-r5-runtime-proof.json, lead-worker-fixture-typing-green.log, r5-runtime-red-2026-10-03T14-44-37-721Z-12c9f97c-summary.json, r5-runtime-green-2026-10-03T14-45-32-374Z-38033f68-summary.json e r5-runtime-failed-green-teardown-20261003-1.json. Próximo: successor R5, correções T32/jornada/catalog, novos critics, native T18 e demais tasks. Sem phase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T15:10:35Z — R5 successor1 negativo e reparo mínimo
+
+- IN_PROGRESS integral. Successor1 real: participant1PASS/staff1FAIL/0skip, CLIexit1 correto e fontes/build/dependências pré=pós. Convite staff browser200; assertion usa headers() que omite Set-Cookie segundo SDK local. Somente duas leituras allHeaders corrigidas, assertions mantidas; lint/format/strict PASS, specSHA931f1fc5857f5a792bb9a68d152fa7e483d02f0dc9384a142a27ae87d754e7b5.
+- Cleanup deletável0, 14 audits imutáveis retidos/digest36d4f17dfcf408f0a491d804fa8b21156016870a665ec2b15431f5621d5f3fb9 até destruição do cluster; diretório ausente e quatro portas ECONNREFUSED. Isso não reclassifica os FAILs/cleanup anteriores. SummarySHAc0a45ee7decd69ecc770c261393add5b0f827c9420b18399b9ab6b99d523099a.
+- Evidência: .agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-07-51-443Z-d34fa66c-{summary,cleanup,teardown}.json e r5-runtime-repair2-{lint,format,strict}-20261003-1.log. Próximo: successor2 técnico com mesmos assets e nova prova; fresh critic CI R4 em inspeção read-only, testes depois da janela. T32/jornada/catalog REJECT permanecem; nativeT18 NOT_PROVEN. Sem phase/release/publicação.
+
+## 2026-10-03T15:17:00Z — R5 successor2 e paint readiness
+
+- R5 real successor2 FAIL preservado SHA2a2ec1cef6c17d934f5daaa45a8778ffe69a8a707a8fa493eb67c0efad744c93: participant1PASS/staff1FAIL/0skip e CLI1; source/build/deps pré=pós. Staff real convite200/cookiewire/session200/scopes200/dashboard200/headings/operations-ready passaram; primeiro screenshot parou no networkidle/timeout30s. Staff PNGs/deny/revoke NOT_EXECUTED.
+- Cleanup deletável0,15 audits imutáveis digest3962ee8fbcd0f7aa37ddd0270e63aeeffc852101d2d8a89a2cd5eb9f5cf81bf6 retidos até destruição; directoryMissing/quatro portas ECONNREFUSED. Reparar somente spec paint readiness, mantendo gates explícitos/fonts/images/twoframes, sem elevar timeout; novo successor antes de rerun. Evidência: .agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-15-29-392Z-52db6618-{summary,cleanup,teardown}.json. IN_PROGRESS integral; nenhum autoaceite, failures anteriores preservados.
+
+## 2026-10-03T15:27:00Z — R5 successor3: negações passaram, landing divergente
+
+- Successor3 real FAIL SHA b4f0095840f00ef05f9d2c59498203dcc356d156da1bc87dc880b143a8478355: participant1PASS/staff1FAIL/0skip/CLI1, identidades pré=pós. Staff cookie/session/scopes/dashboard/UI e PNGs pintados passaram; foreign scope403 e participant internal scopes/report403/dashboardkind200 confirmados. Redirect participante passou, assertion Token pressupunha anonimato embora sessão continue ativa. Revogação/prova final staff NOT_EXECUTED.
+- Spec-only landing repair autorizado: sessão ativa, Token ausente, staff ausente, redirect preservado; sem alterar gates deny. Cleanup/teardown PASS. Evidência .agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-23-12-478Z-af258458-{summary,cleanup,teardown}.json e e2e.log. Próximo successor4 com mesmos assets; nenhum retry sem checkpoint, nenhum relabel dos FAILs históricos, nenhuma promoção global.
+
+## 2026-10-03T15:32:00Z — R5 successor4: typo no teste adicional
+
+- Successor4 FAIL SHA7cfc41818adb06080661a66298695aa94693c7bfbeb1b6a312a4f8f8b1595165: participant1PASS/staff1FAIL/0skip/CLI1, identidades pré=pós. Landing participante ativo passou; GET adicional usou /api/v1/sessions/current (plural errado) e recebeu404. Apenas literal singular autorizado; nenhuma assertion relaxada. Revogação/finalstaffproof NOT_EXECUTED.
+- Cleanup deletável0/audit19 append-only retido/digest0ea8c066dd0c7b20b07b05e0782aa87a516939f7ddddab910e473ad5c60f43e2 e teardownPASS. Evidência .agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-30-44-202Z-b1e4b3bd-{summary,cleanup,teardown}.json/e2e.log. Próximo successor5 técnico com mesmos assets; critic CI testes aguardam janela. IN_PROGRESS integral e FAILs históricos preservados.
+
+## 2026-10-03T16:06:08Z — R5 real positivo, revisões e coordenação T20
+
+- EXEC-AUDIT-20261003 IN_PROGRESS integral. R5 successor5 CLI0, Playwright2PASS/0FAIL/0SKIP/0flaky; convite MODERATOR, cookie real, session/scopes/dashboard, matriz anon/participant/foreignscope/revoked e revogação concluídos. Seis PNGs atuais1280/390. PG18.4 appNOSUPER/NOBYPASS e admin separado; fontes/assets/deps pré=pós no intervalo controlado.
+- Cleanup13 entidades deletáveis0; audit24 append-only retido/digest1174eaef4e9b8cc525e7d4686f7201f331220e0ae6a03bc723a27b9dff528927 até destruição real do cluster. Diretório ausente e runtime3100/3101/3102/PG58312 recusando conexão, processos encerrados. Lead conferiu20 referências mais summary. Handoff3496c35a26de1bd80775e8473c31bdd1c5a614be4107397dc07f9aa62215468b/summary605aa717c404be8fb72bc8b3aa1fb2cd1bddf9af7663bc65cf3e00e24d81fd51; fresh review em andamento, sem aceite global/candidato. Todos os FAILs históricos preservados.
+- CI fresh REJECT6: 227 canônicos PASS, 13PASS/12FAIL discriminantes. Lead confirmou26 fontes pré/pós/current,45 rawlogs imutáveis,16 artefatos e4 probes; correções divididas entre owner CI F01/F02/F03/F04/F06 e Lead produtor F05. F05 RED5/GREEN11: GITHUB_SHA/ref/repository medidos desde início, head divergente/ausente ou ref distinto não promove cobertura. Nenhuma cobertura global/remota executada.
+- Jornada T17 RED6/GREEN24, regressão ampliada201PASS/1nativePGopcionalSKIP; target exige assignment/participant/scope/status corretos, pendência entre runtimes precede retenção e conclusão autoritativa supera runtime humano obsoleto. Fixture público reconciliado com assignment UUID correspondente, assertions preservadas. Build exclusivo application0. Catalog assertion30/60/90 RED/GREEN; nativePublishedAttemptEvaluation NOT_PROVEN/T18 pendente.
+- T32 RED8/GREEN31: response.ok obrigatório, rationale obrigatória e calendário real; caso GET503 com envelope de sucesso preserva recibo. Focal lint/webstrict/applicationnoemit/diff0. Novo review/persistência HTTP/PG ainda necessários. T20 owner58PASS5files/strict API+root/lint/format0; HTTP store sintético explicitamente não prova Redis/PG. API build exclusivo e PG18.4 duas instâncias aguardam checkpoint de persistência compartilhada, sem build global. Redis ausente NOT_EXECUTED, sem instalação/claim PASS. Worker R6 PG/fencing em execução coordenada.
+- Evidência: `.agent/artifacts/remediation-20261003/r5-runtime-handoff-successor5-20261003-1.json`, `r5-runtime-lead-successor5-verification.json`, `lead-ci-r4-independent-verification.json`, `critic-ci-r4-report.md`, `journey-r3-critic-probes-regression-final.log`, `journey-r3-application-build.log`, `authoring-r3-independent-findings-{red,green}.log`, `coverage-ci-head-r5-{red,green}.log`, `r6-ratelimit-unit-green-20261003-2.log`. Próximo: fechar checkpoint/build/live T20, revisar R5, concluir CI e native T18/demais tasks. Sem phase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T16:53:33Z — Reviews delimitados, T20 PostgreSQL e jornada R4
+
+- EXEC-AUDIT-20261003 permanece IN_PROGRESS integral. Fresh reviews R5 runtime e worker T21/T22 ACCEPT somente no recorte controlado: Lead conferiu respectivamente10 fontes/124 referências e17 fontes/75 referências; nenhum aceite global, provider ou built-current. R5 mantém2PASS/0skip/6PNGs, cleanup e teardown; worker PG18.4 mantém12PASS/0skip, Qdrant DOUBLE_NOT_REAL_QDRANT e dist histórico.
+- T20 fresh ACCEPT:58 canônicos/21 probes próprios,13 fontes PRE=POST=CURRENT iguais ao baseline Lead,21 arquivos selecionados da prova e12 artefatos critic conferidos. PG18.4 genuíno: dois listeners HTTP no mesmo processo com handles separados, budgets20/10/120 e429 em ambas réplicas; outage fecha handles cliente, não simula partição de rede. Cleanup buckets0/diretório ausente/portas recusadas. Redis NOT_EXECUTED/exit2 permanece requisito aberto.
+- Checkpoint T20: dois packets Lead inválidos contêm traceback preservado; API build0 executou uma vez sob mensagem explícita successor1 enquanto PG foi retido. Apenas successor2 válido, JSON/hashes conferidos, autorizou PG. Correção cronológica em r6-ratelimit-checkpoint-chronology-correction.json; nenhum relabel das falhas.
+- Fresh jornada T17 REJECT P1: assignment agregado concluído ocultava atividade salva/humana e liberava M03. Lead reproduziu8FAIL/150PASS e corrigiu coerência entre todas as atribuições autorizadas e atividades presentes. GREEN162/162 em8 arquivos, incluindo novos casos permanentes dashboard/HTTP; fresh review novo e native E2E ainda necessários. T19 e T32 UI/decoder ACCEPT local; T32 persistência/resubmissão PG ainda não executada.
+- T27 em implementação delimitada: decisão vigente D091 APPROVADO_INTEGRALMENTE fixa idle ADMIN/MODERATOR30min, PARTICIPANT8h e absoluto12h. Builder RED5 e rotationRED1 preservados, GREEN73/4files; expande negativos/provaPG, sem build/live. Minimal2exports application/index aplicados. Lint Lead0; strict root atual FAIL2 apenas exports ainda ausentes no dist application antigo, aguardando build coordenado. Nenhuma exclusão adicionada.
+- Scanner oficial complexity FAIL2 worker: processOutboxOnce163>150 e createOutboxRepository155>150; owner notificado para extração coesa sem ratchet. Findings/FAILs preservados e task não fechada globalmente. Native T18 NOT_PROVEN; mapper respostas congeladas11/11 e precondição PG preparada, ainda sem integração nativa.
+- Evidências: .agent/artifacts/remediation-20261003/lead-r5-runtime-independent-review-verification.json; lead-worker-r6-independent-verification.json; lead-ratelimit-r6-independent-verification.json; r6-ratelimit-handoff-20261003-1.json; critic-journey-receipt-r3-report.md; journey-completion-r4-red-owned.log; journey-completion-r4-permanent-green.log; journey-completion-r4-static.log; journey-completion-r4-complexity.log. Próximo: coordenar build application/persistence e PG T27 após pacote final, concluir CI/complexidade worker e native T18/review jornada. Sem phase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T17:50:13Z — T27 revisão delimitada, jornada R5 e T18/R8
+
+- EXEC-AUDIT-20261003 permanece IN_PROGRESS integral. T27 freshACCEPT I1 independente verificado Lead:23 fontes PRE=POST=CURRENT,14 critic artefatos e52 raw referências sem divergência.91 canônicos+31 públicos/HTTP+62 probes critic PASS0skip; PG18.4 histórico11PASS0skip, builds exclusivos application/persistence0/0. Rotação conserva criação/deadline; cap público43200 e tokenTTL de convite/recovery separados. Não há novo HTTP nativo completo/built-current/globalaccept. Snapshot1469 histórico pré=pós preservado e posteriores5 fontes fora do freeze23 reconhecidas como drift legítimo.
+- Jornada freshR4REJECT2P1 conferido13 fontes/24refs: hint opcional ausente escondia pendência e conclusão em outro escopo liberava pré-requisito. RED4/GREEN104 canônicos+51 probes históricos=155PASS; fixture positivo de retenção reconciliado com conclusão coerente, assertion mantida. Novo critic R5 fresco e freeze14 ativos, sem aceitar pelo builder.
+- T18 RED real PG18.4: seis relações ausentes, testCLI1/orchestratorEXPECTED_RED0, cleanup/teardown/hashes8refs verificados. Expansão aditiva0055 com schema coeso e snapshottypes compatíveis reduz monólito a1522<1532; strict/lint/manifest56migrações/diff0. Nenhum backfill/publicação, tabelas FORCE RLS/defaultdeny, start/read-save/main/fullflow ainda pendentes; runtime da expansão ainda não executado.
+- R8 T28 Chromium RED4 (A200/401/503 tardia e filtro editável), GREEN4 focal;23 skips correspondem ao filtro -t. Lifecycle helper/page4213<4296, regressões/delayedJSON/unmount em progresso. Lead inclui apenas apps/web/app/**/*.test.ts no projeto unit oficial, sem alterar browser/exclusões/pisos. Capturas RED novas preservadas com hashes próprios. CI/complexidade worker seguem owner; nenhuma exclusão/ratchet.
+- Evidência: .agent/artifacts/remediation-20261003/lead-session-r7-independent-verification.json; r7-session-handoff-20261003-1.json; r7-session-public-contract-handoff.json; critic-session-r7-report.md; journey-completion-r5-final.log; journey-r5-lead-frozen-pre.json; native-attempt-binding-schema-red-lead-verification.json; native-attempt-schema-migrations-manifest.log; r8-operations-browser-red-20261003-1.log. Próximo: schema PG, captura e avaliação nativa, reviews/jornada/R8/CI/worker e demais44. Sem phase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T18:40:26Z — CI/reconcile REJECT; jornada/R8 review; start T18 RED
+
+- EXEC-AUDIT-20261003 IN_PROGRESS integral44tasks. CI226/produtores27PASS e65/67discriminantes reproduzem recusa do k6legado false válido. Worker85canônicos/31probesPASS1FAIL reproduzem reconcile ressuscitando ponto retirado durante embedding. Lead33/18PRE=POST=CURRENT e4982/43rawrefs conferidos; narrativa inicial limita I1cego, rejeições executáveis válidas. Owners reparos delimitados consumer/reconcile/tests sem build/live.
+- Jornada freshR5REJECT P1 corrigido RED2/GREEN111+47=158PASS; cyclesRED2/GREEN0 com extração exata8tipos/publicexports compatíveis. Strict/lint/complexity/secrets/diff0. R2handoffJSON imutável, três fontes supersedidas. Novo criticR6 freeze17 ativo. R8 43refs verificadas/35PASS reportados/freshcriticfreeze8. R9 T29–31 TDD em13fontes delimitadas, finalChromium33/unit25 reportados; pacote/freshreview pendentes. Lead somente fixture day30/dueAt2026-11-01, assertions intactas.
+- T18 schemaPG18.4GREEN1 estrutural; startRED2 testCLI1/3FAIL1denialPASS0skip/orchestratorEXPECTED_RED0. Primeiro4FAIL inclui fixture esperando zero em vezACL42501; raw preservado/assertion corrigida reconheceACLouzeroRLS, jamais dados. Lead8refs/15checkpoint/1263 selectedPRE=POST=CURRENT verificados; appNOSUPER/NOBYPASS/adminNOSUPER/BYPASS. Dados imutáveis sintéticos retidos até destruição real do cluster, dirabsent/portrefused; não publicação clínica. Captura/contexto/RLS/read-save/main/fullnativeflow pendentes.
+- Evidências: .agent/artifacts/remediation-20261003/lead-ci-r5-independent-review-verification.json; lead-worker-r7-independent-review-verification.json; journey-r6-lead-frozen-pre.json; journey-completion-r6-final-corrected.log; journey-completion-r6-final-secrets-diff.log; lead-operations-r8-precritic-verification.json; native-attempt-binding-schema-green-lead-verification.json; native-attempt-start-red2-lead-verification.json. RedisNOT_EXECUTED/nativeT18NOT_PROVEN; sem phase/release/commit/push/deploy/publicação. Próximo captura T18, reparos/reviews CI/worker/jornada/R8/R9 e demais44; REM-06/HCONTENT/provider/sameUID/remote específicos.
+
+## 2026-10-03T19:43:39Z — Captura T18 real; reviews e reparos preservados
+
+- EXEC-AUDIT-20261003 permanece IN_PROGRESS integral44tasks. Start T18 passou4/4 sem skips em PG18.4: captura33, replay imutável, subset/retirada com rollback e sigilo ordinário. AppNOSUPER/NOBYPASS, adminNOSUPER/BYPASS separado com CREATEROLE de fixture; contas/audit/forma retidos até destruição real. Lead conferiu24 fontes/checkpoint, todos selectedPRE=POST=CURRENT e8rawrefs; summary201420fde4c69a2364258c67373ccc293a00f4f435da574689371b3410583c2c. Três FAILs GREEN históricos mantidos (3FAIL/1PASS, coleta0 por import,1FAIL/3PASS); native avaliação/read-save/main NOT_PROVEN.
+- Migração0056 contexto interno/locks/policies SELECT privadas e INSERT apenas bindings; setters7+audit limpam identidades. Forma/advisory fence e source rowlocks, cópias imutáveis, completude deferred SECURITY INVOKER. Legacy não recebe binding inferido. Unit189 e probes104 atuais PASS; rootstrict/persiststrict/lint/diff0, migration/complexitycontracts32PASS e scanner0. Validador R10 freshREJECT2P2 caller malformado reproduzido7FAIL corrigido; handoff histórico4b0b...c6df preservado. Não publicação clínica.
+- Jornada freshR6REJECT5P1+1P2 conferido17fontes/39refs; reparos atuais113canônicos e114HTTP por source aliases PASS. RootHTTP antigo7FAIL/107PASS por dist histórico preservado. Scanner deixou de pular orçamento de função em arquivos excepcionados: RED2/GREEN4 e HTTPcore extraído sem mudar rotas; nenhum limite reduzido. Novo review/integração built-current pendentes.
+- R8 review55PASS funcional/8PREPOSTCURRENT/38refs, CONDITIONAL por leitura inicial de narrativa;35builderPASS. R9 freshREJECT2 material com16PREPOSTCURRENT conferidos,58oficiaisPASS e27PASS/2FAIL probes: key original ambígua perdida após edição e envelope atividadeIDdivergente. Reparos R11 TDD3browser+16helperRED/cheapGREEN reportados, final/review pendentes; relatos clínicos não envolvidos.
+- CI R6/worker R8 handoffs novos conferidos16/19sources mais91/66refs. Owner CI258canônicos+27produtoresPASS e worker105PASS reportados; fresh critics cegos novos ativos, sem aceitar pelo builder. Sem builds/install/live provider. Redis NOT_EXECUTED, HCONTENT/REM06/sameUID/remote/AAA001 específicos mantidos; sem phase/release/commit/push/deploy.
+- Evidências: native-attempt-start-green4-lead-verification.json; lead-capture-r10-independent-review-verification.json; native-capture-unit-green-current.log; native-capture-reviewed-probes-current.log; native-capture-reviewed-probes-provenance.json; lead-participant-r9-independent-review-verification.json; lead-operations-r8-independent-review-verification.json; lead-ci-repair-precritic-current-verification.json; lead-worker-repair-precritic-current-verification.json. Próximo: vínculo público/respostas/read-save/main T18, fresh reviews/reparos R11/CI/worker/jornada e critérios44 restantes.
+
+## 2026-10-03T20:14:43Z — Snapshot público T18, R11 selado e fresh reviews
+
+- EXEC-AUDIT-20261003 continua IN_PROGRESS nas44tasks. PostgreSQL18.4 atual passou4/4/CLI0/0skip: captura33 e replay, respostas e projeções públicas congeladas sobrevivem edição de texto e remoção da lista atual, subset/retirada/participante alheio/chaves privadas negados. Summary9d97da417b8b249a9fbfe5518049ef51f9ad2203a10b7f0c00d7144e2ec18f46; Lead conferiu todas as fontes do checkpoint, snapshot pré/pós/corrente e8refsraw. Cluster destruído/diretório ausente/porta recusada, appNOSUPER/NOBYPASS. Prova exclusivamente técnica sintética, sem publicação clínica/nativeevaluation/save/main/globalaccept.
+- TDD: inserção fora da transação RED1/GREEN190; leitura vinculada RED1FAIL3PASS e GREEN1FAIL3PASS/RLS antes do GREEN4; projeção pública RED1FAIL3PASS/GREEN4. Primeiro wrapper RED retornouCLI1 porque só reconhecia o RED antigo3FAIL1PASS; rawtest1FAIL3PASS permanece intacto. Fonte225unitPASS/strict/lint/format/diff/complexity0. CycleRED1/GREEN0 após extração compatível de ActivityRowShape; softwarnings permanecem, sem novo limite/exclusão.
+- Fresh CI R6 REVISE5P1: contagens/RLS inventados, scanner stale/wrongrun, digests/migrations fictícios, prova sintética/denominadores falsos e k6thresholds ausentes/vazios. Lead16PREPOSTCURRENT e1053refs verificados;258canônicosPASS não anulam falsos positivos.11falhas unitárias fora do escopo preservadas. Reparo CI R7 delegado em fontes disjuntas, sem builds/install/live/globalgates.
+- Fresh worker R8 SCOPED_ACCEPT_SOURCE_AND_DOUBLES:86focais+20independentes e3controles negativos;19PREPOSTCURRENT/36artefatos conferidos Lead. Não comprova PG fresco, providers, settlement remoto ou candidato/global. Critic fechado e fontes congeladas preservadas.
+- R11 selado4fontes:44Chromium+45unit89PASS/0skip, strict/lint/format/diff0, página2039/2377/funções70/150 e warning teste818>800 preservado. Lead101referências recursivas conferidas (94verificador owner usa denominador distinto). Oracle critic antigo permanece28PASS1FAIL/CLI1; UNKNOWN422 e receiptFixed divergente não confirmam o payload original, teste permanente conserva key/bytes, rascunhoFixed e envio bloqueado. EXPECTED_CHANGED_ORACLE não é29PASS. Fresh critic cego18fontes ativo; handoff16b4b9431f8267ab98d07ca26bb72c2bc2ed34ad3c8eb0075cb6b6a417aea469 imutável.
+- Evidências: native-bound-public-green1-lead-verification.json; native-bound-answer-green2-lead-verification.json; native-bound-public-unit-green1.log; native-bound-public-static-green2.log; lead-ci-r6-fresh-review-verification.json; lead-worker-r8-fresh-review-verification.json; r11-participant-handoff-final-1.json; lead-participant-r11-fresh-review-map.json. Próximo: integridade de respostas/captura no banco, autorização de itens vinculados, reader/evaluation/save/main transacional T18, CI/reviews/jornada e restante44. RedisNOT_EXECUTED/HCONTENT/REM06/sameUID/remote/AAA001 específicos; sem phase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T20:28:12Z — Captura obrigatória no commit e R11 fresh REVISE
+
+- T18 realPG18.4 atual4PASS0skip/CLI0 inclui rejeição23514/zero committedattempts para SQL direto sem captura em atividade vinculada. Trigger deferred SECURITY INVOKER preserva legado sem vínculo e exige cópia completa aprovada antes de commit; normal pipeline33/public/answers/replay/isolamento permaneceGREEN. RED atual1FAIL3PASS provou commit indevido; GREEN1 preservado falhou só no shape do erro deferred nativo (code direto, não cause); GREEN2 summary532ee1fa0d2ec8203bb2209744a9308f40194506763442e36b0d8d6e0f516ead. Lead32checkpoint/1274selectedPREPOSTCURRENT/8rawrefs e teardown atual conferidos. Migrações57 e32governance/budgettestsPASS. Sem avaliação/save/main/publicação clínica/globalaccept.
+- R11 fresh review REVISE P1 em dois caminhos: start/submit aceitam receipt de activity/attempt alheio, limpam snapshot original e anunciam sucesso.89canônicosPASS, combinado134PASS2FAIL0skip/CLI1;18PREPOSTCURRENT e1248artefatos verificados Lead. Bootstrap pnpm no cache próprio e duas capturas inicialmente fora do namespace/relocadas limitam isolamento perfeito; negativas executáveis preservadas e válidas. Oracle antigo unknown422 permanece EXPECTED_CHANGED_ORACLE28/1; não explica os dois novos defeitos.
+- R12 repair packet delegado page/resilience e novo helperreceipt/test declarados; todas as outras fontes R9/R11 readonly. Verificar identidade/status/versão da operação original antes de complete, conservar retry/key/bytes/rascunho em divergência. Nenhum build/install/PG/config/backend pela lane web. CI R7 continua disjunto corrigindo freshREVISE5; worker scoped fonte/doubles positivo, provider/nativeglobal não aceitos.
+- Evidências: native-capture-commit-green2-lead-verification.json; native-capture-commit-static-green2.log; lead-participant-r11-independent-review-verification.json; critic-participant-r11-i1-evidence/report.md; native-bound-public-green1-lead-verification.json; lead-ci-r6-fresh-review-verification.json; lead-worker-r8-fresh-review-verification.json. Próximo: autorização/integridade de respostas vinculadas, reader/evaluation/save/main na mesma transação, R12/CI/jornada reviews e critérios44 restantes. IN_PROGRESS integral; sem phase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T21:09:04Z — Respostas nativas vinculadas; CI e web novamente REVISE
+
+- EXEC-AUDIT-20261003 permanece IN_PROGRESS integral44tasks. PG18.4 atual4PASS0skip/CLI0 inclui gravação/replay e resolução API por itens congelados depois de apagar a lista atual; SQL direto com item/choice inválido, alteração de identidade ou resposta submetida rejeita23514. Oito vetores MULTIPLE reais comprovam validação SQL sem inferir modo pelas chaves. Parentrowlock e form/content/assignment locks mantêm a verificação até commit; não há prova concorrente adicional nem avaliação/read-save/main completos nesta rodada. Summary3cbc5c48eb49e46a0d59ee1e8fa4bb363ba170293d858cf90370cd8a25c19de0, snapshot/checkpoint/raw/teardown conferidos Lead antes das novas fontes legítimas. Dados imutáveis sintéticos retidos até destruição física, appNOSUPER/NOBYPASS/admin separado; nenhuma publicação clínica.
+- REDs/FAILs preservados: fixture inicial sem learningAssignment tornou o primeiro RED inconclusivo; fixture reconciliado e capturedbranch desabilitado reproduziu a falha antiga, depois restaurado byte-exato. DBguard RED comprovou commit de item alheio; primeiro GREEN falhou42501 por EXECUTE ausente; grant mínimo corrigido. Vetores MULTIPLE revelaram42883 por alias JSONB interno sombreando texto; aliases explícitos corrigiram e GREEN4 passou. Extração coesa do parentport mantém função abaixo do orçamento anterior;85unit/28migration-governance/strict/lint/scanner/cycles/migration57/diff PASS, sem ratchet/exclusão/build.
+- CI R7 handoff18fontes/1020refs conferidos Lead,313canônicosPASS. Fresh21PREPOSTCURRENT/2158artefatos REVISE3: representação describe/list vs reporter recusa testes genuínos; collector aceita job de documentação com substring scanner e cronologia invertida.84observações78conformes6divergentes, limites de exposição de narrativa SPEC declarados. RLS produtor/raw e promoção/provenance ainda exigem integração; remote/certificação NOT_PROVEN. Reparo delimitado em fila, nenhum aceite geral.
+- R12 handoff4fontes/183refs reportados e verificados Lead,151canônicosPASS. Fresh20PREPOSTCURRENT/refs REVISE P1 recovery torna replay original inacessível após mudança de identidade e P2 savereceipt aceita estado/versão incompatíveis:38independentesPASS6FAIL0skip. Narrativa/metadata exposure limitado declarado; falhas executáveis válidas. R13 autorizado nos mesmos4 arquivos e artefatos próprios, ledger/helpers antigos readonly, sem build/install/PG. Mapper puro T18 em nova lane2fontes declaradas, SQLreader/outertransaction/main Lead; dois builders máximos, sem descendentes.
+- Evidências: native-answer-database-guard-green4-lead-verification.json; native-bound-answer-write-refactor-static-green1.log; lead-ci-r7-independent-review-verification.json; lead-participant-r12-independent-review-verification.json; lead-participant-r12-precritic-verification.json. Próximo: reader/evaluation/save/main T18 na mesma transação, R13/CI consumer+producer e revisão independente, jornada/current gates e restante44. RedisNOT_EXECUTED/REM06/HCONTENT/sameUID/remote/AAA001 específicos preservados; sem phase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T21:44:36Z — Native adapter parcial e fresh reviews
+
+- EXEC-AUDIT-20261003 IN_PROGRESS integral44. NativePG GREEN2 histórico4PASS0skipCLI0 salva anchor33/31objetivas corretas e2TEXT humano, sem nota global. Lead raw8/selectedPREPOST conforme número exato no verificationJSON/42checkpoint measured de45 prechecked/teardown conferidos;3checkpoint históricos não pertenciam ao inventário selecionado, sem afirmar prepost desses3. Sem main/concorrência/currentbuilt/clinical/globalaccept. RED3 válido1FAIL3PASS falta reader; RED1/2 erros próprios de fixture SUBMIT antesSALVA/activityId ausente preservados. Unittransaction RED5/GREEN9; GREEN intermediário8FAIL por mockhistory do próprio teste corrigido.
+- Native extensãoGREEN3 falhou na própria coleta: testes concorrentes aninhados,3PASS1FAIL em4collected; estrutura corrigida sem alteração de oracle/guard, inventory7 atual conferido. Fullmain HTTP com convite/cookie MODERATOR reais preparadoNOT_EXECUTED; main ainda readerless para RED discriminante. Mapper freshREVISE2 com15PREPOSTCURRENT/26refs:7public metadata viola limites/plaintext e choice-onlyFORMATIVE incompatível comguard de módulo completo. Reparo2files delegado sem mudar contratos/aplicação. Capturetime gap9RED corrigido,166unit+104probes270PASS.
+- R13 handoff4sources/260refs conferidos Lead,182canônicos e18probes copiados builderPASS; fresh critic20paths ativo. Fixture readonly reflexão ONLYcounter0→2 alinhaGET SALVA2, assertions/POSTstartreset1 intactos; histórico67/1 preservado. CI R8 reparando3findings. Dois builders máximos, sem descendentes/build/live na lanes.
+- Evidência: lead-native-evaluation-green2-historical-verification.json; native-evaluation-transaction-unit-green2.log; native-evaluation-seven-test-inventory-current.json; lead-native-evaluation-mapper-fresh-review-verification.json; native-capture-public-contract-red1.log/green1.log; r13-participant-handoff-final-1.json; lead-participant-r13-reflection-fixture-coordination.json. Próximo: freeze mapper; native7/mainRED→GREEN/concurrency; freshweb/CIreviews+producer e currentintegrated44gates. RedisNOT_EXECUTED/REM06/HCONTENT/sameUID/remote/AAA001 específicos; sem phase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T21:56:29Z — Native main compilado7PASS e três fresh critics
+
+- EXEC-AUDIT-20261003 continua IN_PROGRESS integral44. T18 GREEN compiledmain atual7PASS0skipCLI0 genuinePG18.4, appNOSUPER/NOBYPASS/adminNOSUPER/BYPASS separado. API realaceita convite MODERATOR/cookie e GETsession200, anônimo401/foreignscope403/evaluate200; publicprojection semanchor/keys/fontes/respostas privadas. Catálogo congelado33/31objetivas31/31,2TEXT humano/semnota global, anchor exato persistido; missinglegacy/retiradas/stale/foreign negam semwrite. Duas queries realmente bloqueadas provam formwithdrawal aguardando pid da avaliação enquanto runtimeinsert bloqueado, locks sustentados atéoutercommit. Summaryc382505db8e3e7f5ceafeaf8b37063f719836f86a2869fc5e744af3a21c91cda;48checkpoint e2730selectedPRE=POST=CURRENT/raw9 e dirausente/portarecusada conferidos Lead.
+- MainRED válido HTTPcookie/session200/evaluate409 eformfencePASS, total5PASS2FAIL; outroFAIL foi próprio fixture tentando apagar associação imutável, corrigido para atividade legada separada sem associação, nenhuma guard/oracle relaxada. Testes concorrentes anteriormente aninhados preservadoscomo harnessFAIL; coleta atual7conferida antesGREEN. Builds SOMENTEapplication/persistence/API0/0/0, rootstrict/lint/complexity/cycles/diff0; mainfunction ratchet inalterado. MapperR2 repaired178unit/503scopedregressions owner; capture166+104probes270PASS. Antigos pacotes/reviews negativos imutáveis, semclinicalpublication/globalwholecandidate/webassembly/remoteaccept.
+- Freshnativecritic58sources+9rawobservations ativo, independente autorizado a reproduzir7emclusterpróprio sembuild. WebR13freshcritic20ativo após182canônicos/260refs; CI R8fresh21ativo após340canônicos/probes16 reportados. Leadvalidou2692refs CI recursivas/18sources/27indexes; primeiroparse0refs só procurava path/shaobjects, raw0preservado e scanner flatSHA/indexcorrigido, sem tiraracceptdezero. RLS/workflow produtores ainda readonly atéreviewterminar. Todosbuilders fechados; trêscritics semdescendentes, fontes/pacotesmain congelados.
+- Evidência: lead-native-main-green1-current-verification.json; native-main-coordinated-three-builds.log; native-main-post-three-build-root-strict.log; native-main-fresh-review-map.json; lead-native-evaluation-mapper-r2-pre-native-verification.json; lead-participant-r13-precritic-verification.json; lead-ci-r8-precritic-verification.json. Próximo: verificarcritics/patchboundedseREVISE, reconciliarproducerCI depoisfreeze, jornada/currentassembledgates/restante44. RedisNOT_EXECUTED/REM06/HCONTENT/sameUID/remote/AAA001 específicos; semphase/release/commit/push/deploy/publicação.
+
+## 2026-10-03T22:03:09Z — R13 fresh REVISE4 e R14 delimitado
+
+- R13 fresh REVISE4 confirmado: 20PRE=POST=CURRENT/132artefatos;182canônicosPASS versus34PASS28assertionFAIL independentes. P1 normalização/diagnosticreceipt;P2 deadline/unmount/DTOguards. R14 reparo delimitado iniciado, sembuild/backend/config; históricos preservados, nenhuma aceitação global.
+- Critic fechado antes do reparo; exposição incidental SPEC declarada limita cegueira perfeita, sem anular repros executáveis. Native58/CI21 críticos independentes continuam; seus pacotes source/dist congelados. R14 escreve apenas página/receipt/contracts/diagnostic e testes correspondentes, novos helpers declarados antes de editar; ledger/resource helpers anteriores readonly. Lead único escritor de controles.
+- Evidência: .agent/artifacts/remediation-20261003/lead-participant-r13-independent-review-verification.json; critic-participant-r13-i1-evidence/review-report.txt; sentinel.json; sha256-artifact-manifest.json. Próximo: verificar native/CI reviews; R14 RED→GREEN→freshreview, producerCI/jornada/currentgates44. Status IN_PROGRESS; semcommit/push/deploy/publicação.
+
+## 2026-10-03T22:12:45Z — Dist de contratos divergente e lanes disjuntas
+
+- Regressão HTTP15files/114casos usando pacotes compilados atuais:111PASS3FAIL0skip/CLI1, exclusivamente session cap nas rotas rotate/invitation/recovery. Fontes max43200 e dist max604800 conferidos em6arquivos. Controle mínimo troca apenas @cvg/contracts para fonte e passa114/114/CLI0, sem alterar dist. Não se afirma candidato compilado inteiramente reconciliado. Rebuild SOMENTEcontracts e rerun114 pendentes após liberação do freeze nativecritic.
+- FreshjourneyR7 critic22fontes ativo readonly/sourcealiases/doubles; mapa inicial tentava incluir projection.test.ts inexistente, falhou antes de gravar, corrigido para22 membros reais antes de prosseguir. Native58/CI21 permanecem readonly; R14 packet8existentes+2novosdiagnostic-client declarados. Segundo builder autorizado preparar APENAS novohelper RLS/evidence e novo teste, nenhuma integração às21fontes CI enquantocritic aberto; sem builds/install/PG/controles pelosbuilders.
+- Evidência: .agent/artifacts/remediation-20261003/lead-current-built-http-regression-verification.json; lead-current-built-http-regression.results.json; lead-contract-source-http-control.results.json; lead-journey-r7-fresh-review-map.json. Status IN_PROGRESS integral44; nenhum aceite global/remote/clinical, RedisNOT_EXECUTED e holds específicos preservados.
+
+## 2026-10-03T22:34:47Z — Reviews encerrados; reparos e metadados canônicos
+
+- Native58/raw9/2730selected PRE=POST=CURRENT e662artefatos critic conferidos Lead. Fresh genuinePG18.4 reproduziu7PASS/mainHTTP;432unitPASS,25probesPASS1FAIL, REVISE P2: choiceID <id> aceito na publicação mas não no contrato plain de resposta. CURRENTprocessguard do critic encontrou4processos externos em checkouttemporário de outra lane e parou leituras; bytefreeze exato/ownhandles encerrados, sem attestation global de processos. Lead rejeita IDs não representáveis em publiclearning/capture/mapper, sem alterar assessment/decoder/SQLguards:6RED352PASS→358GREEN0skip, lint/format/rootstrict0; antigo teste aceitava idHTML e agora conserva somentecontrolelabelHTML legítimo.8sources+novoownrunner9cases preparados, NATIVE_AFTER_GUARD_NOT_EXECUTED; builds SOMENTEcontracts/persistence aguardam janela após browserfinal.
+- CI21PREMIDPOSTCURRENT/7859regularfiles/17literal-symlinkdigests conferidos;340canônicosPASS e101probesPASS2FAIL. FreshREVISE P1 títulos RLS inventados passam endsWith, P2 archive antigo não vinculado à tentativa; gap produtorraw/inventory/execution permanece. Critic fechado, builderCI recebeupacketdisjunto expandido para correçõesconsumer e integraçãoRLS/workflow+novohelper/test. Sem remote/wholepromotionbypass demonstrado, sem aprovação inventada.
+- Jornada22PREPOSTCURRENT/43refs conferidos;161PASS7FAIL0skip,5findings P2/P3: alvo pré-requisito bloqueado, runtimes multiversão divergentes, módulo de leitura incorreto, ação dashboard obsoleta e projector120/DTO100 incompatíveis. Criticclosed, reparo técnicoLead emfila; doubles não PG, confinamento loaderVite inicial não certificado.
+- R14 backend/config/dist untouched; learningSRC9e27be3cb330c42cd9bc4e55b8267ee26cf2265dbb43178e3402f9fbd779d7a0 held através browserfinal. Leadfixture readonlyaccess atual4392826312223be63a5725861441949e4692da91919846a8306b7b7622881e9d:3emptyjourneyenums,4wireanswerprojections stripkey/addsavedAt,1restoredGETsavedAt,removeapelotargetobsoleto,activity terminalaction deriveProgressNextAction. Rawarrays/requestbodies/assertions inalterados. Inverseprimeira fatia comprovou1ecbaseline; hash incorreto em mensagemLead corrigido com bytes/provenanceauthoritative, sem fonteextra.
+- Evidência: lead-native-main-independent-review-verification.json; lead-ci-r8-independent-review-verification.json; lead-journey-r7-independent-review-verification.json; native-choice-answerability-ready.json; native-choice-answerability-red.results.json/green.results.json; lead-r14-readonly-access-fixture-coordination.json. Status IN_PROGRESS integral44; native9/buildcompiled/current114/freshreviews/journey5/CIassembly/currentassembled ainda pendentes. RedisNOT_EXECUTED/REM06/HCONTENT/sameUID/remote/AAA001 específicos; semcommit/push/deploy/publicação.
+
+## 2026-10-03T22:47:01Z — Native choice guard9 e HTTP compilado114; R14 congelado
+
+- EXEC-AUDIT-20261003 continua IN_PROGRESS nas 44 tasks. Builds limitados a @cvg/contracts e @cvg/persistence retornaram 0/0. PG18.4 executou 9/9 testes sem skips/CLI0, incluindo main compilado com convite/cookie/autorização reais, avaliação transacional imutável e duas negativas SINGLE/MULTIPLE para IDs impossíveis no contrato de resposta. Summary05b4a2675af36d62f53e544c6d48614d0741c4ca7e47d8eb964b30af525ee1a0; 60 hashes do checkpoint, 2732 arquivos selecionados PRE=POST=CURRENT e 8 referências raw conferidos Lead. AppNOSUPER/NOBYPASS e adminNOSUPER/BYPASS separados; fixtures imutáveis retidos até destruição física do cluster, diretório ausente e porta34777 recusada em nova observação. Pending fresh review, sem publicação clínica/assembledweb/global/remote accept.
+- Regressão das 15 suites HTTP com pacotes compilados correntes passou 114/114/CLI0/0skip após rebuild: fonte e dist usam limite de sessão43200. Resultado histórico111PASS3FAIL e controle mínimo aliascontracts114PASS preservados. Isso comprova essas suites, sem inferir candidato integral montado. Guards escolha tiveram6RED352PASS e358GREEN; nenhum contrato de resposta, decoder, SQL, piso ou ratchet enfraquecido.
+- R14 owner informou freeze10 e240canônicos=79Chromium161unit/0skip; strict/lint/static0. Medidas atuais page2125/2377, diagnostic680/851, maxownedfunction112/150 (109 era históricoR13), resilience1487 com warningsoft800/hard2000. Probes critic copiados25PASS5FAIL/30 são EXPECTED_CHANGED_ORACLE reportado, não30PASS; fresh review/handoff verificado ainda pendentes. learningSRC9e27be3cb330c42cd9bc4e55b8267ee26cf2265dbb43178e3402f9fbd779d7a0 e access4392826312223be63a5725861441949e4692da91919846a8306b7b7622881e9d permanecem congelados.
+- Novo critic nativo independente recebeu somente mapa literal60source/9raw e writes próprias; pacotes/config/locks/dist frozen até encerramento. CI R9 consumer/produtor/workflow em reparo disjunto; janela RLS live fechada até packet pronto. Jornada5 findings aguardam reparo coordenado; nenhum avanço silencioso a COMPLETED. RedisNOT_EXECUTED/REM06/HCONTENT/sameUID/remote/AAA001 específicos mantidos.
+- Evidências: .agent/artifacts/remediation-20261003/lead-native-choice-green1-current-verification.json; native-choice-main-fresh-review-map.json; lead-current-built-http-after-choice-build-verification.json; r14-participant-static-proof-final-1.json. Próximo: verificar handoff/freshcriticR14, native freshreview, CI R9 assembly+proof+review e jornada5/currentgates44. Sem commit/push/deploy/publicação.
+
+## 2026-10-03T23:32:18Z — R14 fresh REVISE e reparos delimitados nativo/CI/jornada
+
+- EXEC-AUDIT-20261003 continua IN_PROGRESS nas 44 tasks. Handoff R14 SHA0d09484daeb6b11bdee24524b780f0db96cd865d00577356cf2c5e5d179ff559/246128bytes conferido. Lead verificou 737 ocorrências/622 caminhos distintos; o checklist owner625 usa denominador próprio. Copiados históricos:31unitPASS+25browserPASS5FAIL=61casos56PASS5FAIL; smoke/compatibilidade originais não executados. Nenhum contador convertido em aprovação.
+- Fresh R14 REVISE1P2 validado:318artefatos e36PRE=POST=CURRENT.240canônicosPASS/78independentesPASS não anulam2FAIL reais: resposta local inválida é marcada ambígua semPOST e impede correção. Critic encerrado; Lead acrescentou RED2FAIL1controlePASS, valida resposta NOVA antes de alocar snapshot e conserva replay original realmente enviado. Regressão canônica R16 em execução, strict/lint0; conclusão/freshreview pendentes.
+- Native fresh REVISE2 conferido237refs/60fontes9raw e2732fingerprints: pares MULTIPLE introduzem markup entre IDs e FORMATIVE semTEXT é aceito no capture mas negado no mapper. Reparo coeso8fontes:5RED/367GREEN pure e2RED/14GREEN contrato público, ambos0skip. Permutações verificadas sem proibir SINGLE com ângulos válidos; capture exigeTEXT nas duas modalidades. Primeiro helperRED tinha fixture própria inválida; strict inicialTS2307 corrigido por import relativo de teste para assessment dist existente; históricos preservados. Nenhum build/PG após esse reparo; native9 anterior permanece evidência histórica do escopo anterior.
+- Fresh CI R9 REVISE4 conferido5034files/23PREPOSTCURRENT;412canônicos e51probes de observação não equivalem a segurança aprovada. Reparo CI-R10 disjunto: coerência produtor/collection/gates vivos, risk-register strict/counts, audit corrente antespreflight e mesmo --audit nosconsumers, contadores safeinteger não negativos. Jornada R8 reparando5findings em fontes disjuntas; nenhuma janela build/live aberta.
+- Redis7.4.11 extraído de imagem local cached por container único nunca iniciado; runner R15 pronto com prova deownership PID/socket e8testes readonly, mas runtime NOT_EXECUTED e fingerprint deve ser atualizado após writers congelarem. RLS snapshot Git LOCAL próprio779files/SHA9cbc808a4e5c82efd61458414dc92cea0b33550b preparado, nenhumPGexecutado/remoteclaim. RootHEAD preservado. Scan secrets oficialCLI1 mantido:3artefatos históricos de testes sintéticos triados em metadata redigida; gate continua FAIL, sem alterar provas/excluir arquivos.
+- Evidências: lead-participant-r14-independent-review-verification.json; lead-native-choice-independent-review-byte-verification.json; lead-ci-r9-independent-review-verification.json; native-publication-response-coherence-ready.json; r16-participant-preflight-red1-results.json; r15-redis-20261003-prep-7c91e4/ready-v2.json; lead-secret-scan-triage-metadata.json. Próximo: concluir R16/contratoformat/static e freshreview, freezeCI/jornada, coordenar builds/provas nativas/Redis/RLS e gates44 correntes. REM06/HCONTENT/sameUID/remote/AAA001 específicos; sem aprovação global/clínica/manualG07/release/commit/push/deploy.
+
+## 2026-10-04T00:46:00.670329Z — R16 REVISE8, R17 parcial e native14 compilado
+
+- EXEC-AUDIT-20261003 mantém IN_PROGRESS integral44tasks. Fresh R16 conferido:2898refs,36CURRENT e504sentinels;243canônicosPASS versus25probes15PASS10FAIL, oito findings reais F01–F08. Não são substituídos pelos oracles antigos R14. Lead reparou F04 draft acknowledgment e F07/F08 identidades duplicadas: contratos4RED/24GREEN, feedback1RED/1GREEN focal e regressão completa244PASS0skip/CLI0. Revogação mantém limpeza integral; primeiro patch atingiu reset errado, corrigido antes da regressão completa. Cinco findings F01/F02/F03/F05/F06 em execução SOURCE_WINDOW_OPEN R17 por builder web-only8paths, sem builds/backend/config/controles.
+- CI-R10 congelado:512canônicos0skip,47sealrefs+3932rawfiles+26contextos bytes conferidos Lead; novo freshcritic somentefontes ativo. JornadaR8 owner163PASS e19sources/82durable refs conferidos antes da reconciliação de build; 1012caches contados pelo owner não foram hash-manifestados. Generic120 passa apenas pela fronteira interna explícita; currículo12existing+6new e1inalterado, sem aprovação clínica. Novo connected test não compilava por imports de pacotes não declarados: contratosbuild0/curriculumbuild2 preservados; caso exato de hashes catalog/seed/session movido para novo application diagnostic-catalog-boundary.test.ts, parser currículo usa contrato relativo já compilado. Nenhuma assertion/dependência pública alterada; handoff owner imutável agora histórico nesses arquivos e learning schema. Jornada canônica sucessora em verificação.
+- Scoped builds sucessores curriculum/application/persistence/api0/0/0/0, contratos0 anterior conservado. Rootstrict pósbuildCLI0. Native14 genuinePG18.4/compiledmain passou14/14/CLI0/0skip;66checkpoint hashes e2782selectedPRE=POST=CURRENT/8rawrefs conferidos. AppNOSUPER/NOBYPASS e adminNOSUPER/BYPASS/CREATEROLE de fixtures separados. Dados técnicos e auditoria imutável retidos até destruição física; /tmp/cvg-live-pg-418A0U ausente e44593 recusada. Summaryfa9d1e1c10bb8ba3867f2d9f371954aee1a8c5a39266a26f0136d132e73ce462. Pendingfreshreview; não assembledweb/nativeclinical/fullcandidate/remote/release accept.
+- Redis/RLS novos permanecem NOT_EXECUTED; produtores locais preparados requerem snapshots atualizados após fontes congelarem. Scan secrets oficialCLI1 por3probes sintéticos históricos mantém gateFAIL; nenhum histórico alterado/excluído. REM06/HCONTENT/sameUID/remote/AAA001 específicos permanecem, sem bloqueio artificial geral. Semcommit/push/deploy/publicação.
+- Evidência: lead-participant-r16-independent-review-verification.json; r17-partial-canonical-final1-results.json; r17-public-identity-contract-final-results.json; r10-ci-final-seal.json; r8-journey-implementation/freeze-handoff.json; native-coherence-scoped-build-successor1-summary.json; lead-native-coherence14-current-verification.json. Próximo: R17 TDD/freshreview, CI/jornada freshreviews, produtoresRLS/Redis e checks44 correntes; Lead único escritor de continuidade.
+
+## 2026-10-04T01:38:31.413489Z — Reviews atuais REVISE; CI R18, jornada R19 e proveniência R20
+
+- EXEC-AUDIT-20261003 permanece IN_PROGRESS nas 44 tasks. Revisões fresh encerradas e bytes conferidos: CI-R10 quatro findings reais, native14 dois P1 de proveniência e jornada dois P1 de autoridade. Native14/169jornada/512CI são evidências históricas dos respectivos escopos; nenhuma aprovação global é inferida.
+- CI-R18 declara arquivos externos ao consumer, rejeita scores não finitos/fora0–100 e usa lifecycle de recursos próprios desde bootstrap; o runner deixa de matar collectors por basename. TDD lifecycle7RED/7GREEN, claims21GREEN; primeira regressão540 teve537PASS3FAIL, preservada. Duas falhas eram pnpm exec em diretórios temporários sem package e uma fixture extraía nomes anteriores dos adaptadores; CLI Vitest instalado e nomes reconciliados sem mudar assertions. Focal3PASS/131selectionSKIP; lint2CLI0, regressão completa sucessora em execução. Correção de classificação: os sete FAILs dos probes CI anteriores contêm cinco assertions válidas e duas oracles inválidas, incluindo consumer sem declarar arquivo neutro; os quatro findings reais permanecem. Histórico original e primeira classificação preservados.
+- JornadaR19 source-only277PASS0skip, quatro fontes alteradas dentre oito autorizadas, nenhum helper/export novo. Lead verificou1303arquivos do manifest e47refs source/supplemental, zero drift; handoff a7d10d117ea3daaee066e0f226a98e57e4076cc0882ccf4ad881c23030b0a111. Fresh I1 Bernoulli somente fonte/mapa atual ativo. J1 usa completion do produtor real; J2 impede ATRIBUIDO/staleactivity de contornar pré-requisito e conserva continuidade autorizada. Nenhuma prova nova de banco/mutação é atribuída a esse recorte.
+- WorkerT23 candidato127PASS0skip e quatro fontes congeladas, evidência local/doubles. Não há orçamento numérico aprovado de drain nem hook OTLP próprio; freshreview e API/supervisor permanecem pendentes. WebR17 cinco guards em execução em oito caminhos exclusivos. Builder jornada encerrou escrita nesses caminhos e passa à lane nativa R20 disjunta: forward0057/proveniência/capture/read failclosed, source-only; builds/live fechados até checkpoint específico.
+- Native review dois P1 são integridade de ingestão privilegiada: auditpublication não liga action/resource ao formulário; blueprintapproval não verifica actor/scope/outcome/time/resource. Novo guard não pode promover registros legados inválidos; fixtures técnicas/auditoria são preservadas e nunca aprovação clínica. ActualPG para essas negativas ainda NOT_EXECUTED. Redis/RLS novos NOT_EXECUTED; secretsgate oficialFAIL mantém histórico, sem exclusões. Dependency audit atual dev/prodCLI0/zero vulnerabilidades observadas. REM06/HCONTENT/sameUID/remote/AAA001 específicos mantidos.
+- Evidência: lead-native-journey-worker-current-review-verification.json; lead-ci-r10-independent-review-verification.json; lead-r19-journey-handoff-verification.json; r18-ci-canonical-final1-results.json; r18-ci-boundaries-green1-results.json; r18-worker-shutdown-handoff.json. Próximo: CI540 sucessor/freshreview, R17/R19 reviews, nativeRED/forwardguard/GREEN, API shutdown e produtores Redis/RLS atuais. Semcommit/push/deploy/publicação/global/manualG07/release accept.
+
+## 2026-10-04T02:27:42.833595Z — CI R22, jornada R23 e revisão API T23
+
+- EXEC-AUDIT-20261003 permanece IN_PROGRESS integral44. CI R18 regressão540PASS0skip preservada; freshREVISE cinco findings: spawnENOENT sem cleanup, grupo próprio sobrevivente ao líder, counters reporter inválidos admitidos, candidate sem trustedClaims e P3 cardinality/identity incompletas. Lead conferiu1334artifactrefs/29sources, inclusive um hash de symlink literal: primeira verificação leu destino incorretamente e foi preservada, sucessora zero mismatch. Attestation I1 estrita NÃO satisfeita por tentativa inicial Corepackdownload e leituras transitive fora mapa; execuções corrigidas173canônicosPASS/84probesPASS9FAIL preservadas. Pauli R22 autorizado somente CI/source+own child proofs, sem providers/builds/PG.
+- Web R17 handoff298PASS=193unit105browser, source8/6728artifactfiles/39current verificados Lead. Euler fresh readonly41 encerrado REVISE2P2: replay diagnóstico rebaixa checkpoint novo e acknowledgement participante pode reduzir versão aceita. Lead303artifactrefs/41sources zero mismatch;298canônicosPASS/41independentesPASS2FAIL, native reachabilityF02 não comprovada. Novo reparoLeadR25 delimitado segue TDD; semautoaccept. API T23 oito fontes congeladas, 40focais e421PASS2RedisNOT_EXECUTED/49files, strict/lint/format/diff/scanner0; main439/439 e server158/166, teste1061soft800warning. Boyle fresh readonly66/source-only ativo. Worker127 local permanece candidato; sem deadline global aprovado/hook OTLP próprio/OS-supervisor/new live claim.
+- Jornada freshR19 REVISE2P2 verificada265refs/36PREPOSTCURRENT: retenção apagava progresso concluído e atribuição futura ficava disponível. LeadR23 seis fontes com helper de elegibilidade: RED6FAIL13PASS, GREEN112; adicional runtime obsoleto oferecia3ações para atribuição futura, RED3FAIL1controlePASS/112selectionSKIP, GREEN116. Regressão ampliada300PASS0skip e probes anteriores60PASS0skip sem alteração das assertions; strict/lint/format/diff0. buildScopePath147/150 e teste825soft800warning preservados. Source-only/synthetic relational SQLite, não nativePG ou E2E; freshreview continua pendente.
+- NativeR20 oito fontes/1299artifacts verificados sem drift, handoffe51f2ae05de406be4c71b562e5653bfedead9618f71cf3f3843a7a94f266c55d. 570unitPASS0skip/strictlintformatdiff0; forward0057 mantém0055/56 imutáveis, capture/read negam proveniência ausente/inconsistente. Root17PGnegativas/controle preparados mas NOT_EXECUTED; R24 prepara apenas runner/legacyfixture próprios. Historical0..56 reconstruído deverá preservar RED real antes de forward0057GREEN, com roles appNOSUPER/NOBYPASS admin separado e immutablelegacy não promovido. Nenhum build/PG novo executado nessas lanes.
+- Secrets gate oficial continua FAIL; novos artefatos exigem scan atualizado, não presumir número antigo3. Novos Redis/RLS NOT_EXECUTED; dependency audit dev/prod corrente0/zero observado. REM06/HCONTENT/sameUID/remote/AAA001 específicos preservados; nenhuma paralisação geral, commit/push/deploy/publicação/global/nativeclinical/G07/release accept.
+- Evidência: lead-ci-r18-independent-review-verification-corrected.json; lead-r17-participant-handoff-verification.json; lead-r21-api-shutdown-handoff.json; r23-journey-canonical-final1-results.json; r23-journey-probes-final1-results.json; r23-journey-complexity1.json; lead-r20-native-source-handoff-verification.json. Próximo: R22 TDD/review, web/API reviews, journey freshreview, native frozencheckpoint/build/RED/forward/GREEN, worker/T24/Redis/RLS/current44gates.
+
+## 2026-10-04T03:54:08.572938Z — R25/R26; fresh REVISE e native R24 RED confirmado
+
+- status: IN_PROGRESS; EXEC-AUDIT-20261003 integral44. R14 SHA0d09484daeb6b11bdee24524b780f0db96cd865d00577356cf2c5e5d179ff559 e artefatos históricos intactos, oito fontes legitimamente supersedidas. Histórico240canônicos/copied61=56PASS5FAIL permanece semautoaccept.
+- R25 atual308canônicosPASS0skip/43probes antigosPASS; freshREVISE P1 confirmaçãoA após GETC e P2 feedback/appeal DTOdrift.358artefatos41fontes conferidos0mismatch; fresh30=20PASS10FAIL agrupados2. Isolamento integral da sessãoINVALID por temporários iniciais externos declarado; findings funcionais preservados. Critic fechado, R27 segundo builder somente frontend autorizado/sourcealiases, sembuild/config/backend.
+- R23 freshREVISE2P2: trilha oferece execuçãoPAUSADO/BLOQUEADO e retenção revoga pré-requisito concluído.88artefatos43fontes conferidos0mismatch;228regressõesPASS/fresh44=35PASS9FAIL. Evidência relacional/HTTPde fonte, nãoPG/RLS; reparo aguarda teardown nativefreeze.
+- R26 API diagnóstico safe EADDRINUSE/CLI1 passou após REDreal1FAIL1controlePASS;432canônicosPASS2RedisNOT_EXECUTED/434;8probes OS/HTTP/TCP antigosPASS. Strict/lint/format/diff/scanner0;main439/439; freshreview pendente. Worker127fonte mantém gap deadline operacional/OTLP, T24pendente.
+- R24 cinco scopedbuilds contracts/curriculum/application/persistence/api0, recibos reais; checkpointR24-NATIVE-20261004-LEAD1 SHA5932a6f79774c44d165baa113fd8dad6d84bc96ce8b5d52142741191a6774c4b. NativePG18.4 histórico0..56:17=6PASS11FAIL0skip/CLI1/HISTORICAL_RECONSTRUCTION_RED; summaryb19ac3171d8aec146e251244cac04887d5bb6b2dae2df9bebe8ed6b07fdbaa0a/14refs conferidos.1899source/2313build/39091dependencyPREPOSTCURRENT iguais; teardowndiretórioausente/porta36635refused. Não convertidoREDemPASS. Forward0057GREEN iniciado, ainda sem resultado; pacote fonte/build/deps permanece congelado.
+- CI R22 segue disjunto; novos Redis/RLSNOT_EXECUTED, secretgateFAIL requer scan atual. REM06/HCONTENT/sameUID/remote/AAA001 específicos; semcommit/push/deploy/publicação/clinical/G07/release/globalaccept.
+- last_completed_action: manifests/reviews e scopedbuilds verificados; históricoREDnativo esperado preservado. next_action: concluir forwardGREEN/teardown; CI R22/webR27/freshreviews; jornada após nativefreeze; worker/T24/Redis/RLS/current44gates.
+- evidence: .agent/artifacts/remediation-20261003/lead-r25-r23-r14-review-artifact-verification.json; lead-r25-participant-handoff.json; lead-r26-api-diagnostic-handoff.json; lead-r24-historical-red-verification.json; lead-R24-NATIVE-20261004-LEAD1-checkpoint.json.
+
+## 2026-10-04T04:27:51.560664Z — R28 native corrente, R27 e reviews delimitados
+
+- status: IN_PROGRESS; EXEC-AUDIT-20261003 integral44. NativeR24 históricoRED17=6PASS11FAIL/CLI1 preservado; GREEN1 CLI1 comparou Array com Result(57), seed2PASS; conserto representação do runner RED7PASS1FAIL/GREEN8PASS usa Result instalado e mantém rejeição de hash/time/order/row. GREEN2 real23PASS8FAIL/31 expôs SQL correlatedDrizzle; nenhum teste foi substituído por skip.
+- LeadR28 supersede EXATAMENTE provenance.ts/test do R20: Drizzle removia qualificação Column em single-table SELECT, subquery confundia auditid com id interno. SQL outeraudit explicitamente qualificado; discriminator fullDrizzle RED49PASS1FAIL, GREEN50; regressão571PASS0skip, persistence strict/lint0 e rootstrict0. R20 handoff/1299artifacts permanecem históricos imutáveis, novas duas fontes declaradas no checkpoint sourceSupersessions; nenhum SQL0055/56/57,rootfixture/assertion/provenancecriterion enfraquecido.
+- Novo scopedbuild contracts/curriculum/application/persistence/api0/0/0/0/0 e checkpointR24-NATIVE-20261004-LEAD3 SHA636896ad7f5ba40e1e5eb6c6d224bd9da0404cf0f442dd593281f88276ae31c0. ActualPG18.4 CLI0 seed2PASS,current-original31PASS,legacyDENY4PASS,0skip: normal0057 preserva57trackingrows e acrescenta1; legado immutable inválido continua negado/no writes. Summary21bf50e6498a4b57ec0998b381ec66628a7f413983824a7fd16e770e75148dcc e23refs conferidos;1899source/2313build/39091dependencies PREPOSTCURRENT iguais. AppNOSUPER/NOBYPASS, adminNOSUPER/BYPASS separado; guardsenabled/SECURITYINVOKER. Teardowndiretórioausente/porta34969refused; todoshandles settled. Técnica sintética, não clínica/fullweb/publicação/globalaccept. Freshnative83source/9rawFaraday ativo.
+- CI R22 final9sources frozen: full576PASS/original540preserved anterior ao delta saída; successor39focal+3installedexitcontractsPASS/cheapchecks0. Lead23artifactrefs9sources conferidos0mismatch. FreshCI35sourceNewton ativo; sem Redis/RLS/remote/globalgreen inventado.
+- R27 builder source4/5229artifacts41source conferidos0mismatch; novos44PASS=22unit22browser; full351PASS1FAIL/352 por fixtureABERTOinvalid. Lead alterou somente readonlyaccessABERTO->NOVO; inversebyte-exact439baseline/current4e578287a012d1ccfd87e2a787730161869a3e10325029821bf5db5ef7aad4a8, assertions intactas. Focal1PASS14selectionSKIP. Nova full351PASS1FAIL preservada por ownedlocator alertambíguo; espera operação concluída+últimoalertamutation+textoexato acrescentadas semprod/timeoutchange, focal10PASS65selectionSKIP. Fullcurrentfinal2 emexecução, nenhum352PASS antecipado.
+- API432PASS2RedisNOT_EXECUTED/434 e worker127fonte em freshreview80sourceEpicurus; contratos drain/OTLP/deadline operacional não aprovados globalmente. JornadaREVISE2 operacionalpaused/blocked e retenção perde pré-requisito continua pendente; sem desbloqueio por quiz. RedisR29 apenas prepara namespace novo/copiacachedbinary/CLIoffline; live aindaNOT_EXECUTED. RLSprodutor current pendente/secretgateFAIL requer scan novo. REM06/HCONTENT/sameUID/remote/AAA001 específicos.
+- last_completed_action: native atual e histories/hash proofs verificados; CI/webhandoffs conferidos e fixture corrigida. next_action: terminar fullweb/freshreview; verificar criticCI/APIworker/native; Rediscurrentrecipe/checkpoint/liverun; jornada após sourceholds; T24/RLS/gates44. Semcommit/push/deploy/publicação/clinical/G07/release/globalaccept.
+- evidence: .agent/artifacts/remediation-20261003/lead-r28-native-final-verification.json; lead-r24-native-green2-failure-verification.json; lead-r24-runner-ledger-repair-provenance.json; lead-r22-ci-successor-verification.json; lead-r27-handoff-pre-fixture-verification.json; lead-r27-feedback-fixture-coordination.json; lead-r27-appeal-alert-measurement-coordination.json.
+
+## 2026-10-04T04:42:05.551966+00:00 — R28 scoped PASS; CI PASS, web352 e APIworker REVISE4
+
+- status: IN_PROGRESS; EXEC-AUDIT-20261003 integral44. Lead conferiu R28 critic36refs/83sources e APIworker1059artifacts/80sources, zero drift; R29prep932refs conferidos, liveNOT_EXECUTED. Critics encerrados; nenhum aceite global/clínico/G07/release.
+- Native freshI1 R28 PASS restrito:539 próprias assertions de fonte (516originais+23novas), CLI0;37assertions PG autorizadas revisadas, sem nova execução PG pelo critic e sem observação independente do exit do child Lead. Prova técnica Lead seed2/current31/legacyDENY4 atual já conferida, não publicação clínica.
+- CI freshI1 R22 PASS restrito, Lead2832refs35source conferidos:576assertion occurrences/556unique fullNames em12files,27controles novos; sem claim wholebundle/Redis/RLS/remote/global.
+- Web atual352PASS0fail0skip (224unit+128Chromium),12files CLI0; rootstrict/webstrict0. Lead alterou somente fixture ABERTO->NOVO e measurement de alerta do novo teste (sem prod/timeout/guardchange); históricos351/1 intactos. Novo freshI1 Hypatia source41 ativo, sourcealiases/owncache/no builds.
+- APIworker freshI1 FAIL: P0=0,P1=1,P2=3. Cliente desconectado permite fechar adapters antes do callback; traces já em exportação não são aguardados; falha fatal claim worker sem diagnóstico redigido; bind síncrono inválido deixa listeners no helper (API valida port, alcance limitado). Originais145PASS; final167=163PASS4FAIL, worker fatal observado em harness separado. Nenhuma perda/corrupção de dados ou deadline total numérico inferida.
+- RedisR29 caché7.4.11/CLI e contratos9PASS preparados; liveNOT_EXECUTED. Próximo Lead atualiza/valida trace e congela pacote para oito testes originais once; sem RedisPASS antecipado. Depois reparar T23 com TDD e freshreview, jornadaREVISE2/T24/RLS/secrets/current44gates.
+- last_completed_action: hashes/reviews conferidos e fullweb352 atual; next_action: Redis freeze/checkpoint/live8, T23 quatro reparos/freshreview; status IN_PROGRESS. Semcommit/push/deploy/publicação/globalaccept.
+- evidence: .agent/artifacts/remediation-20261003/lead-r28-r26-r29-independent-verification.json; lead-r22-ci-independent-review-verification.json; lead-r27-current-regression-verification.json; critic-native-r28-i1/manifest.json; critic-api-worker-r26-i1/report.md; r29-redis-proof/recipe.md.
+
+## 2026-10-04T04:54:00.012186+00:00 — Redis R29 actual8GREEN e novos RED/scan
+
+- status: IN_PROGRESS; local Redis7.4.11 original8PASS0FAIL0SKIP/CLI0, snapshot13446PREPARED/PRE/POST/CURRENT iguais/4PIDs ausentes/ports refused; freshcritic ativo, sem candidato distribuído/CI ordinário/globalaccept. Summary7e787445eab0be56af34ec5eb6416c7f4655ee6d8815ade64141ac067bc5ad5f; lead-r29-live-current-verification.json.
+- T24 sourcealiases RED2FAIL/1controlePASS; inicial0tests por import incorreto do harness preservado. Sem alteração produtiva/queries proibidas. R30 só prepara T23 até release; R31 scoutreadonly busca autoridade de conclusão anterior sem permissiveEM_REFORCO.
+- Scan atualCLI1/11files. Contextos inspecionados são marcadores sintéticos de testes lease/auth/processownership; não valor real divulgado/não scan clean. Fontes e evidência histórica intactas, nenhum allowlist/exclusion/deletion.
+- last_completed_action: Redis8 actual/hash/teardown e T24RED/secretcontext verificados; next_action: freshreviews/R30 apóshold/jornada/T24/RLS/current44gates. Lead sole controlwriter, semcommit/push/deploy/publicação/globalaccept.
+
+## 2026-10-04T04:59:58.790023+00:00 — Redis fresh scoped PASS; R30 source-go
+
+- status IN_PROGRESS. FreshI1 Redis original8 scopedPASS;14source (correção do anúncio13),6raw,2transitive estáveis;21artifacts conferidos.14purecontrolesPASS/22badraw cases rejeitados. Original8 não rerodado pelo critic; exit0 observado Lead, não reconstruído de invocation. DoisHTTPlisteners mesmoOS/syntheticoutage/restartnonpersistent limites retidos. Lead sourcehold liberado após encerramento/cleanup; R29 técnico não encerra T12/T20/G05 global.
+- R30 preparation1496artifacts conferidos;181cases175PASS6RED0skip,145APIworkeroriginais+12tracing originaisPASS;6nativechildren4PASS2RED esperados. Packet12rootpaths máximo:APIserver/lifecycle/novo requestdrainhelper+tests, OBS tracing/test, worker main/test/lifecycle se necessário. Source-go explícito, sem builds/config/deps/PG/Redis/schema; T24Lead espera terminar regressão R30.
+- Critic web41 e scoutdurablejourney continuamreadonly. HistóricoR29prova é boundao candidato de04:43; qualquer novo drift pertinente deve ser identificado e revalidado antes de aceite candidato/global. Nenhum source-only PASS prova clínica/publicação/G07/release.
+- evidence: lead-r29-fresh-and-r30-prep-verification.json; critic-redis-r29-i1/report.md; r30-shutdown-repair/prepared-scope.md. last_completed_action: freshRedisverificação/sourceholdrelease; next_action: R30TDD/nativeprocessclosure/freshreview, webreview/journey/T24/RLS/secrets/current44gates.
+
+
+## 2026-10-04T05:36:34Z — R30/T24 e geometria R33, fontes congeladas para revisão
+
+- status: IN_PROGRESS; objetivo integral44. R14 manifesto246128bytes/SHA0d09484daeb6b11bdee24524b780f0db96cd865d00577356cf2c5e5d179ff559 intacto;737refoccurrences/622pares únicos,726matches e11ocorrências de fonte legitimamente supersedidas; zero divergência durável. Histórico240PASS/copied61=56PASS5FAIL permanece histórico, semsmoke/compatibility/globalaccept.
+- R30 dez fontes alteradas de12autorizadas; Lead2049artifacts/12refs fonte conferidos e mainAPI byte-idêntico. RED83PASS13FAIL; GREEN614PASS2RedisNOT_EXECUTED; novechildren/59checks reais com IPCunref, callback antes de fechamento, inflightOTLP e diagnósticos redigidos/CLI1. Sem deadline total numérico/build/provider/durabilidade presumida.
+- Lead T24 altera somente rejection-audit.ts/newtest/ops.http.test.ts: escopo pedido autorizado preservado; missing/foreign usa primeiro scope confiável sem consultar recurso proibido. Appendfailure gera contador/diagnóstico fixo; métricas/logger quebrados não alteram rejeição pública. Principal scopes[] não recebe autoridade inventada: diagnostic AUDIT_SCOPE_UNAVAILABLE, sem row audit; permanece limite explícito. RootRED8FAIL3PASS após corrigir três spies de logger imutável; firstRED5behavioral+3harnessFAIL retido. Current626PASS/0FAIL/2RedisNOT_EXECUTED/68files CLI0; strict/lint/format0. Source snapshot começou DURING a execução, não declarar fullPRE. FreshI1 APIworker85 Peirce ativo; artefatos antigos imutáveis.
+- FreshwebR27 REVISE P2 geometria,352regressões+19functionalPASS mas3candidategeometryFAIL; blindness inicial compromissada por narrativa dos controles, não aceitar como I1 cego. Lead R33 CSSEXATAMENTE height/padding/width do input e novo teste canonicalSINGLE/MULTIPLE 1440/768/390: RED6FAIL, GREEN6PASS; full358PASS0skip/13files e reproductiongeometry5PASS(2controles+3candidates). Strict/lint0;43fontes congeladas/freshI1 Erdos ativo. PNGmobile inspecionado como cropfieldset, sem alegar viewport/fullassembledruntime ou certificação Tab.
+- RedisR29 prova oito local/freshscope14controls anteriormente conferida permanece válida para candidato04:43; R30/T24 alteraram inputs e exigem prova integrada renovada. R34 prepara somente defaultmatrix7, sem selector/mock/nativePG executado; trace/source/build/deps devem congelar antes de checkpoint. Jornada paused/blocked e perda de conclusão após reforço ainda pendentes; scout mostrou estados idênticos com/sem conclusão anterior e ausência de inventário imutável de obrigações, não fabricar completedboolean/receipt/backfill.
+- Secrets scan11patternsCLI1 preservado e necessita renovação após novas cópias; contexto sintético não equivale a scannerclean. REM06/HCONTENT/sameUID/remote/AAA001 específicos mantidos, sem bloqueio geral ou commit/push/deploy/publicação/clínica/G07/globalaccept.
+- last_completed_action: handoffs/manifests e regressões atuais conferidos; next_action: reviewsfrontend43/APIworker85, frozencheckpoint/defaultRLS7, jornada/Redis integrado/coverage/secrets/current44gates.
+- evidence: .agent/artifacts/remediation-20261003/lead-r30-implementation-verification.json; r32-current/handoff.json; lead-r33-diagnostic-choice-handoff.json; lead-r14-historical-handoff-current-verification.json; lead-r35-api-worker-fresh-review-map.json.
+
+
+## 2026-10-04T05:47:31Z — R33 review REVISE visual; R36 corrigido, R34 preparado
+
+- status IN_PROGRESS. Lead308artifacts/43sources conferiu freshR33:385PASS6FAIL/391, P2 participanteSINGLE/MULTIPLE deformado nas três larguras. Filtro do critic deixou narrativa após head/status e comprometeu cegueira; tetoconditional, não I1 aceito. Histórico intacto, critic encerrado.
+- R36 modifica somente CSS com novas regras específicas de seleções do participante e NEWparticipant-choice.browser.test.tsx; inverseCSS equivale exatamente ao baselineR33. RED6layoutFAIL; firstGREEN6FAIL por expectativa incorreta focus-visible após clique; teste usa agora Tab/ShiftTab reais, GREEN6. Full364PASS0FAIL0SKIP/14filesCLI0,44PREPOSTCURRENT iguais; copiedpaint14PASS/147unselected, dozePNG atuais da página inteira com CSS real e dois controles conhecidos. Captura mobileSINGLE inspecionada; bitmap281 para CSS390 devido escala Vitest, não alegar1:1. Lint/webstrict/format/diff0. Handoffc5bfde128c3c75451279d0acc011ad3b1fafa0a9d02edbc064f8d5adbbf221d8/2213refs; freshreview limpa pendente.
+- R34 somente prep:24manifestrefs conferidos,23purePASS/8helperssyntax/lint0, cache cincofiles+134libraryentries e13raízes/3312oldRLSentries preservados. Nenhum PG/build/service/nativeversion executado, nenhum mapa final corrente selado. Lead concluirá freeze e prepare/checkpoint para defaultproducer sete casos sem selector/dependency override. RootHEAD3cd e isolado futuro distintos, classeLOCAL_MEASURED/NOT_VERIFIED, não GHA/globalaccept.
+- T24/R30 current626PASS/2RedisNOTEXEC continuam sourcefrozen para freshAPIworker85. Nenhuma nova escrita backend/config/deps/build. SecretsFAIL/jornada/inventoryproof/integratedRedis/coverage e critérios44 pendentes; REM06/HCONTENT/sameUID/remote/AAA001 específicos.
+- last_completed_action: geometryrepair/regressões/hashes e prepRLS conferidos; next_action: freeze/defaultRLS7 e freshfrontend44/APIworker85, depois jornada/gates44; semcommit/push/deploy/publicação/clínica/G07/globalaccept.
+- evidence: .agent/artifacts/remediation-20261003/lead-r33-fresh-review-verification.json; lead-r36-participant-choice-handoff.json; lead-r34-preparation-verification.json; lead-r36-participant-fresh-review-map.json.
+
+
+## 2026-10-04T05:58:16Z — RLS pré-check RED sem PG; R35 observadores REVISE
+
+- status IN_PROGRESS. R34 prepareCLI0 criou snapshot271b75472bd57fcbf7016b6cae4761cba95f36e0/816source/2392build/39143deps/1079tool entries; root3cd permanece distinto. Precheckpoint originalfreshness detectou19symlinks de diretórios gerados como runtimeuntracked. Nenhum checkpoint/claim/PG iniciado; prepared/13oldRLSroots e firstFAILEDprecheck intactos, não declarar checkoutclean.
+- R38 novo pacote irmão copia24helpers/records anteriores; reparo somente layout de containers reais dist/node_modules com links para folhas medidas. Defaultproducer e freshnessoriginals intactos. RED1directoryshape e RED2originaldirtyguard preservados; GREEN24pure/0skip +syntax/lint0. Nova fonte real não rastreada continua rejeitada no controle. Novo prepare/validcheckpoint aindaNOT_EXECUTED até resetfreeze.
+- R35fresh scopedREVISE:108artifacts/85sources Leadconferidos0drift;175canônicosPASS/independent20=14PASS6FAIL. P1HTTP completionobserver suprime403;P2workerobserver converte sucesso processado em failure;P2diagnóstico substitui erro original. Novo reparo após esta janela RLS sem promoter626PASS para aceite. Liveness unrefadapter é gap limitado: produçãoPG mantém conexão/timer e não houve prova de perda/saída prematura nela. Frozenbar baseline exposto inicialmente comprometeu I1 pristine; findings executáveis mantidos, critic encerrado.
+- FrontendR36 source44/364PASS continuafrozen em freshI1 Hume com requiredcontinuity por script sanitizado. ScopeT24handler audit passou independentemente, mas não prova HTTPcompletion sob falha de observador. Redisintegrado/coverage/secrets/jornada/44gates ainda pendentes, nenhum global/G07/release/clínico/nativepublicationaccept.
+- last_completed_action: handoff/reviews/failedfreshness e layoutTDD conferidos; next_action: successorR38 frozenprepare/defaultRLS7/teardown, reparo observers atual e freshreviews/gates44.
+- evidence: .agent/artifacts/remediation-20261003/lead-r34-precheckpoint-review1.json; lead-r34-default-freshness-preflight-red.json; lead-r38-copy-provenance.json; r38-rls-proof-successor/contracts-green1.log; lead-r35-fresh-review-verification.json.
+
+
+## 2026-10-04T06:33:24.408083+00:00 — R38 medição local suportada; R39 observadores GREEN; R40 foco em execução
+
+- status: IN_PROGRESS; objetivo integral44. R38 successor executou uma única vez o producerdefault original:7PASS/0FAIL/0SKIP, CLI0 observado Lead; original collection/argv/migrations58 intactos e PostgreSQL18.4 appNOSUPER/NOBYPASS.27rawrefs e teardown PID/diretório ausentes/porta40425refused conferidos. Snapshot fonte825/build2392/deps39143/tools1079 igual na janela, histórico após alterações legítimas R39; não restampar candidato inteiro atual.
+- Freshcritic R38 SUPPORTED_LOCAL_MEASUREMENT_WITH_LIMITS / LOCAL_MEASURED / NOT_VERIFIED:41 controles offline, sete assertions originais e27rawrefs recomputados. Grants receipt contém273 registros admin e zero registros app, sem certificar effectivegrants/owner/RLS de todas as tabelas. Fonte/kernel/helpers/raw estáveis; exposição inicial de baseline genérico declarada, sem pristineI1. Não rerodou PG/CLI original; manifesto e fontes conferidos Lead.
+- R39 Lead isolou somente falhas síncronas de writers de logger/métricas; readers preservam erro real, sem retry/durabilidade inventada. API RED2 controle403PASS/3observerFAIL, GREEN13; helper RED7FAIL2PASS/GREEN9. Worker RED24FAIL8PASS, GREEN32/regressão145/nativecomdoubles20PASS. Combined atual647PASS/0FAIL/2RedisNOT_EXECUTED em69files CLI0; strict0,118fontes PREPOST iguais.222refs conjuntos Lead conferidos0mismatch. MainAPI byte-idêntico, fontes nove congeladas; freshI1 atual90fontes iniciado sem narrativas anteriores.
+- R37 freshfrontend encontrou P2 foco: salvar/avançar por teclado deixa BODY ativo e próximo Tab vai para Finalizar diagnóstico em1440/768/390.59artifacts/44source já conferidos; exposição baseline qualifica I1, FAIL preservado. R40 builder somente diagnostic/page.tsx + novo diagnostic-focus.browser.test.tsx e artifacts próprios, TDD Chromium e foco heading bound ao receipt/identidade, sem foco em hidratação passiva/dirtydraft/rejeição. Nenhum GREEN antecipado.
+- Jornada paused/blocked e prova imutável de obrigações permanecem pendentes; Rediscurrent integrado/coverage/scansecrets/44gates também. Secrets scan anteriorCLI1 não vira clean por classificação sintética. REM06/HCONTENT/sameUID/remote/AAA001 específicos preservados; nenhum build/install/PG adicional durante R39/R40, commit/push/deploy/publicação/clínica/G07/globalaccept.
+- last_completed_action: R38 raw/review/hash/teardown e R39 combined647/strict0 conferidos; next_action: concluir R40/freshfrontend e freshAPIworker90; reparar jornada com autoridade explícita, candidato integrado/Redis/coverage/secrets/gates44.
+- evidence: .agent/artifacts/remediation-20261003/lead-r38-default-live-verification.json; lead-r38-review-r39-worker-verification.json; critic-rls-r38-i1/report.md; r39-integrated-observers/verification.json; r39-worker-observers/handoff-final.json; lead-r37-fresh-review-verification.json.
+
+
+## 2026-10-04T06:49:20.313556+00:00 — R40 foco GREEN e T34 correção histórica; serviços R42 somente preparados
+
+- status IN_PROGRESS. R40 RED7PASS3FAIL no teclado1440/768/390 → GREEN10; canonical374PASS/0FAIL/0SKIP,224unit+150browser/15files. Official/sourcealias executam os mesmos374, não748. Lead139refs conferidos0mismatch;43fontes originais intactas e somente página diagnostic supersedida + teste novo. Dois fontes congeladas em freshI145. Foco heading aplicado somente após receipt válido/advance efetivo/sem nova edição; controles passive/rejection/noadvance mantidos. Página716/851/maxnamed81/150, strict/lint/format/diff/static/Ajv0; nenhum assembledruntime/G07manual/globalaccept.
+- Complexidade oficial globalCLI0: budgets atuais mantidos sem ratchet/exceção adicional; avisos soft retidos. Secrets atualCLI1 em22arquivos,22matches; metadata redigida preserva valores viahash e classificação REQUIRES_CONTEXT_REVIEW, sem scannerPASS/allowlist/delete/historicalrewrite.
+- T34 Lead corrigiu justificativa histórica em docs/quality/mutation-classification-v4.md preservando texto anterior. OriginalreportSHAef1d0fb2373bf31ca236a8853d59d4b94a241c9055ffd028f10e2c81a8bf337e/sourceSHA1b502dd4d6e56b2c17d75966f7eb03b287dc23f8f555d7299287e6462c1f3e92 idêntico ao blob14b97.1.216.512entradas por variante, dez mutantes:80/81/82/83/94/102 REAL,84/175/214/215 equivalentes somente na fonte histórica/domínio válido. Score100 anterior não sustentado; Survived histórico intacto, nenhum novoStryker/currentclosure. Primeirocomparador supôs34capabilities e falhou; ASTcorrigido demonstra33, execução0. Freshcritic adendo emexecução; task aindaIN_PROGRESS.
+- R42 G06 preparação apenas: imagem oficial workflowQdrant1.15.5 puxadaCLI0 e digestsha256:0fb8897412abc81d1c0430a899b9a81eb8328aa634e7242d1bc804c1fe8fe863 observado. Nenhum container/PG/service/build iniciado. Builder somente ownr42-integration-proof-prep, feasibility de duas suítes originais, fontealias/roles/ownership/teardown/checkpoint; nenhuma fixture/source mutação autorizada nele. FreshAPIworker90 continua com fontes congeladas.
+- last_completed_action: R40hash/canonical374 e T34 comparação/adendo/scan22/complexidade0; next_action: freshreviews frontend45/APIworker90/T34, repararjornada e preparar checkpoint G06/native, depois candidato integrado/Redis/coverage/secrets/current44gates. Nenhumcommit/push/deploy/publicação/clínica/global/release/manualG07accept.
+- evidence: .agent/artifacts/remediation-20261003/lead-r40-diagnostic-focus-verification.json; r40-diagnostic-focus/handoff.json; lead-r40-complexity-current.log; lead-r39-secrets-current-metadata.json; r41-historical-mutation-review/handoff.json; r42-services-preparation/qdrant-image-inspect.json.
+
+
+## 2026-10-04T07:03:10.923013+00:00 — T34 histórico concluído; R39 callback REVISE e R43 drain GREEN
+
+- status geral IN_PROGRESS. FreshT34 PASS restrito e Lead102refs/797ocorrências conjuntas0mismatch: prova própria3.784.704entradas por variante/135.168combinações de predicados, seis labelsREAL e quatro corpos/negações equivalentes históricos. Fonte/raw/Git/doc/comparadores estáveis; initial34cap INVALIDCLI1 preservado e comparadorASTcorrigido0. TaskT34 documental concluída, sem promover score/candidato/Stryker/G03/G05; texto antigo preservado/adendo autoritativo.
+- FreshR39 APIworker REVISE1P2 de contrato callback/liveness, nenhum P0/P1 estabelecido.665PASS/10RedisNOT_EXECUTED,67criticartifacts e90authority+448additionalhashes conferidos. Sourcecomments históricos qualificam I1; não usou oldcritic/builderoutputs. Callback unref termina naturalmente antes de efeito/close quando não há handles; impacto concretoPG/provider UNKNOWN, não alegar perda de job/dados.
+- LeadR43 altera somente worker/lifecycle.ts + novo lifecycle-process.test.ts. RED1/2 três falhas comportamentais naturais; mínimo reference durante close e finallyrelease, sem deadline/cancellation. GREEN3 nativos + combined650PASS/0FAIL/2RedisNOT_EXECUTED/70filesCLI0.119fontes PREPOST iguais; três receiptsstdout capturam ordemefeito→resources→drained/failure,erro original/closeoriginal preservados/idempotência/admissão negada/Timeout0. Exactexported ASTdeclarations da fonte executadas emchildren, não fullworkerPG/provider. Strict/lint/format/complexidade/diff0; source2 frozen/freshcritic91 iniciado. Warning assertpromise unawaited originalHTTP test preservado, sem ampliar garantia para futura major.
+- FrontendR40/fresh45 em execução e sourceheld; canonical374 histórico corrente daquela fatia. R42 artifact-only prepG06 aguarda finalfreezes/checkpoint concreto, nenhuma fixture/migration/runtime/container/PG/build executada nesta preparação; imagem workflow1.15.5 digest observado. Secrets22CLI1 permanecem contexto em revisão, sem allowlist/historydelete/gate clean.
+- last_completed_action: freshT34/currenthash e nativeR43 source650/cheap0 conferidos; next_action: freshfrontend45/APIworker91, R42ready/checkpoint, repararjornada com inventárioautoridade e candidato integrado/Redis/coverage/secrets/44gates. Semcommit/push/deploy/publicação/clínica/manualG07/globalaccept.
+- evidence: .agent/artifacts/remediation-20261003/lead-r39-r41-fresh-review-verification-final2.json; critic-historical-mutation-r41-i1/final-ref-manifest.json; critic-api-worker-r39-i1/report.md; r43-worker-drain/handoff.json; lead-r43-api-worker-fresh-review-map.json.
+
+## 2026-10-04T07:33:11Z — Fresh REVISE conferidos; R45/R46/R47 e G06 preparado
+
+- status: IN_PROGRESS; todas44 tasks mantidas. HandoffR14 SHA0d09484/246128bytes reconferido, histórico240PASS/copied61=56PASS5FAIL intacto; fontes posteriores legitimamente supersedidas, nenhum novo aceite R14.
+- FreshfrontendR40:264artefatos/45fontes conferidos0mismatch. Independente44native=40PASS4FAIL +19unitPASS; originalCSS372PASS2locatorFAIL e native-declared diagnostic20PASS separados. P1 alternativa canônica1760sem espaços oculta ações em1440/768/390; P2 422 diagnóstico sem associação/foco. Root.vite-temp inicial e broadtrace drift qualificam isolamento, incompletosaxe/AT não certificados. R45 somente diagnostic/page.tsx/CSS/newrecoverytest: RED7PASS6FAIL, GREEN13 e original374PASS separados; finalmanifest/static pending, sem autoaccept.
+- FreshAPIworkerR43:140artefatos/91fontes conferidos0mismatch, closure235 estável.241original+25ownPASS;17nativechildren16exit0/1SIGTERMcontainment recolhido. DoisP2 de callback: APIclose com unref perde completion; limiterthrow deixa request sem resposta. Impacto concretoPG/Redis/provider não reproduzido. LeadR46 source4: RED5FAIL, GREEN5, atual655PASS/0FAIL/2RedisNOT_EXECUTED/72files,93PREPOSTequal/strictsourcealias/lint/format/officialcomplexity0. FirstGREEN3PASS2FAIL por próprio fixture requestId nãoUUID/oracle preauth scope corrigido; erronomecomplexityCLI1 preservado. Fonte4 congelada/fresh93 emexecução. Rootstrict originalCLI2 por OBSdist sem exportisolateObservabilityWrites; sem build durantehold e sem declarar rootPASS.
+- C10freshR44:20artefatos conferidos,76inputs estáveis;110checks102PASS8FAIL. DoisP2 sintéticos de códigos/definições/primaryindex inválidos, nenhum catálogoPGreal incorreto demonstrado. Lead comparator/test apenas RED24PASS8FAIL1liveNOTEXEC ->GREEN32PASS0FAIL1liveNOTEXEC. OriginaldrillPG16.15 antes/depois do reparo CLI0,58migrations até0057/flagsRLS/grants/marker verdadeiros; Unixsocket privado/PIDdir ausentes observados. Durações parciais2677ms/novo raw não são RPO/RTO nem alltable restore. R47selected76PREPOSTcurrent e fresh critic emexecução; dependency/library wholecandidate PRE não medido no runner, limite explícito.
+- R42prep final1030unique selectedrefs0mismatch,12purePASS/syntaxlintformat0. Runtime permaneceCLOSED/NOT_EXECUTED; três deltas mínimos de fixture worker foram identificados (fence real/UUID órfão/RETIRADO anteswithdraw). Sem rootfixturewrite/PG/container/build na prep, snapshot/checkpoint só após freezes finais. Imagem workflow1.15.5 cache observada não prova serviço.
+- last_completed_action: três reviews/hashes e source/native fixes delimitados conferidos; next_action: selar R45/freshfrontend, concluir fresh93/C10, coordfixturesG06 e scopedOBSbuild apóshold, jornada/inventário e candidato integrado/Redis/coverage/secrets/current44gates.
+- evidence: .agent/artifacts/remediation-20261003/lead-r40-fresh-review-verification.json; lead-r43-fresh-review-verification.json; lead-r44-fresh-review-verification.json; r46-api-callbacks/handoff.json; r47-restore-comparator/native-launcher.log; lead-r42-final-prep-verification.json.
+- Semcommit/push/deploy/publicação/AT/clínica/globalaccept. Secrets22CLI1 permanece revisão de contexto; REM06/HCONTENT/sameUID/remote/AAA001 específicos, nenhum bloqueio geral.
+
+## 2026-10-04T08:08:24.506316+00:00 — R14 histórico recebido; fresh frontend REVISE, API local verificado e restore R49
+
+- status: IN_PROGRESS; todas44tasks mantidas. R14 handoff246128bytes/SHA0d09484 reconferido; 737ocorrências/622pares,726matches/11fontes posteriormente supersedidas,0mismatch durável. Raws79browser+161unit=240PASS e copied31unit+25browser/5FAIL=61cases preservados; não625fontes atuais nem aceite R14 atual.
+- FreshfrontendR45:74artefatos/46fontes PREPOSTCURRENT conferidos. P1 erro422 sem mensagem/blank libera snapshot ambíguo; P2 alternativa QUESTAO canônica1990sem espaços recortada1440/768/390. Originais228unitPASS e162browserPASS1FAIL; isolatedF03PASS não fecha regressão completa. I1 qualificado por relatório temporário escrito na raiz/recolhido sem mutation de fonte. R50 builder recebeu somente helperdiagnostic/test/CSS/recoverytest/newparticipantcontenttest; fontes históricas preservadas.
+- FreshAPIworkerR46:75artefatos/93fontes conferidos0mismatch;246original+8own=254PASS,10nativechildren concluídos/12attempts e recursos0. Sourcecallback slice verificado localmente; provider/RLS/buildcurrent/globalrelease não aceitos. Holds encerrados antes de scopedOBSbuild autorizadoCLI0;16fontes/configs inalterados e pnpm typecheck:test oficial atualCLI0. APIs/workers/web compiledoutputs restantes stale.
+- C10freshR47:23artefatos conferidos,146PASS2FAIL em148checks; P2 default vazio e P3runbook histórico. R49 mínimo helper/test/runbook: RED33PASS2FAIL1liveNOTEXEC →GREEN35PASS0FAIL1liveNOTEXEC. Drill originalPG16.15CLI0,0053→0057 todas4pendentes/flags true,76PREPOSTCURRENT;2610ms parcial nãoRPO/RTO. PID3169354/dataDir ausentes reconferidos. Novo criticI1 C10 independente emexecução,76HOLD. WholeinstalleddepsPRE não medido nesse wrapper.
+- G06 original R42 REDCLI1/1PASS1FAIL em PG18.4+Qdrant1.15.5 verdadeiro: workerfixture sem fence; QdrantadapterPASS. Fullinventories source4063/outputs3186/deps47633/tools1034/helpers17/preserved974 PREPOSTCURRENT iguais e teardown4CLOSED/zerochildren/dirsports ausentes; raw histórico não green. Lead fixture reconciliou fence nativo com guard/UUID órfão/RETIRADO anteswithdraw, assertions/prod unchanged. R48 protocolo sucessor12PASS/strictlintfmt0, checkpoint/runtimeCLOSED até R50sourcefreeze e todoswriterssettled.
+- last_completed_action: R14raw/hashrecepção e três freshreviews/scopedOBSbuild/rootstrict/C10nativecurrent conferidos; next_action: R50RED/GREEN/fullregression/freshreview, C10fresh76, G06 successor concreto apósholds, jornada/inventário e candidato integrado/Redis/coverage/secrets/44gates.
+- evidence: .agent/artifacts/remediation-20261003/lead-r14-handoff-receipt-20261004.json; lead-r45-fresh-review-verification.json; lead-r46-fresh-review-verification.json; lead-r47-fresh-review-verification.json; r49-restore-comparator/handoff.json; r49-restore-comparator/root-strict-final1.log; lead-r42-original-red-verification.json.
+- Semcommit/push/deploy/publicação/clínica/manualAT/G07/globalaccept. Secrets22FAIL/contexto pendente, jornada sem inventário autoritativo e integratedgates abertos; REM06/HCONTENT/sameUID/remote/AAA001 específicos, nenhum bloqueio geral.
+
+## 2026-10-04T08:34:43.849276+00:00 — R50/R51/R52 congelados; C10 verificado e G06 sucessor pronto
+
+- status: IN_PROGRESS, todas44tasks. R50source49/artifacts283/425PASS conferidos;387nomes anteriores presentes e38novos, focused85 não somado. RED61/24 e initial49/36 preservados; F03fullcurrentPASS não resolve causa histórica. Fonte5 frozen/freshcritic, sourcealias/CSS/Chromium, sem native/G07/globalaccept.
+- R51F01 pausa/bloqueio precedem path/globalaction com orientação neutra e scope disponível preferido; resumelegítimo preservado, evidências digitais semmutação. RED46/4 e contrato52/2→GREEN54, expansãofocal63. Extrai helper, buildScopePath119/150 warning80. Sharedpage3labels/dashboardenum+refine via supersessionhashes, sem assertionsoriginais alteradas.
+- Related730 inicial727/3 expôs legacyserverclock oracle/7dayfixture e recoveryapp guard antigo. R52 app recovery só troca cap pelo D09112hconstant antestransação; RED39/1 demonstra43201internalerror→GREEN40validation_error/no newtransaction; tokenTTL1800 intacto. Submitproducer intocado; tests provam replayoriginalstate/date/eventonce e changedattemptconflict. Currentrelated730/0/0, allpackages/APIworker sourcealiasstrict/lint/format/diff/officialcomplexity0, warnings/oldFAILs preservados. Source12 frozen/freshcritic. F02 immutablefullmandatoryinventory/history permanece pendente, nenhum receipt fabricado.
+- C10freshR49 refs21/source76/41ownPASS+35original2liveNOTEXEC conferidos. CONDITIONAL PASS técnico; suppliedPG16CLI0/2610ms parcial/teardown inspectedafterseal, não criticPGpróprio/RPO/RTO/fullbackup/release.
+- G06R48 novo protocolo12PASS/syntax16/format0; lintinitial7Nodeglobals configuraçãosemdeclaração preservado e invocaçãocorrigida declara globals reais Node22, nenhum rootconfig/rulewaiver. Próximo checkpoint singleuse/fullsource+outputs+installeddeps+tools+helpers; sourcewriters e packagehandles0, critics readonly ownnamespaces. Runtime atéagora CLOSED no sucessor. R42genuinePG18.4/Qdrant1.15.5 RED1PASS1FAIL/cleanup histórico intacto; fixturefence/UUID/RETIRADO reconciliada peloLead mantendoassertions/prodguards. Holds atéexit/summary/teardown/CURRENT; semrootwrites/build/install durante janela.
+- last_completed_action: source425/730 e freshC10 verificados; next_action: abrirconsumirG06checkpoint/STOPunexpectedFAIL/cleanup, concluirfreshreviews, F02 e integrated44gates.
+- evidence: .agent/artifacts/remediation-20261003/lead-r50-handoff-verification.json; r51-journey-availability/handoff.json; r52-application-contract-reconciliation/red1.results.json; lead-r49-fresh-review-verification.json; lead-r42-original-red-verification.json; r48-qdrant-fixture-proof/protocol-final.tap.
+- Semcommit/push/deploy/publicação/clinical/manualAT/G07/globalaccept. Secrets22FAIL/contextreview; REM06/HCONTENT/sameUID/remote/AAA001 específicos, sem bloqueio geral.
+
+## 2026-10-04T08:49:53.823996+00:00 — G06 local sucessor medido e conferido
+
+- status: IN_PROGRESS; todas44tasks e qualidade congelada preservadas.
+- G06 R48 checkpoint a0169299-2047-43c4-8508-2c51b1ab0307 consumido uma vez: runnerCLI0/childCLI0, duas suítes originais2PASS0FAIL0SKIP em PG18.4/Qdrant1.15.5 reais. Embeddings assistivos determinísticos fake/IA não invocada; source aliases, não candidato montado nem fornecedor remoto.
+- Lead independente confirmou57rawrefs,134imports/source exata, PREPOSTCURRENT e recaptura iguais:4072source/3194outputs/47633dependencies/1034tools/18helpers/974preserved. AppNOSUPER/NOBYPASS e demaisflags elevadosfalse; migratorSUPER somenteDDL, admin separadoNOSUPER/BYPASS. Cleanup4CLOSED/failures[]/children0; PG3548791 e Qdrant3550253 ausentes, diretório/contêiner exato ausentes, portas42047/32812 recusadas.
+- LOCAL_MEASURED_PENDING_FRESH_REVIEW/NOT_VERIFIED, não aceite global/clínico/G07/release. R42 originalRED1PASS1FAIL intacto. R48 lintinitial7Nodeglobals e tentativaCLIglobal ineficaz preservados; imports qualificados node:url/node:timers/globalThis corrigiram somentehelpers antescheckpoint; lint-final3/format-final2/protocol-final2 12PASS atuais0, semrootconfig/rulewaiver.
+- R14 handoff246128bytes/SHA0d09484daeb6b11bdee24524b780f0db96cd865d00577356cf2c5e5d179ff559 reconferido;240canônicos e copied61=56PASS5FAIL históricos, nenhuma reclassificação para fonte atual. R50/R51 freshreviews mantêm49/44fontes congeladas; capacidade do critic journey inicialmente indisponível, retry enviado, nenhum verdict inventado.
+- last_completed_action: G06 execução/teardown/fullmaps/raws conferidos peloLead; next_action: concluir freshreviews frontend/journey e G06; implementar inventário imutável obrigatório/histórico F02 com produtor nativo, depois gates integrados44/Redis/coverage/secrets. F02 e secrets22FAIL permanecem abertos.
+- evidence: .agent/artifacts/remediation-20261003/lead-r48-local-verification.json; r48-qdrant-fixture-proof/runs/a0169299-2047-43c4-8508-2c51b1ab0307-596d437a-e53e-49a4-b51e-9b571cc65192/summary.json; lead-r14-handoff-receipt-20261004.json.
+- Root runtime-window HOLD encerrado após verificação independente; holds específicos49/44 continuam. Sembuild/install/rootcommit/push/deploy/publicação; REM06/HCONTENT/sameUID/remote/AAA001 específicos, sem bloqueio geral.
+
+## 2026-10-04T09:17:46.003047+00:00 — R54/R55 reparos selados; F02 em implementação separada
+
+- status: IN_PROGRESS, todas44tasks; critérios/pisos/ratchets congelados.
+- FreshfrontendR50:156artefatos/49PREPOSTCURRENT conferidos. P1 CASO canônico19990 semespaços expande texto/textarea;425originaisPASS nãoanula15PASS5FAIL independente. InitialdeadlineharnessFAIL corrigido em5focaisPASS, trêsasserts17.6pixel sembarreira AT demonstrada continuamrawFAIL; não20PASS. Fonte/paint/I1 limitações preservadas.
+- R54 mínimoCSS/test2: REDcanonical27PASS6FAIL (19990/20000tokens x3widths) →GREEN33 →canonical440PASS0skip/17files=425anteriores+15novos, semsomarfocal.350digests/fontes2/other47current verificadas. QuatroCSSdecl inversas reproduzembaseline; schemas/texto/controles/overflowglobal nãoalterados. Source49 congelada para novo criticI1 Rawls emnamespacepróprio. CapturaVitest PNG281px difereviewport390: geometria/nativeactivation separadas, não certificação1:1 de toda pintura; novo critic deve capturarnativeactual.
+- FreshjourneyR51: manifestrefs/source44 conferidos;354originaisPASS, refined32PASS1FAIL/33; recomenda runtime remediação mesmoM02 pathBLOQUEADO_PRE_REQUISITO/targetausente. ProceduralI1 LIMITED/INVALID para aceitefullyreadonly: node_modules/.vite-temp foraowned e sequência producerread/incidentaltestsnippets; nenhum aceite. Capacity erro transient não bloqueia, criticsettled/fechado.
+- LeadR55 exatojourneyguard +NEWtest: REDválido4FAIL4PASS →focal8PASS →related738PASS0skip/CLI0;app/API/domainreal sourceHTTP/canonicals+trustedread-port doubles, nãoPG. Guardunstartedprereq integrado à disponibilidade antes seleção, startedlegítimo e predecessor same-scope positivos preservados. InitialRED6FAIL inclui2ownfixtureerrors corrigidos antesprod, initialstrict somentefixturetipos corrigidos; históricos intactos. Strict/lint/format/diff/officialcomplexity0, source2sealed/handoff pendingfullyisolatedfreshreview. Reverseproductiondelta equals oldR51hash.
+- G06R48 continuaobservação histórica genuína2PASS0skip/CLI0/teardown/fullmaps igualnomomento. R55 alterou importcarregadojourney e R54CSS/fullsource; prova não écurrentcandidate/integratedG06. Repetir checkpoint novo no candidato final, não reutilizarUUID consumido nemrescreverraw2PASS/57refs.
+- F02 contrato decisãoartifacts-only r53-module-completion/decision.md: inventário obrigatório completo aprovado/imutável independente de formisolada, bindingoriginal e receipttransacional, nãobooleano/status/empty.every/backfill. BuilderKant exclusivoNEWpersistence validator/test2 eownnamespace; schema/publisher/binding/nativewriter/reader/consumer futurosLeadcoordenação. SemnativeF02/clinicalpublicationclaim.
+- last_completed_action: freshREVISEs conferidos e R54/R55TDD/regressões/hashseals; next_action: freshfrontend49, integrarF02 produtor/inventário/receipt/reader/consumer comnativeproof e criticfullyisolated, depoiscurrent44gates/build/Redis/G06/coverage/secrets. Secrets22FAIL contexto aindaaberto; RPO/RTO/AT/G07/remote/HCONTENT/REM06 específicos.
+- evidence: .agent/artifacts/remediation-20261003/lead-r50-fresh-review-verification.json; lead-r51-fresh-review-verification.json; lead-r54-handoff-verification.json; lead-r54-painted-inspection.json; r55-journey-prerequisite/handoff.json; r53-module-completion/decision.md.
+- Semrootcommit/push/deploy/publicação/manualG07/globalaccept; callbacks/natives anteriores sóno candidato/slice original, builtoutputs restantesSTALE. TodosLeadR55handles0, ownerR54handles0; source49 critic e R53validator separados.
+
+## 2026-10-04T10:03:25.788240+00:00 — FreshR54 REVISE e F02 captura/finalização seladas
+
+- status: IN_PROGRESS; todas44tasks ebarra/pisos/ratchets preservados; runtime-controller explícito, controles Lead-only.
+- FreshR54I1:342refs/source49PREPOSTCURRENT verificados antes transferwrites. Originais440PASS, mas31probesdistintos24PASS7FAIL (33assertsbrutos24PASS9FAIL/2ownharness). P1 títulos300/bodydiagnóstico10000 cortados1440/768/390, PNG nativo390 inspecionado peloLead; P2 dashboardguard aceita extra source rejeitado canônico, não prova vazamento backendlegítimo. Closures fora49 first-load, smokesummaryreutilizado/semrawcompleto setup, fullPNGblank qualificado por viewports reais, axe incompletes/manualAT não aceitos. Zeroownservers/browsers reportados. Source49hold liberado apenaspacketR58 apóscriticseal; Aristotle exclusivoCSS/guard/testes+ownnamespace, sembuild/install/native/desc.
+- R53M1 Kant:95PASS0skip e2sources48ef4819.../c5fec5e2... congeladas; handoff38f72e... refs conferidas0mismatch. Valida capture integral/blueprint/manifest/provenance, não origem nativa nemterminal/nota/receipt. R56schema/migration5files emhandoff/nativeNOT_EXECUTED; quatro tabelas privadasappend-only/RLSFORCE/FKsversões+auditmicroseconds; journal59/0058 invalida atualidade dasprovas nativas0057 nesseescopo, semrewrite histórico/backfill/clinicalpublication.
+- R57 Lead source3sealed: REDdenyall3FAIL52PASS→GREEN55→63; REDauditduplicado1FAIL63PASS→final64. Seis suítes sourcealiases573PASS0FAIL0SKIP (64novos incluídos; focais não somados). Strict/lint/format/importgraphfinal0; static-final2 reteve2ciclos TYPE introduzidosduranteR56, owner eliminou schema→validator semwaiver. CLI0 observado ali nãoéPASS: rawFAIL prevalece; checkerfocal agora sai apósflush. Fontefinalização305ish abaixo800/maxfn68 abaixo150, fixturehelpers109/91 soft80warnings preservadas; apoio test-support jáclassificado, nenhuma exclusão nova. Handoff95ae1d0d.../26refs verificados0mismatch.
+- D102 literal distingueATIVIDADES_FINALIZADAS deCONCLUIDO: aprovação somativa aplicável éobrigatória. R57aceitaatividade corrigidaREFORCO semfabricar aprovação/nota/domínio. RN022/023/D103 composição30/70, geral70/críticos80 precisa producer/policy/prova antesreceipt; resultadoescalaresingle nãoassumido comoprova detodoscomponentescríticos.
+- F02writer/producer/originalbinding/consumer/gradepolicy ePG/races/rollback/RLS/history pendentes; semnative/build/install/globalcov/freshacceptance/clínica/G07/release. R55related738 pendingfullyisolatedfresh; G06R48local2 eC10technical antigas seleções permanecemhistóricas, candidateoutputsSTALE após0058/R58. Secrets22FAIL contextual e44gates integrados pendentes, decisões humanas/remotas específicas não bloqueiam núcleo autorizado.
+- last_completed_action: freshR54 verificado e sealsM1/R57; next_action: R58TDD/fresh, native0058 eF02producer/policy/transação/consumer, depoiscurrent44gates.
+- evidence: .agent/artifacts/remediation-20261003/lead-r54-fresh-review-verification.json; r53-module-completion/builder/handoff.json; r56-module-storage/builder/handoff.md; r57-module-finalization/handoff.json.
+
+## 2026-10-04T10:06:03.830626+00:00 — Correção de métrica R57
+
+- A estimativa informal `305ish` da entrada imediatamente anterior não é evidência de gate. O raw strict-static-final-3 registra exatamente301linhas no scanner/300linhas físicas para module-obligation-finalization.ts; maior função de produção68linhas, abaixo150. Apoios sintéticos109/91 mantêm os avisossoft80.
+- Resultado final permanece64novos/573relacionados0FAIL0SKIP; nenhum hash de fonte/handoff/raw mudou. Documentation/traceability/audit-consistency Lead atuais CLI0. F02nativo/D102somativa/integração eR58 permanecemIN_PROGRESS.
+
+## 2026-10-04T10:45:00.000Z — R59 gates oficiais reparados; seam D-102 criado
+
+- status IN_PROGRESS; objetivo integral 44 tasks e barra/pisos/ratchets preservados. Esta entrada não aceita nenhuma rodada anterior (R48 G06, C10, R50–R58) e não executa prova nativa.
+- Nove defeitos de gate official foram encontrados e corrigidos com evidência antes/depois. `pnpm typecheck` estava exit 2 com 42× TS5055: um teste dentro de `packages/application/src` importava `apps/api/src`, fechando o ciclo application→api→persistence→application; o teste foi realocado para `apps/api/src/http-boundary/` e passou a importar `@cvg/application`. `pnpm lint` estava exit 1 com 332238 erros porque o eslint ignorava `.agents/**` e não `.agent/**`; foram adicionados `.agent/**`, `.gauntlet/**`, `.opencode/**` sem mudar regra, severidade ou waiver. `pnpm build` falhava no `next build` com 10× `Can't resolve ./diagnostic.js`: arquivos de produção do web importavam a FONTE de outro pacote por caminho relativo, o que o vite resolve e o Turbopack não; todos passaram a importar `@cvg/contracts`, declarado como dependência de workspace de `@cvg/web` e registrado em `architecture-boundaries.json` (a regra de `apps/web/app` já permitsia contracts). Nenhum símbolo precisou ser exportado novo e nenhum contrato mudou.
+- `verify:secrets` falhava com 22 arquivos: 19 eram snapshots de evidência dentro de `.agent/**` e 3 eram literais sintéticos de teste. As árvores de evidência foram excluídas da varredura e três isenções literais revisadas foram registradas, impressas a cada execução limpa. O conjunto de padrões não mudou; o grupo de captura apenas estreita o que uma isenção casa. Controle negativo: literal plantado continua exit 1 e a árvore limpa exit 0.
+- `test:unit` tinha 1 FAIL pré-existente do trabalho T18: `curriculum-attempt-capture.ts` seleciona com `.for('update')`/`.orderBy()`, que o double de HEAD não modelava, e o double carregava identidades não-UUID que `setCurriculumAttemptContext` corretamente rejeita. O double passou a modelar locks/ordem e a usar a forma uuid real, ainda simulando atividade publicada explicitamente não ligada. Nenhuma asserção de produção foi afrouxada e nenhum guard de UUID foi relaxado.
+- `test:integration` tinha 2 FAIL: a matriz de autorização gerada não conhecia `GET /api/v1/attempts/:attemptId` e o gate AAA-104 fixava `lastIndex` 54/0054 num journal que agora termina em 58/0058. Matriz regenerada pelo comando oficial e expectativa fixada no journal real de 59 entradas.
+- `test:browser` era intermitente: R58 em 768, R54 em 390, R50 em 1440 e o foco do feedback T31. Causa: `html { scroll-behavior: smooth }` anima o deslocamento que o foco de um controle fora da tela dispara, então a geometria era lida no meio da animação; e dois testes amostravam o DOM logo após um heading ficar visível, antes do controle de resposta e da lista de itens committed. Foi adicionado um `settleScrolling` que espera `scrollY` estabilizar e polls para o controle e a contagem canônica de cards. Todas as asserções originais continuam obrigatórias; apenas a amostragem virou determinística. Sete execuções consecutivas do pacote inteiro verdes (290/290, 14 arquivos).
+- `verify:evidence-consistency` falhava exigindo run id de mutação do candidato. O resumo local é de sha `14b97a8` (2026-09-11) e estava sendo tratado como evidência desta etapa. Somente no caminho sem candidato (sem `CVG_MUTATION_CANDIDATE_ID`) um resumo que não foi gerado para esta etapa é reportado como skip, conforme o contrato documentado do próprio gate; com run id configurado ele continua fail-closed. Controle negativo: `CVG_MUTATION_CANDIDATE_ID=fake-run-1` continua exit 1. Mutação para o candidato atual permanece NOT_PROVEN.
+- `format:check` falhava com 6 arquivos: cinco drifts de formatação e dumps de geometria escritos pelos testes de browser em `apps/web/tests/__screenshots__/`. Os cinco foram formatados e a árvore de screenshots foi ignorada em `.prettierignore` e `.gitignore`.
+- Removidos 60 artefatos compilados não rastreados (`.js`/`.d.ts`/`.js.map`) dentro de `apps/api/src`. Cada um tinha fonte `.ts` irmã e nenhum estava no Git; eram inputs do tsc e um `apps/api/src/http.js` obsoleto ao lado de `http.ts` pode sombrear o módulo atual para qualquer import de `../http.js`. Verificação de órfãos: 0 sem fonte; `git ls-files`: 0 de 60.
+- Nova capacidade: `packages/persistence/src/module-obligation-grade-policy.ts`. D-102 exigia política somativa aprovada aplicável antes de uma conclusão de módulo e R57 decidir apenas finalização de atividade, deixando essa autoridade aberta. O seam é puro: só aprova quando cada componente da composição aprovada tem resultado próprio provado e a média ponderada clears o limiar geral enquanto cada componente crítico clears o seu. Política ausente ou componente sem evidência é `NAO_APLICAVEL`, nunca aprovação; correção `REFORCO` pode finalizar atividade mas nunca carrega componente avaliado. RED (módulo ausente) → GREEN 16/16, com 98,46% statements, 96,34% branches e 100% functions no arquivo novo. Não há produtor nativo, PostgreSQL, receipt, publicação clínica, autonomia prática nem projeção pública.
+- Estado dos gates agora: format, ci-contract, lint, typecheck, build, coverage (3825 PASS/212 skip, 91,14% statements, 87,14% branches), coverage-floor, evidence-consistency, contract, worker, migrations, secrets, traceability, architecture, routes, complexity, cycles, dead-code, security, otel, documentation, product-definition e exposure em PASS. `verify:release-evidence` é o único FAIL e apenas porque as migrations 0055–0058 não estão commitadas, então `git ls-files` vê 55 arquivos SQL contra um journal de 59 entradas; não é defeito de código e se resolve no próximo commit autorizado.
+- last_completed_action: nove defeitos de gate corrigidos com evidência e seam D-102 criado com TDD; next_action: produtor nativo de inventário, binding original da atribuição, writer transacional de conclusão, reader privado, consumer histórico e prova PostgreSQL da 0058, mantendo `verify:release-evidence` dependente de commit autorizado.
+- evidence: .agent/artifacts/remediation-20261003/r59-gate-repair/verification.json; r59-gate-repair/baseline-typecheck.log; r59-gate-repair/after-typecheck.log; r59-gate-repair/lint.log; r59-gate-repair/build3.log; r59-gate-repair/secrets.log; r59-gate-repair/verify2.log.
+- Sem commit/push/deploy/publicação/clínica/manual AT/G07/global accept. Nenhuma prova nativa executada nesta rodada; Redis/RLS nativos, RPO/RTO, aceite manual e decisões REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem específicos.
+
+## 2026-10-04T17:19:55Z — R60 writer/reader F02 e `pnpm verify` completo
+
+- status: IN_PROGRESS; todas44tasks e barra/pisos/ratchets preservados; runtime-controller explícito. Esta entrada não aceita nenhuma rodada anterior e não executa prova nativa.
+- Writer transacional em `packages/persistence/src/module-obligation-completion.ts`: `recordModuleCompletion` valida antes da transação (UUIDs de ator/requisição/correção, `expectedAssignmentVersion` inteiro ≥1, `capture.now` válido e não futuro, inventário finalizado completo com cobertura de witnesses, decisão somativa `APROVADO_SOMATIVO`, identidade de evidência contra o manifesto e igualdade de conjuntos de obrigações) e nega dentro da transação (atribuição ausente/versão/status não completável, receipt já existente, binding divergente em identidade ou `boundAt`, manifesto divergente em identidade ou obrigações, atividade inconsistente e update sem retorno ou com versão/status errados). Toda denegação é `ApplicationError("state_conflict", ...)` e nenhuma acontece depois de `db.transaction` sem ter sido validada antes. A fila fake consome exatamente11 linhas: security context, seleções com lock, GUC de auditoria, update de atribuição com retorno, sync de atividades, insert de auditoria e insert do receipt no mesmo commit. O resultado é `RecordedModuleCompletion` congelado com exatamente12 chaves.
+- Reader privado em `packages/persistence/src/module-obligation-receipt-reader.ts`: uma única consulta `select ... where ... orderBy(asc(...))` aguardada no fim, sem `setDatabaseSecurityContext`, compatível com os dois doubles da suíte. Contexto vazio ou em branco, linha de participante/escopo estrangeiro, moduleId fora de M01–M024, timestamp não parseável ou `completedAssignmentVersion` não inteiro lançam `PersistenceMappingError`; o retorno é array congelado de fatos congelados de6chaves (participantId, scopeId, moduleId, assignmentId, completedAt ISO, completedAssignmentVersion), sem aprovação, auditoria, hash ou witness interno.
+- Integração na jornada: `journey-repository.ts` coleta `completionReceipts` no loop2 e os publica nos dois retornos (escopos presentes e retorno vazio). A escrita do reader levou `createParticipantJourneyRepository` a189linhas contra o ratchet de180, então a consulta de atividades saiu para o helper de módulo `readJourneyActivityRows`, preservando as assinaturas de segurança por escopo e o comentário RLS. O teste novo de `journey-repository.test.ts` prova a leitura no contexto escopado do participante usando o sexto slot do double.
+- Correções de gate: `pnpm typecheck` saiu de45erros em6arquivos (publisher com `.where` sobre colunas diretas do schema, casts `db as unknown as DatabaseExecutor`, chamadas do reader test, `rowsQueue` estritamente tipado, `correctionOutcome` literal e chaves opcionais de fixture) para exit0. `verify:complexity` voltou a passar após a extração do helper, e `pnpm lint`, `pnpm format:check`, `verify:cycles`, `verify:dead-code`, `verify:architecture`, `verify:secrets` e `verify:traceability` permanecem exit0.
+- RN-032 nas fronteiras HTTP: `curriculum.http.test.ts` e `journey-prerequisite.http.test.ts` esperavam conclusão de módulo a partir do status da atribuição e passaram a receber `REVISAR_RETENCAO`/`CONSULTAR_PROXIMO_PASSO`, porque `hasCoherentModuleCompletion` só aceita receipt endereçado ao participante, escopo, módulo e versão. As5falhas em2arquivos foram corrigidas publicando `completionReceipts` coerentes com a versão da atribuição nas fixtures; nenhuma asserção de produção foi afrouxada e a projeção pública continua sem a chave de receipt, que é interna.
+- Migrations 0055–0058 adicionadas ao índice git (`git add`, sem commit): `verify:release-evidence` comparava o journal de59entradas com55SQL em `git ls-files` e agora roda o self-test completo PASS. O head continua `3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff` e o gate segue dependendo do commit autorizado para não repousar sobre o índice.
+- Estado dos gates agora: `pnpm verify` exit0 em11m21s com os23 gates encadeados (format, ci-contract, lint, typecheck, coverage, coverage-floor, evidence-consistency, contract, worker, migrations, secrets, traceability, architecture, routes, complexity, cycles, dead-code, security, otel, release-evidence, documentation, product-definition, exposure). `pnpm test` exit0:301arquivos/3886testes PASS,44arquivos/212testes skip,0FAIL. Cobertura global: statements91,20%, branches87,22%, functions95,00%, lines92,30% contra pisos90/85/90/90.
+- last_completed_action: writer, reader, integração do reader na jornada,45erros de typecheck,5testes HTTP e o staging das quatro migrations, com `pnpm verify` exit0; next_action: produtor nativo do inventário obrigatório completo, consumer histórico, integração do writer em use case/handler/endpoint e prova PostgreSQL da 0058 (races, rollback, RLS, papéis, teardown).
+- evidence: .agent/artifacts/remediation-20261003/r60-f02-writer-reader/verification.json; r60-f02-writer-reader/verify.log; r60-f02-writer-reader/test.log; r60-f02-writer-reader/complexity.log.
+- Sem commit/push/deploy/publicação/clínica/manual AT/G07/global accept. Nenhuma prova nativa executada nesta rodada; Redis/RLS nativos, RPO/RTO, aceite manual e decisões REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem específicos.
+
+## 2026-10-05T03:43:26Z — R61 encadeamento F02 e R62 autoridade condicional + e2e 45/45
+
+- status: IN_PROGRESS; todas44tasks e barra/pisos/ratchets preservados; runtime-controller explícito. Esta entrada cobre duas rodadas e não executa prova nativa.
+- R61 (relatório `.agent/artifacts/remediation-20261003/r61-f02-wiring/report.md`): cadeia F02 encadeada nos quatro pontos de costura — Step A `publishModuleInventoryForAssignment` dentro da transação de criação da atribuição (só com audit `CURRICULUM_MODULE_OBLIGATIONS_APPROVED`; sem identidade → skip fail-closed), Step B `bindAssignmentObligations` somente quando `started === true` no INICIAR original, Step C receipt na transação da correção humana via `triggerModuleCompletionOnCorrection` (porto opcional, invocado antes do `idempotency.store`; falha derruba a correção inteira), Step D `readModuleCompletionReceipts` publicado como `completionReceipts` em `journey-repository.ts` e consumido por `hasCoherentModuleCompletion`. Alvos 47/47; suíte unit 2837 pass; browser 290/290; integração não-live 770 pass; `pnpm verify` exit 0. Infra de ratchet criada sem elevar nenhum ratchet (`database-executor.ts`, `learning-state-shapes.ts`, splits de evidência/trigger, helpers de idempotency/operations).
+- R62 (relatório `.agent/artifacts/remediation-20261003/r62-conditional-authority/report.md`): autoridade condicional aprovada pelo usuário — receipt é a única prova quando há inventário vinculado (`boundAssignmentIds`); vínculo sem receipt nega; sem vínculo o fallback pré-receipt (status) decide e esse fallback é débito explícito que desaparece com o primeiro binding real. Peças novas: campo `boundAssignmentIds` nos fatos, `isObligationBound` em `journey-module-authority.ts`, reader privado `readBoundAssignmentIds` (`module-obligation-binding-reader.ts`, projeção mínima assignmentId por participante+escopo, contexto divergente → `PersistenceMappingError`), ligação em `journey-repository.ts` nos dois retornos e propagação em `journey-use-cases.ts`. RED registrado em sessão (autoridade 2 falhas/9 passagens; reader 6 testes novos); GREEN reexecutado agora: alvos 22/22 (`journey-module-authority` 5, `module-obligation-binding-reader` 6, `journey-repository` 11). Quatro fixtures ganharam `boundAssignmentIds` explícito para modelar atribuição vinculada, sem alterar asserção.
+- R62 e2e: as 10 falhas herdadas tinham causa-raiz única — fixtures defasadas vs contratos atuais (specs/fixture-server inalterados desde 2026-09-09; `apps/web`/`packages/contracts` evoluíram): 7 mocks de resposta sem `savedAt` (strict `participantAnswerSchema` → receipt inválido → UI de envio pendente), 4 testes sem mock do `GET /api/v1/attempts/:attemptId` (404 do fixture-server → `attemptReadState(error)` → botão de retry), `day: 7` fora do enum 30/60/90 (×2), `outcome: REFORCO_RECOMENDADO` fora do enum APROVADO/REFORCO, `nextActionTarget` incompatível com `REVISAR_RETENCAO` no superRefine do journey, e aprovação clínica sem a justificativa obrigatória do T32. Reparos apenas nos specs (savedAt, 4 rotas GET com asserção de método, day 90, enum, remoção de target, preenchimento de justificativa); zero linhas `await expect` alteradas (verificado por diff dedicado); prettier limpo. Baseline RED 35 pass/10 falha → GREEN **45/45 exit 0**. Uma edição em lote ancorou no teste errado e foi reparada com verificação de diff inteiro — lição registrada no relatório.
+- R62 corridas de browser: 3 testes amostravam DOM antes do commit de estado; polls determinísticos adicionados em `participant-content`, `diagnostic-content` e `participant-coherence` sem enfraquecer asserção; 290/290 exit 0.
+- Gates finais: `pnpm verify` exit 0 com os23 gates (format, ci-contract, lint, typecheck, coverage, coverage-floor, evidence-consistency, contract, worker, migrations, secrets, traceability, architecture, routes, complexity, cycles, dead-code, security, otel, release-evidence, documentation, product-definition, exposure); suíte principal 3907 pass/212 skip (304 arquivos); unit 2841 pass/2 skip; browser 290/290; e2e 45/45. Cobertura: statements 91,03%, branches 86,92%, functions 95,05%, lines 92,36% contra pisos 90/85/90/90.
+- Débitos condicionais explícitos (decisão do usuário "Autoridade condicional"): P1 nenhum produtor nativo de blueprint/form nem do audit de aprovação de inventário (Step A fail-closed; feature de autoria exige PRD/SPEC); P2 `apps/api/src/main.ts:157` chama `createCorrectionUseCaseDependencies` sem `summativeApproval` (nenhum receipt em produção); P3 sem `SummativeGradePolicy` aprovada no caminho produtivo; fallback pré-receipt vigente enquanto não houver binding.
+- last_completed_action: cadeia F02 R61 verificada, autoridade condicional R62 implementada com TDD, e2e reparado até 45/45, browser 290/290 e `pnpm verify` exit 0; next_action: prova PostgreSQL da 0058 via `r59-module-storage-native` (RED58 → runner → GREEN59), depois commit completo do worktree autorizado e `verify:release-evidence` pós-commit.
+- evidence: .agent/artifacts/remediation-20261003/r61-f02-wiring/report.md; r62-conditional-authority/report.md; r62-conditional-authority/red/e2e-baseline-10failed.log; r62-conditional-authority/green/{verify-full.log,e2e-45passed.log,authority-binding-reader-green.log,unit-r62.log,browser-290.log}.
+- Sem commit/push/deploy/publicação/clínica/manual AT/G07/global accept nesta entrada (commit completo já autorizado e pendente); nenhuma prova nativa executada; Redis/RLS nativos, RPO/RTO, aceite manual e decisões REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem específicos.
+
+## 2026-10-05T04:52:00Z — R62: re-selo M1 adjudicado e prova nativa da 0058 executada
+
+- status: IN_PROGRESS; todas44tasks e barra/pisos/ratchets preservados; runtime-controller explícito. Entrada complementar à anterior (o log é append-only; nada foi apagado).
+- **Re-selo M1 (decisão humana registrada).** O `prepare.mjs` da prova nativa travou em `verifySeals`: `packages/persistence/src/module-obligation-validation.ts` estava em `6fb0f1e2…`/18432 bytes contra o selo `48ef4819…`/15425 bytes. Triagem: preparações de 07:23–07:51 registravam o selo; mtime 13:27 local (16:27Z) na janela da R60, cujo writer estendeu o fonte com `ApprovedModuleObligationCaptureInput` e `assertApprovedModuleObligationCapture` (consumidos por `completion.ts`, `completion-trigger.ts`, `completion-evidence.ts`) sem atualizar o selo — o teste selado `c5fec5e2…` permanece idêntico e verde, `verify` completo verde, coerente com os "45 erros de typecheck em 6 arquivos" da R60. Pergunta objetiva formulada ao usuário; decisão: **"Re-selar com registro (Recomendado)"**. Executado: entrada `preservedM1` atualizada e `resealHistory` anexado em `r56-module-storage/builder/handoff.json` (manifesto `55a9cb2f…` → `bd1cae4e…`), pin em `inventory.mjs:174` atualizado, registro integral em `.agent/artifacts/remediation-20261003/lead-r62-reseal-validation.json`. Nenhum conteúdo selado editado; `lead-r56-handoff-verification.json`, selos R53, `seal.mjs` e snapshots R59 preservados intocados.
+- **Prova PostgreSQL da migration 0058 (R59-R56).** Preparação ordinary exit 0: 50787 caminhos, `linksComplete: true`, drift vazio, selos 7 fontes / 58 SQL / mismatch 0, `preparedSha256 c3c4d1a6…` (Node 22.23.2). Checkpoint `R59-RED58-20261005-001` → **EXPECTED_RED**: exatamente 1 caso, SQLSTATE `42P01` em `curriculum_module_blueprint_versions` (0000–0057 aplicadas, 0058 pendente), `finalExit: 1`, `cleanup: true`, `failure: null`, teardown completo. Checkpoint `R59-GREEN59-20261005-001` com `baselineRed` (`7a581aad…`, `testSha256` idêntico ao preparado) → **MEASURED_GREEN**: **86/86 casos, exit 0, 0 falhas, 0 pendentes, 0 todos**; 59 migrações + ledger Drizzle; app sem flags perigosas, migrator SUPERUSER isolado, papéis/RLS/anexos/append-only/rollback conforme `recipe.md`. Escopo preservado: `PROPOSED_NATIVE_STORAGE_ONLY`, `acceptance: NOT_PERFORMED`, `D102: NOT_PROVEN` — não prova publicação clínica, terminal witnesses, captura de início original, notas somativas, consumer de receipt nem conclusão de módulo.
+- Evidência: `r59-module-storage-native/checkpoint-{red58,green59}-r62.json`, `preparations/prepare-6443a8fb-…/prepared.json`, `runs/R59-RED58-20261005-001-488b1525-…/{summary,native-baseline-error,counts}.json`, `runs/R59-GREEN59-20261005-001-d6a3f271-…/{summary,counts}.json`, `lead-r62-reseal-validation.json`, relatório `r62-conditional-authority/report.md` §6.
+- last_completed_action: re-selo M1 adjudicado com registro e prova nativa RED58→GREEN59 concluída (86/86); next_action: commit completo do worktree autorizado (head 3cd7bc3; migrations 0055–0058 staged) e `verify:release-evidence` pós-commit; depois P1–P3, consumer histórico, integração live e fresh critic.
+- Sem push/deploy/publicação/clínica/manual AT/G07/global accept; commit completo autorizado e pendente; Redis/RLS de integração live, RPO/RTO, AT manual, mutação do candidato e REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem NOT_PROVEN ou específicos.

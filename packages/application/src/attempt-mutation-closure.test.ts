@@ -215,9 +215,9 @@ describe("attempt mutation closure — submit guards", () => {
         attemptId,
         participantId: ids.participantId,
         scopeId: ids.scopeId,
-        submittedAt: "2026-09-11T12:00:00.000Z",
       }),
     );
+    expect(stored?.attempt.submittedAt).toBe("2026-09-11T12:00:00.000Z");
   });
 
   it("audits the submit with SUCCESS outcome", async () => {
@@ -295,7 +295,7 @@ describe("attempt mutation closure — error mapping", () => {
     });
   });
 
-  it("conflicts when the same key resubmits a different instant", async () => {
+  it("replays the original submit when the trusted server clock advances", async () => {
     const deps = dependencies();
     const started = (await startAttempt(startCommand(), deps)) as {
       attemptId: string;
@@ -313,9 +313,27 @@ describe("attempt mutation closure — error mapping", () => {
       correlationId: "corr-9",
       submittedAt,
     });
-    await submitAttempt(submit("key-reuse", "2026-09-11T12:00:00.000Z"), deps);
+    const original = await submitAttempt(
+      submit("key-reuse", "2026-09-11T12:00:00.000Z"),
+      deps,
+    );
     await expect(
       submitAttempt(submit("key-reuse", "2026-09-12T12:00:00.000Z"), deps),
+    ).resolves.toEqual(original);
+    expect(deps.attempts[0]).toEqual(original);
+    expect(original.submittedAt).toBe("2026-09-11T12:00:00.000Z");
+    expect(deps.events).toHaveLength(1);
+    expect(
+      deps.audits.filter((entry) => entry.action === "ATTEMPT_SUBMITTED"),
+    ).toHaveLength(1);
+    await expect(
+      submitAttempt(
+        {
+          ...submit("key-reuse", "2026-09-12T12:00:00.000Z"),
+          attemptId: "other-attempt",
+        },
+        deps,
+      ),
     ).rejects.toMatchObject({ code: "idempotency_conflict" });
   });
 

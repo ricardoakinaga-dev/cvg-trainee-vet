@@ -129,6 +129,14 @@ um link ou nome de teste não prova comportamento por si só.
 
 ## 9. Próxima ação
 
+A auditoria estática de 2026-10-01 abriu uma trilha local de remediação
+complementar: [roadmap 58](../../docs/58_roadmap_repository_remediation_2026-10-01.md)
+e [backlog 59](../../docs/59_backlog_repository_remediation_2026-10-01.md).
+REM-01–05 tratam a integridade dos gates; REM-06 trata a integração somativa
+conforme contrato; decisões humanas e provas live/remotas permanecem
+independentes. Essa trilha não substitui AAA-001, nem bloqueia trabalho local
+que não dependa das aprovações pendentes.
+
 `AAA-001` continua sendo o próximo passo executivo de governança: revisar e
 aprovar a barra AAA, metas propostas e autoridade dos gates. A execução local
 bounded de `AAA-101`–`AAA-106` e da fatia visual foi autorizada pela solicitação
@@ -143,3 +151,16 @@ projeção/proveniência, corrigido em RED/GREEN, com foco `25/25` e foco amplia
 próxima dependência de produto é `AAA-202`, somente em ambiente autorizado,
 enquanto `AAA-203`/`AAA-204` podem ser selecionados como fatias locais
 separadas.
+
+## 10. Recorte de remediação — auditoria de 2026-10-03
+
+O planejamento solicitado após a auditoria corrente está em
+[roadmap 60](../../docs/60_roadmap_repository_remediation_2026-10-03.md) e
+[backlog 61](../../docs/61_backlog_repository_remediation_2026-10-03.md):
+34 tasks A01–A34 e dez de continuidade/validação, em R0–R6. Este recorte
+detalha os onze épicos AUDIT-20261003 e complementa REM/SOA sem apagar seus
+estados históricos. Para selecionar uma correção desta auditoria, usar G01
+e então T13 como primeira recomendação, conforme estado prevalente.
+
+A entrega de planejamento é COMPLETED; código e gates globais não foram
+promovidos. Remoto, clínica, somativa, same-UID e aceite mantêm seus boundaries.

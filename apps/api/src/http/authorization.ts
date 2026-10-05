@@ -1,8 +1,8 @@
 import { canAccess, type Capability } from "@cvg/application";
 
-import type { ApiPrincipal } from "../http.js";
+import type { ApiPrincipal } from "./contracts.js";
 
-export type ParticipantActivityItemKind = "QUESTAO" | "CASO" | "REFLEXAO";
+export type { ParticipantActivityItemKind } from "./contracts.js";
 
 export function isAllowed(
   principal: ApiPrincipal,

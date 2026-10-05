@@ -1,0 +1,13 @@
+{
+  "name": "verify-triple-aaa",
+  "command": [
+    "pnpm",
+    "verify:triple-aaa"
+  ],
+  "startedAt": "2026-10-03T04:54:44.276690+00:00",
+  "durationSeconds": 1.74,
+  "exitCode": 1,
+  "result": "FAIL",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-triple-aaa.log",
+  "sha256": "299f6d04c5d3c73c6f3ffcfd3445a0adf41353c687ab7374bb13056e331b148f"
+}

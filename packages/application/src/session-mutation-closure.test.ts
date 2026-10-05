@@ -61,46 +61,46 @@ describe("session mutation closure — lifetime cap and expiry math", () => {
     ).rejects.toThrow("outside the allowed range");
   });
 
-  it("rejects lifetimes above seven days and accepts exactly seven days", async () => {
+  it("rejects lifetimes above twelve hours and accepts exactly twelve hours", async () => {
     const repo = repository();
     await expect(
       createSession(
         {
           accountId: "account-1",
-          expiresInSeconds: 7 * 24 * 60 * 60 + 1,
+          expiresInSeconds: 12 * 60 * 60 + 1,
           tokenFactory: () => SES,
         },
         repo,
         NOW,
       ),
     ).rejects.toThrow("outside the allowed range");
-    const week = await createSession(
+    const maximum = await createSession(
       {
         accountId: "account-1",
-        expiresInSeconds: 7 * 24 * 60 * 60,
+        expiresInSeconds: 12 * 60 * 60,
         tokenFactory: () => SES,
       },
       repo,
       NOW,
     );
-    expect(week.expiresAt.getTime()).toBe(
-      NOW.getTime() + 7 * 24 * 60 * 60 * 1_000,
+    expect(maximum.expiresAt.getTime()).toBe(
+      NOW.getTime() + 12 * 60 * 60 * 1_000,
     );
   });
 
-  it("grants multi-day sessions within the cap (kills hour-scale mutant)", async () => {
+  it("grants ten-hour sessions within the cap (kills hour-scale mutant)", async () => {
     const repo = repository();
     const session = await createSession(
       {
         accountId: "account-1",
-        expiresInSeconds: 2 * 24 * 60 * 60,
+        expiresInSeconds: 10 * 60 * 60,
         tokenFactory: () => SES,
       },
       repo,
       NOW,
     );
     expect(session.expiresAt.getTime()).toBe(
-      NOW.getTime() + 2 * 24 * 60 * 60 * 1_000,
+      NOW.getTime() + 10 * 60 * 60 * 1_000,
     );
   });
 
@@ -377,6 +377,11 @@ describe("session mutation closure — rotation and revocation guards", () => {
         accountStatus: "ACTIVE" as const,
         roles: ["PARTICIPANT"],
         scopes: ["scope-1"],
+        sessionLifetime: {
+          createdAt: NOW,
+          lastSeenAt: NOW,
+          expiresAt: new Date(NOW.getTime() + 60_000),
+        },
       }),
       rotate: async (_hash, record) => {
         rotated.push(record);

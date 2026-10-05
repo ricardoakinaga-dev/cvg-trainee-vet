@@ -59,6 +59,7 @@ describe.skipIf(
     const secondContentId = randomUUID();
     const firstVersionId = randomUUID();
     const secondVersionId = randomUUID();
+    const orphanContentId = randomUUID();
     const scopeId = randomUUID();
     const contentIds = [firstContentId, secondContentId];
 
@@ -114,8 +115,8 @@ describe.skipIf(
         {
           id: randomUUID(),
           vector: [0, 1, 0, 0, 0, 0, 0, 0],
-          knowledgeId: "orphan-synthetic",
-          sectionId: "orphan-synthetic:v1",
+          knowledgeId: orphanContentId,
+          sectionId: `${orphanContentId}:v1`,
           scopeId,
           contentHash: "orphan-hash",
           status: "APPROVED_FOR_INTERNAL_SEARCH",
@@ -123,8 +124,12 @@ describe.skipIf(
       ]);
 
       const contentSource = createContentIndexSourceRepository(database.db);
+      const withContentVersionFence = contentSource.withContentVersionFence;
+      if (withContentVersionFence === undefined)
+        throw new Error("Native content version fence is required");
       const source = {
         findPublishedIndexable: contentSource.findPublishedIndexable,
+        withContentVersionFence,
         listPublishedIndexable: async () =>
           (await contentSource.listPublishedIndexable()).filter(
             (record) => record.scopeId === scopeId,
@@ -200,6 +205,12 @@ describe.skipIf(
         vectorPointId(firstContentId, 1),
       );
 
+      await staffWrite((staffDb) =>
+        staffDb
+          .update(contentVersions)
+          .set({ status: "RETIRADO" })
+          .where(eq(contentVersions.id, firstVersionId)),
+      );
       await handlers["content.withdrawn.v1"]({
         ...publishEvent,
         eventType: "content.withdrawn.v1",
@@ -209,12 +220,6 @@ describe.skipIf(
         expect.objectContaining({ knowledgeId: secondContentId }),
       ]);
 
-      await staffWrite((staffDb) =>
-        staffDb
-          .update(contentVersions)
-          .set({ status: "RETIRADO" })
-          .where(eq(contentVersions.id, firstVersionId)),
-      );
       await expect(reconcileVectorIndex(dependencies)).resolves.toEqual({
         expected: 1,
         upserted: 0,

@@ -60,4 +60,42 @@ describe("http rate limiter backend selection", () => {
       retryAfterSeconds: 1,
     });
   });
+
+  it.each([
+    "authentication",
+    "recovery",
+    "mutation",
+    "expensive-read",
+    "internal",
+    "ai-assisted",
+  ] as const)(
+    "fails closed for %s on an actually unreachable Redis transport",
+    async (riskClass) => {
+      const limiter = createHttpRateLimiter(
+        {
+          CVG_RATE_LIMIT_BACKEND: "redis",
+          CVG_RATE_LIMIT_REDIS_URL: "redis://127.0.0.1:9",
+        },
+        db as never,
+        log,
+      );
+      await expect(
+        limiter.check("outage", undefined, riskClass),
+      ).resolves.toMatchObject({ allowed: false, retryAfterSeconds: 1 });
+    },
+  );
+
+  it("preserves the explicit public-low-risk failure policy without memory fallback", async () => {
+    const limiter = createHttpRateLimiter(
+      {
+        CVG_RATE_LIMIT_BACKEND: "redis",
+        CVG_RATE_LIMIT_REDIS_URL: "redis://127.0.0.1:9",
+      },
+      db as never,
+      log,
+    );
+    await expect(
+      limiter.check("outage", undefined, "public-low-risk"),
+    ).resolves.toEqual({ allowed: true, remaining: 0 });
+  });
 });

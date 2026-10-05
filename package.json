@@ -14,10 +14,12 @@
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
     "format:check": "prettier --check 'AGENTS.md' 'apps/**/*.{ts,tsx,json,mjs,css}' 'packages/**/*.{ts,json,mjs}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.mjs' '.github/workflows/**/*.{yml,yaml}' '*.{json,yaml,yml,mjs,ts}'",
     "lint": "eslint .",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && pnpm --filter @cvg/web typecheck && pnpm typecheck:test",
+    "typecheck:test": "tsc -p tsconfig.tests.json",
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
+    "test:browser": "vitest run --project browser",
     "test:contract": "vitest run --project unit packages/contracts/src",
     "test:worker": "vitest run --project unit apps/worker/src",
     "test:integration:live": "node scripts/run-live-integration.mjs",
@@ -25,7 +27,7 @@
     "test:integration:extended": "CVG_INCLUDE_LIVE_RESTORE=true CVG_INCLUDE_LIVE_QDRANT=true node scripts/run-live-integration.mjs",
     "test:integration:restore": "CVG_INCLUDE_LIVE_RESTORE=true CVG_ONLY_LIVE_RESTORE=true node scripts/run-live-integration.mjs",
     "test:e2e": "node scripts/build-e2e.mjs && playwright test",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "node scripts/run-coverage-with-provenance.mjs",
     "verify:coverage-floor": "node scripts/verify-coverage-floor.mjs",
     "verify:evidence-consistency": "node scripts/verify-evidence-consistency.mjs",
     "test:load": "k6 run tests/load/k6-baseline.js",
@@ -43,6 +45,7 @@
     "mutation:critical": "stryker run stryker.critical.mjs",
     "mutation:worker-loop": "stryker run stryker.worker.mjs",
     "mutation:critical:closure": "node scripts/verify-mutation-critical.mjs",
+    "mutation:summary": "node scripts/write-mutation-summary.mjs",
     "reconcile:qdrant": "pnpm --filter @cvg/worker build && pnpm --dir apps/worker reconcile:qdrant",
     "verify:ci-contract": "node scripts/verify-ci-contract.mjs",
     "verify:secrets": "node scripts/verify-secrets.mjs",
@@ -51,6 +54,7 @@
     "verify:architecture": "vitest run tests/integration/architecture-boundaries.test.ts",
     "verify:documentation": "node scripts/verify-documentation.mjs",
     "verify:migrations": "node scripts/verify-migrations.mjs",
+    "verify:restore-migrations": "node scripts/verify-restore-migrations.mjs",
     "verify:product-definition": "node scripts/verify-product-definition.mjs",
     "verify:exposure": "node scripts/verify-public-boundary.mjs",
     "verify:routes": "node scripts/verify-routes.mjs",
@@ -75,6 +79,7 @@
     "@stryker-mutator/typescript-checker": "9.3.0",
     "@stryker-mutator/vitest-runner": "9.3.0",
     "@types/node": "22.20.1",
+    "@vitest/browser-playwright": "4.1.11",
     "@vitest/coverage-v8": "4.1.11",
     "drizzle-kit": "0.31.10",
     "drizzle-orm": "0.45.2",
@@ -84,15 +89,20 @@
     "prettier": "3.9.6",
     "typescript": "5.9.3",
     "typescript-eslint": "8.66.0",
-    "vitest": "4.1.11"
+    "vitest": "4.1.11",
+    "vitest-browser-react": "2.3.0"
   },
   "pnpm": {
     "overrides": {
       "@babel/core@<7.29.6": "7.29.6",
       "ajv@8.17.1": "8.18.0",
+      "brace-expansion@>=1.0.0 <1.1.21": "1.1.21",
+      "brace-expansion@>=5.0.0 <5.0.12": "5.0.12",
       "esbuild@<=0.24.2": ">=0.25.0",
+      "fast-uri@>=3.0.0 <3.1.8": "3.1.8",
       "js-yaml@>=4.0.0 <4.3.2": ">=4.3.2",
-      "minimatch@>=10.0.0 <10.2.3": ">=10.2.3"
+      "minimatch@>=10.0.0 <10.2.3": ">=10.2.3",
+      "undici@7.29.0": "7.29.1"
     },
     "patchedDependencies": {
       "@qdrant/js-client-rest@1.19.0": "patches/@qdrant__js-client-rest@1.19.0.patch"

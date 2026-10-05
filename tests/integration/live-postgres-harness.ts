@@ -31,6 +31,7 @@ async function readRoleCapabilities(
   database: DatabaseHandle,
 ): Promise<LivePostgresRoleCapabilities> {
   const rows = await database.db.execute<{
+    readonly roleName: string;
     readonly isSuperuser: boolean;
     readonly bypassesRls: boolean;
     readonly canCreateRoles: boolean;

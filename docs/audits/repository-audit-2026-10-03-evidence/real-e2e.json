@@ -1,0 +1,12 @@
+{
+  "name": "real-e2e",
+  "command": [
+    "pnpm",
+    "test:e2e"
+  ],
+  "exitCode": 1,
+  "result": "FAIL",
+  "durationSeconds": 136.873,
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/real-e2e.log",
+  "sha256": "ff525bd08a969ccf61b4691442e949a590a0008f6c1abd4535ef3519e33835cf"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "verify-cycles",
+  "command": [
+    "pnpm",
+    "verify:cycles"
+  ],
+  "startedAt": "2026-10-03T04:54:34.370623+00:00",
+  "durationSeconds": 3.35,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-cycles.log",
+  "sha256": "f0426dc848d9f82e9e9b781e112ae5e3360c33b0db8170a52930e1c13a130597"
+}

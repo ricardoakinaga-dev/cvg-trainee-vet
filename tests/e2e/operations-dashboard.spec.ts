@@ -1,6 +1,11 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+function required<T>(value: T | undefined, label: string): T {
+  if (value === undefined) throw new Error(label + " fixture is required");
+  return value;
+}
+
 function successEnvelope(data: unknown) {
   return {
     success: true,
@@ -336,7 +341,7 @@ const secondScopeAppealReviewQueue = {
   },
   items: [
     {
-      ...appealReviewQueue.items[0],
+      ...required(appealReviewQueue.items[0], "appealReviewQueue"),
       justification: "Contestação sintética do segundo escopo.",
     },
   ],
@@ -415,10 +420,14 @@ test.describe("staff training dashboard", () => {
         });
       },
     );
-    let currentFeedbackQueue = feedbackTriageQueue;
+    let currentFeedbackQueue: Omit<typeof feedbackTriageQueue, "items"> & {
+      items: ((typeof feedbackTriageQueue.items)[number] & {
+        assigneeId?: string;
+      })[];
+    } = feedbackTriageQueue;
     let delayFeedbackPatch = false;
     let feedbackPatchPending = false;
-    let releaseFeedbackPatch: (() => void) | null = null;
+    const feedbackPatch: { release: (() => void) | null } = { release: null };
     let failNextTriagedFeedbackQueue = false;
     await page.route(
       /\/api\/v1\/internal\/feedback(?:\/[^?]+)?(?:\?.*)?$/u,
@@ -448,7 +457,10 @@ test.describe("staff training dashboard", () => {
               ...currentFeedbackQueue,
               items: [
                 {
-                  ...currentFeedbackQueue.items[0],
+                  ...required(
+                    currentFeedbackQueue.items[0],
+                    "currentFeedbackQueue",
+                  ),
                   priority: "ALTA",
                   assigneeId: "88888888-8888-4888-8888-888888888888",
                   version: 2,
@@ -460,9 +472,15 @@ test.describe("staff training dashboard", () => {
               contentType: "application/json",
               body: JSON.stringify(
                 successEnvelope({
-                  ticketId: currentFeedbackQueue.items[0].ticketId,
+                  ticketId: required(
+                    currentFeedbackQueue.items[0],
+                    "currentFeedbackQueue",
+                  ).ticketId,
                   scopeId: currentFeedbackQueue.scopeId,
-                  status: currentFeedbackQueue.items[0].status,
+                  status: required(
+                    currentFeedbackQueue.items[0],
+                    "currentFeedbackQueue",
+                  ).status,
                   version: 2,
                   priority: "ALTA",
                   assigneeId: "88888888-8888-4888-8888-888888888888",
@@ -487,7 +505,10 @@ test.describe("staff training dashboard", () => {
             ...currentFeedbackQueue,
             items: [
               {
-                ...currentFeedbackQueue.items[0],
+                ...required(
+                  currentFeedbackQueue.items[0],
+                  "currentFeedbackQueue",
+                ),
                 status: "TRIADO",
                 version: 1,
               },
@@ -496,7 +517,7 @@ test.describe("staff training dashboard", () => {
           feedbackPatchPending = true;
           if (delayFeedbackPatch) {
             await new Promise<void>((resolve) => {
-              releaseFeedbackPatch = resolve;
+              feedbackPatch.release = resolve;
             });
           }
           await route.fulfill({
@@ -514,7 +535,7 @@ test.describe("staff training dashboard", () => {
             ),
           });
           feedbackPatchPending = false;
-          releaseFeedbackPatch = null;
+          feedbackPatch.release = null;
           return;
         }
         const requestUrl = new URL(route.request().url());
@@ -541,12 +562,29 @@ test.describe("staff training dashboard", () => {
           ...feedbackTriageQueueTriagedFilter,
           items: [
             {
-              ...feedbackTriageQueueTriagedFilter.items[0],
-              priority: currentFeedbackQueue.items[0].priority,
-              ...(currentFeedbackQueue.items[0].assigneeId === undefined
+              ...required(
+                feedbackTriageQueueTriagedFilter.items[0],
+                "feedbackTriageQueueTriagedFilter",
+              ),
+              priority: required(
+                currentFeedbackQueue.items[0],
+                "currentFeedbackQueue",
+              ).priority,
+              ...(required(
+                currentFeedbackQueue.items[0],
+                "currentFeedbackQueue",
+              ).assigneeId === undefined
                 ? {}
-                : { assigneeId: currentFeedbackQueue.items[0].assigneeId }),
-              version: currentFeedbackQueue.items[0].version,
+                : {
+                    assigneeId: required(
+                      currentFeedbackQueue.items[0],
+                      "currentFeedbackQueue",
+                    ).assigneeId,
+                  }),
+              version: required(
+                currentFeedbackQueue.items[0],
+                "currentFeedbackQueue",
+              ).version,
             },
           ],
         };
@@ -676,8 +714,8 @@ test.describe("staff training dashboard", () => {
       .first()
       .selectOption("TRIADO");
     await expect(page.getByText("Relato filtrado por status.")).toBeVisible();
-    expect(releaseFeedbackPatch).not.toBeNull();
-    releaseFeedbackPatch?.();
+    expect(feedbackPatch.release).not.toBeNull();
+    feedbackPatch.release?.();
     delayFeedbackPatch = false;
     await expect(page.getByText("Relato filtrado por status.")).toBeVisible();
     await feedbackQueuePanel
@@ -882,7 +920,7 @@ test.describe("staff training dashboard", () => {
       });
     });
     let firstScopeQueuePending = false;
-    let releaseFirstScopeQueue: (() => void) | null = null;
+    const firstScopeQueue: { release: (() => void) | null } = { release: null };
     await page.route(
       "**/api/v1/internal/appeals/review-queue**",
       async (route) => {
@@ -892,7 +930,7 @@ test.describe("staff training dashboard", () => {
         if (scopeId === multiScopeStaffDashboard.scopes[0]) {
           firstScopeQueuePending = true;
           await new Promise<void>((resolve) => {
-            releaseFirstScopeQueue = resolve;
+            firstScopeQueue.release = resolve;
           });
           firstScopeQueuePending = false;
           await route.fulfill({
@@ -914,18 +952,22 @@ test.describe("staff training dashboard", () => {
     await expect.poll(() => firstScopeQueuePending).toBe(true);
     await page
       .getByLabel("Escopo de gestão")
-      .selectOption(multiScopeStaffDashboard.scopes[1]);
+      .selectOption(
+        required(multiScopeStaffDashboard.scopes[1], "second staff scope"),
+      );
     await expect(
       page.getByText("Contestação sintética do segundo escopo."),
     ).toBeVisible();
 
-    expect(releaseFirstScopeQueue).not.toBeNull();
-    releaseFirstScopeQueue?.();
+    expect(firstScopeQueue.release).not.toBeNull();
+    firstScopeQueue.release?.();
     await expect(
       page.getByText("Contestação sintética do segundo escopo."),
     ).toBeVisible();
     await expect(
-      page.getByText(appealReviewQueue.items[0].justification),
+      page.getByText(
+        required(appealReviewQueue.items[0], "appealReviewQueue").justification,
+      ),
     ).not.toBeVisible();
   });
 

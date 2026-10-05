@@ -7,7 +7,15 @@ const idSchema = z.string().uuid();
 const moduleIdSchema = z.string().regex(/^M(?:0[1-9]|1[0-9]|2[0-4])$/u);
 const participantChoiceSchema = z
   .object({
-    id: z.string().trim().min(1).max(32),
+    id: z
+      .string()
+      .trim()
+      .min(1)
+      .max(32)
+      .refine(
+        (value) => !/<[^>]*>/u.test(value),
+        "choice IDs must be representable by the plain response contract",
+      ),
     label: z.string().trim().min(1).max(16),
     text: z
       .string()
@@ -51,8 +59,17 @@ export const participantActivityProjectionSchema = z
   .strict()
   .superRefine((value, context) => {
     const ordinals = new Set<number>();
+    const itemIds = new Set<string>();
     const reflectionItemIds = new Set<string>();
     for (const [index, item] of value.items.entries()) {
+      if (itemIds.has(item.itemId)) {
+        context.addIssue({
+          code: "custom",
+          path: ["items", index, "itemId"],
+          message: "item identities must be unique",
+        });
+      }
+      itemIds.add(item.itemId);
       if (ordinals.has(item.ordinal)) {
         context.addIssue({
           code: "custom",
@@ -63,6 +80,17 @@ export const participantActivityProjectionSchema = z
       ordinals.add(item.ordinal);
       if (item.kind === "REFLEXAO") reflectionItemIds.add(item.itemId);
       if (item.responseMode === "CHOICE") {
+        if (
+          item.choices !== undefined &&
+          new Set(item.choices.map((choice) => choice.id)).size !==
+            item.choices.length
+        ) {
+          context.addIssue({
+            code: "custom",
+            path: ["items", index, "choices"],
+            message: "choice identities must be unique within each item",
+          });
+        }
         if (item.choices === undefined) {
           context.addIssue({
             code: "custom",
@@ -75,6 +103,23 @@ export const participantActivityProjectionSchema = z
             code: "custom",
             path: ["items", index, "selectionMode"],
             message: "choice items must publish selection mode",
+          });
+        }
+        if (
+          item.selectionMode === "MULTIPLE" &&
+          item.choices?.some((left) =>
+            item.choices?.some(
+              (right) =>
+                left.id !== right.id &&
+                /<[^>]*>/u.test(JSON.stringify([left.id, right.id])),
+            ),
+          )
+        ) {
+          context.addIssue({
+            code: "custom",
+            path: ["items", index, "choices"],
+            message:
+              "every selection ordering must fit the plain response contract",
           });
         }
       }
@@ -111,53 +156,19 @@ export function parseParticipantActivity(
   return projection;
 }
 
-const runtimeAnswerSchema = z
-  .object({
-    itemId: z.string().trim().min(1).max(128),
-    selectedChoiceIds: z
-      .array(z.string().trim().min(1).max(32))
-      .min(1)
-      .max(8)
-      .optional(),
-    text: z
-      .string()
-      .trim()
-      .min(1)
-      .max(10_000)
-      .refine((value) => !/<[^>]*>/u.test(value), "text must be plain text")
-      .optional(),
-  })
-  .strict()
-  .superRefine((value, context) => {
-    if (value.selectedChoiceIds === undefined && value.text === undefined) {
-      context.addIssue({
-        code: "custom",
-        path: ["selectedChoiceIds"],
-        message: "an answer must contain choices or text",
-      });
-    }
-    if (value.selectedChoiceIds !== undefined && value.text !== undefined) {
-      context.addIssue({
-        code: "custom",
-        path: ["text"],
-        message: "an answer cannot contain choices and text together",
-      });
-    }
-  });
-
 export const curriculumRuntimeEvaluationRequestSchema = z
   .object({
     participantId: idSchema,
     scopeId: idSchema,
-    answers: z.array(runtimeAnswerSchema).max(100),
-    completedAt: z.iso.datetime(),
-    mode: z.enum(["FORMATIVE_CHOICE", "MODULE_COMPLETION"]).optional(),
+    attemptId: idSchema,
+    attemptVersion: z.number().int().nonnegative(),
+    formVersion: z.number().int().min(1),
   })
   .strict();
 
 const runtimeRetentionReviewSchema = z
   .object({
-    day: z.union([z.literal(7), z.literal(30), z.literal(90)]),
+    day: z.union([z.literal(30), z.literal(60), z.literal(90)]),
     dueAt: z.iso.datetime(),
     status: z.literal("PENDENTE"),
   })
@@ -178,6 +189,10 @@ export const participantCurriculumRuntimeProjectionSchema = z
       "AGUARDAR_CORRECAO_HUMANA",
     ]),
     scorePercent: z.number().int().min(0).max(100).optional(),
+    activityProgress: z
+      .enum(["ATIVIDADES_PENDENTES", "AGUARDA_CORRECAO_HUMANA"])
+      .optional(),
+    unansweredMandatoryCount: z.number().int().nonnegative().optional(),
     remediationCount: z.number().int().nonnegative(),
     retentionReviews: z.array(runtimeRetentionReviewSchema).max(3),
     practicalCompetenceClaim: z.literal("PROIBIDO_MVP"),

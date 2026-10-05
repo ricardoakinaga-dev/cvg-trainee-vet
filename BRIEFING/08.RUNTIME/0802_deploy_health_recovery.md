@@ -22,7 +22,9 @@
 ## Recovery
 
 - API: rollback para artefato compatível;
-- PostgreSQL: restore isolado e validação de contagem/hash; RPO ≤1h/RTO ≤4h;
+- PostgreSQL: restore isolado e validação de contagem/hash; os alvos aprovados
+  por RNF-015/D-107 são RPO ≤1h/RTO ≤4h. A medição local sintética não prova
+  capacidade operacional; AAA-001 permanece gate para aceite/produção;
 - Qdrant: apagar/recriar coleção versionada e reindexar desde PostgreSQL;
 - IA: desligar feature flag e seguir fluxo manual;
 - outbox: lease/retry/replay idempotente;

@@ -64,6 +64,24 @@ function theme(
 }
 
 describe("diagnostic session contracts", () => {
+  it.each(["itemId", "ordinal"] as const)(
+    "R17 rejects duplicate published diagnostic %s identities",
+    (field) => {
+      const duplicate = {
+        ...projection,
+        items: items.map((value, index) =>
+          index === 1 ? { ...value, [field]: items[0]![field] } : value,
+        ),
+      };
+      expect(
+        diagnosticSessionProjectionSchema.safeParse(duplicate).success,
+      ).toBe(false);
+    },
+  );
+  it("R17 permits uniquely identified diagnostic items in a reordered public array", () => {
+    const reordered = { ...projection, items: [...items].reverse() };
+    expect(parseDiagnosticSessionProjection(reordered)).toEqual(reordered);
+  });
   it("accepts only server-owned start input", () => {
     expect(
       diagnosticSessionStartRequestSchema.parse({

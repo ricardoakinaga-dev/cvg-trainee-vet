@@ -1,0 +1,13 @@
+{
+  "name": "live-rls",
+  "command": [
+    "pnpm",
+    "test:rls:live"
+  ],
+  "startedAt": "2026-10-03T04:55:17.257337+00:00",
+  "durationSeconds": 24.44,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/live-rls.log",
+  "sha256": "8eb3b1979d9c3ecaa48ed6121fbcd2e12b2b08c9c6c1d405fcda44d468e73fde"
+}

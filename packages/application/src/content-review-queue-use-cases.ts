@@ -121,8 +121,7 @@ function hasScopedStaffIdentity(
   return (
     command.roles.includes("MODERATOR") ||
     command.roles.includes("ADMIN") ||
-    (command.roles.includes("CLINICAL_APPROVER") &&
-      command.approvedClinicalApproverId === command.principalId)
+    command.roles.includes("CLINICAL_APPROVER")
   );
 }
 
@@ -173,7 +172,7 @@ export async function getContentReviewQueue(
     );
   }
 
-  const canOpenAuthoring = canAccess({
+  const canReadInternalSource = canAccess({
     principalId: command.principalId,
     accountStatus: command.accountStatus,
     roles: command.roles,
@@ -184,12 +183,20 @@ export async function getContentReviewQueue(
       ? {}
       : { approvedClinicalApproverId: command.approvedClinicalApproverId }),
   });
+  const canReadOtherAuthors = command.roles.includes("CLINICAL_APPROVER");
 
   return Object.freeze({
     ...state,
     filters: Object.freeze({ ...state.filters }),
     items: Object.freeze(
-      state.items.map((item) => freezeItem({ ...item, canOpenAuthoring })),
+      state.items.map((item) =>
+        freezeItem({
+          ...item,
+          canOpenAuthoring:
+            canReadInternalSource &&
+            (canReadOtherAuthors || item.authorId === command.principalId),
+        }),
+      ),
     ),
   });
 }

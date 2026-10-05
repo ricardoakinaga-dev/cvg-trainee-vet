@@ -325,6 +325,8 @@ export class BatchSpanProcessor {
   private droppedSpans = 0;
   private closed = false;
   private flushTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly exports = new Set<Promise<void>>();
+  private closing: Promise<void> | undefined;
 
   public constructor(
     exporter: SpanExporter,
@@ -378,9 +380,20 @@ export class BatchSpanProcessor {
     return this.queue.length;
   }
 
-  public async flush(): Promise<void> {
+  public flush(): Promise<void> {
     const batch = this.queue;
     this.queue = [];
+    if (batch.length === 0) return Promise.resolve();
+    const exporting = Promise.resolve().then(() => this.exportBatch(batch));
+    this.exports.add(exporting);
+    void exporting.then(
+      () => this.exports.delete(exporting),
+      () => this.exports.delete(exporting),
+    );
+    return exporting;
+  }
+
+  private async exportBatch(batch: readonly FinishedSpan[]): Promise<void> {
     const limit = this.maxQueue;
     for (let index = 0; index < batch.length; index += limit) {
       const chunk = batch.slice(index, index + limit);
@@ -392,12 +405,16 @@ export class BatchSpanProcessor {
     }
   }
 
-  public async close(): Promise<void> {
+  public close(): Promise<void> {
+    if (this.closing !== undefined) return this.closing;
     this.closed = true;
     if (this.flushTimer !== undefined) {
       clearTimeout(this.flushTimer);
       this.flushTimer = undefined;
     }
-    await this.flush();
+    return (this.closing = Promise.resolve().then(async () => {
+      await this.flush();
+      await Promise.allSettled([...this.exports]);
+    }));
   }
 }

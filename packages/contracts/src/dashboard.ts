@@ -27,6 +27,8 @@ const modulePathItemSchema = z
       "RETENCAO_PENDENTE",
       "CONCLUIDO",
       "EM_ANDAMENTO",
+      "PAUSADO",
+      "BLOQUEADO",
       "NAO_ATRIBUIDO",
     ]),
     nextAction: z.enum([
@@ -36,10 +38,17 @@ const modulePathItemSchema = z
       "EXECUTAR_RETENCAO",
       "REVISAR_PROXIMO_MODULO",
       "RETOMAR_MODULO",
+      "CONSULTAR_PROXIMO_PASSO",
       "AGUARDAR_ATRIBUICAO",
     ]),
   })
-  .strict();
+  .strict()
+  .refine(
+    (item) =>
+      !["PAUSADO", "BLOQUEADO"].includes(item.status) ||
+      item.nextAction === "CONSULTAR_PROXIMO_PASSO",
+    { message: "Unavailable modules require neutral guidance" },
+  );
 
 const competencyProfileItemSchema = z
   .object({

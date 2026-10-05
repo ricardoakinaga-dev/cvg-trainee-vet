@@ -38,6 +38,35 @@ export type Logger = Readonly<{
 
 export type MetricLabels = Readonly<Record<string, string>>;
 
+export const API_SLO_DURATION_METRIC = "api.slo.duration_ms";
+
+export const API_SLO_BUCKET_BOUNDS_MS: readonly (number | null)[] =
+  Object.freeze([
+    0,
+    5,
+    10,
+    25,
+    50,
+    100,
+    200,
+    300,
+    400,
+    800,
+    1_000,
+    1_500,
+    2_000,
+    5_000,
+    10_000,
+    30_000,
+    60_000,
+    null,
+  ]);
+
+export type HistogramBucket = Readonly<{
+  readonly upperBound: number | null;
+  readonly count: number;
+}>;
+
 export type MetricsSnapshot = Readonly<{
   readonly counters: readonly Readonly<{
     readonly name: string;
@@ -50,6 +79,7 @@ export type MetricsSnapshot = Readonly<{
     readonly sum: number;
     readonly min: number;
     readonly max: number;
+    readonly buckets?: readonly HistogramBucket[];
     readonly labels: MetricLabels;
   }>[];
 }>;
@@ -358,12 +388,37 @@ export function renderPrometheusMetrics(snapshot: MetricsSnapshot): string {
   for (const histogram of snapshot.histograms) {
     const name = prometheusMetricName(histogram.name);
     const labels = prometheusLabels(histogram.labels);
-    lines.push(`# TYPE ${name}_count gauge`);
+    if (histogram.buckets !== undefined) {
+      if (!lines.includes(`# TYPE ${name} histogram`))
+        lines.push(`# TYPE ${name} histogram`);
+      for (const bucket of histogram.buckets) {
+        const bucketLabels = `${labels === "" ? "{" : `${labels.slice(0, -1)},`}le="${bucket.upperBound ?? "+Inf"}"}`;
+        lines.push(`${name}_bucket${bucketLabels} ${bucket.count}`);
+      }
+    } else {
+      lines.push(`# TYPE ${name}_count gauge`);
+    }
     lines.push(`${name}_count${labels} ${histogram.count}`);
-    lines.push(`# TYPE ${name}_sum gauge`);
+    if (histogram.buckets === undefined) lines.push(`# TYPE ${name}_sum gauge`);
     lines.push(`${name}_sum${labels} ${histogram.sum}`);
   }
   return lines.length === 0 ? "" : `${lines.join("\n")}\n`;
+}
+
+function observeBuckets(
+  value: number,
+  previous: readonly HistogramBucket[] = [],
+): readonly HistogramBucket[] {
+  return Object.freeze(
+    API_SLO_BUCKET_BOUNDS_MS.map((upperBound, index) =>
+      Object.freeze({
+        upperBound,
+        count:
+          (previous[index]?.count ?? 0) +
+          (upperBound === null || value <= upperBound ? 1 : 0),
+      }),
+    ),
+  );
 }
 
 function createMetrics(): MetricsPort {
@@ -378,6 +433,7 @@ function createMetrics(): MetricsPort {
     readonly sum: number;
     readonly min: number;
     readonly max: number;
+    readonly buckets?: readonly HistogramBucket[];
     readonly labels: MetricLabels;
   }>;
 
@@ -418,7 +474,16 @@ function createMetrics(): MetricsPort {
   ): void {
     if (!Number.isFinite(value) || value < 0) return;
     const safeName = safeMetricName(name);
-    const safeLabels = sanitizeLabels(labels);
+    if (
+      safeName === API_SLO_DURATION_METRIC &&
+      labels.operation !== "read" &&
+      labels.operation !== "mutation"
+    )
+      return;
+    const safeLabels =
+      safeName === API_SLO_DURATION_METRIC
+        ? Object.freeze({ operation: labels.operation! })
+        : sanitizeLabels(labels);
     const key = labelsKey(safeLabels);
     const index = histograms.findIndex(
       (histogram) =>
@@ -433,6 +498,9 @@ function createMetrics(): MetricsPort {
           sum: value,
           min: value,
           max: value,
+          ...(safeName === API_SLO_DURATION_METRIC
+            ? { buckets: observeBuckets(value) }
+            : {}),
           labels: safeLabels,
         }),
       ];
@@ -446,6 +514,9 @@ function createMetrics(): MetricsPort {
             sum: histogram.sum + value,
             min: Math.min(histogram.min, value),
             max: Math.max(histogram.max, value),
+            ...(histogram.buckets === undefined
+              ? {}
+              : { buckets: observeBuckets(value, histogram.buckets) }),
           })
         : histogram,
     );

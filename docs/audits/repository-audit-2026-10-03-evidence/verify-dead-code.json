@@ -1,0 +1,13 @@
+{
+  "name": "verify-dead-code",
+  "command": [
+    "pnpm",
+    "verify:dead-code"
+  ],
+  "startedAt": "2026-10-03T04:54:37.720034+00:00",
+  "durationSeconds": 0.88,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-dead-code.log",
+  "sha256": "b3dddd4f8f52a987e3f723a85443f78cf18093e96cc8a37ba22d5a4c93011a4d"
+}

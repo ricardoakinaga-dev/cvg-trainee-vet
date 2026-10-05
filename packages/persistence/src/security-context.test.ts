@@ -1,3 +1,4 @@
+import type { SQL } from "drizzle-orm";
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -6,6 +7,7 @@ import {
   resolveParticipantActivityScope,
   setDatabaseAppealReviewContext,
   setDatabaseAccountProvisioningContext,
+  setDatabaseAuditReadContext,
   setDatabaseSecurityContext,
   setDatabaseServiceContext,
   setDatabaseSessionSecurityContext,
@@ -174,6 +176,69 @@ describe("database security context", () => {
 });
 
 describe("security context — uncovered guards (AAA-FINAL-002)", () => {
+  it.each([
+    [
+      "participant",
+      (execute: (query: SQL) => Promise<unknown>) =>
+        setDatabaseSecurityContext({ execute }, { participantId, scopeId }),
+    ],
+    [
+      "service",
+      (execute: (query: SQL) => Promise<unknown>) =>
+        setDatabaseServiceContext(
+          { execute },
+          { serviceRole: "content-indexer" },
+        ),
+    ],
+    [
+      "token",
+      (execute: (query: SQL) => Promise<unknown>) =>
+        setDatabaseTokenSecurityContext(
+          { execute },
+          { kind: "invitation", tokenHash: "a".repeat(64) },
+        ),
+    ],
+    [
+      "provision",
+      (execute: (query: SQL) => Promise<unknown>) =>
+        setDatabaseAccountProvisioningContext(
+          { execute },
+          { accountId: participantId },
+        ),
+    ],
+    [
+      "session",
+      (execute: (query: SQL) => Promise<unknown>) =>
+        setDatabaseSessionSecurityContext(
+          { execute },
+          { tokenHash: "b".repeat(64), scopeId },
+        ),
+    ],
+    [
+      "appeal",
+      (execute: (query: SQL) => Promise<unknown>) =>
+        setDatabaseAppealReviewContext({ execute }, { scopeId }),
+    ],
+    [
+      "audit",
+      (execute: (query: SQL) => Promise<unknown>) =>
+        setDatabaseAuditReadContext({ execute }, { scopeId }),
+    ],
+  ] as const)(
+    "clears internal curriculum identity before entering %s context",
+    async (_name, enter) => {
+      const execute = vi.fn(async (_query: SQL) => []);
+      await enter(execute);
+      const command = JSON.stringify(execute.mock.calls[0]?.[0]);
+      expect(command).toContain(
+        "set_config('cvg.curriculum_activity_id', '', true)",
+      );
+      expect(command).toContain(
+        "set_config('cvg.curriculum_attempt_id', '', true)",
+      );
+    },
+  );
+
   it("branch=invalid-kind/risk=context-confusion: rejects unsupported token context kinds", async () => {
     const execute = vi.fn(async () => []);
     await expect(

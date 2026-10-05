@@ -1,0 +1,13 @@
+{
+  "name": "live-postgres",
+  "command": [
+    "pnpm",
+    "test:integration:live"
+  ],
+  "startedAt": "2026-10-03T04:55:16.791204+00:00",
+  "durationSeconds": 0.47,
+  "exitCode": 2,
+  "result": "FAIL",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/live-postgres.log",
+  "sha256": "a2051581b36f6233cd28e3e22c1c1ee1d1f5e5e6662094e5023b6fac49816bdf"
+}

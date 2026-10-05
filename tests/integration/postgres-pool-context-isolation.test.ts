@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 
-import { sql, type SQL } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import type { DatabaseHandle } from "../../packages/persistence/src/database.js";
 
 import {
   setDatabaseSecurityContext,
@@ -16,9 +17,7 @@ import {
 
 const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 
-type QueryExecutor = {
-  execute<T>(query: SQL): Promise<T[]>;
-};
+type QueryExecutor = Pick<DatabaseHandle["db"], "execute">;
 
 type SettingRow = Readonly<{
   readonly participant: string;

@@ -23,8 +23,8 @@ const state = {
     openResponseItemIds: [],
     retentionReviews: [
       {
-        day: 7 as const,
-        dueAt: "2026-08-17T01:00:00.000Z",
+        day: 60 as const,
+        dueAt: "2026-10-09T01:00:00.000Z",
         status: "PENDENTE" as const,
       },
     ],
@@ -34,6 +34,56 @@ const state = {
 };
 
 describe("curriculum runtime persistence mapping", () => {
+  it("preserves and deeply freezes internal attempt/version/source provenance separately from public projection", () => {
+    const source = {
+      code: "F-01" as const,
+      locator: "synthetic-authorized-source",
+      updateRequired: false,
+    };
+    const anchor = {
+      attemptId: "synthetic-attempt",
+      attemptVersion: 3,
+      formId: "synthetic-form",
+      formVersion: 1,
+      blueprintId: "synthetic-blueprint",
+      blueprintVersion: 1,
+      publicationDecisionId: "synthetic-publication",
+      blueprintApprovalDecisionId: "synthetic-approval",
+      publishedAt: "2026-08-09T01:00:00.000Z",
+      contentVersions: [
+        {
+          itemId: "synthetic-item",
+          contentVersionId: "synthetic-content-version",
+          version: 1,
+          sourceRefs: [source],
+        },
+      ],
+    };
+    const stored = {
+      ...state,
+      evaluation: {
+        ...state.evaluation,
+        evaluationAnchor: anchor,
+        unansweredMandatoryItemIds: ["synthetic-case"],
+      },
+    };
+    const row = curriculumRuntimeStateToRow(stored, "synthetic-row");
+    const read = curriculumRuntimeRowToState(row);
+    expect(read.evaluation.evaluationAnchor).toEqual(anchor);
+    expect(
+      Object.isFrozen(
+        read.evaluation.evaluationAnchor?.contentVersions[0]?.sourceRefs[0],
+      ),
+    ).toBe(true);
+    expect(Object.isFrozen(read.evaluation.unansweredMandatoryItemIds)).toBe(
+      true,
+    );
+    Object.defineProperty(source, "locator", { value: "changed-after-read" });
+    expect(
+      read.evaluation.evaluationAnchor?.contentVersions[0]?.sourceRefs[0]
+        ?.locator,
+    ).toBe("synthetic-authorized-source");
+  });
   it("maps the internal state to a row without public projection fields", () => {
     const row = curriculumRuntimeStateToRow(
       state,

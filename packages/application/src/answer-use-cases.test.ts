@@ -132,11 +132,60 @@ describe("SaveAnswer application command", () => {
     } as const;
 
     const first = await saveAnswer(command, deps);
-    const replay = await saveAnswer(command, deps);
+    const replay = await saveAnswer(
+      {
+        ...command,
+        correlationId: "correlation-retry",
+        savedAt: "2026-08-09T17:05:00.000Z",
+      },
+      deps,
+    );
 
     expect(replay).toEqual(first);
     expect(deps.answers).toHaveLength(1);
     expect(deps.events).toHaveLength(1);
+  });
+
+  it("replays persisted timestamp-bearing answer records after a retry", async () => {
+    const deps = dependencies();
+    const command = {
+      attemptId: "attempt-1",
+      participantId: "participant-1",
+      activityId: "activity-1",
+      scopeId: "scope-1",
+      itemId: "item-1",
+      response: "resposta",
+      idempotencyKey: "answer-legacy-retry",
+      correlationId: "correlation-original",
+      savedAt: "2026-08-09T17:00:00.000Z",
+    } as const;
+    const first = await saveAnswer(command, deps);
+    const record = deps.idempotencies.get(command.idempotencyKey)!;
+    deps.idempotencies.set(command.idempotencyKey, {
+      ...record,
+      fingerprint: JSON.stringify({
+        operation: "save_answer",
+        attemptId: command.attemptId,
+        participantId: command.participantId,
+        activityId: command.activityId,
+        scopeId: command.scopeId,
+        itemId: command.itemId,
+        response: command.response,
+        savedAt: command.savedAt,
+      }),
+    });
+
+    await expect(
+      saveAnswer({ ...command, savedAt: "2026-08-09T17:10:00.000Z" }, deps),
+    ).resolves.toEqual(first);
+    await expect(
+      saveAnswer({ ...command, response: "outra resposta" }, deps),
+    ).rejects.toMatchObject({ code: "idempotency_conflict", status: 409 });
+    await expect(
+      saveAnswer({ ...command, scopeId: "other-scope" }, deps),
+    ).rejects.toMatchObject({ code: "idempotency_conflict", status: 409 });
+    expect(deps.events).toHaveLength(1);
+    expect(deps.audits).toHaveLength(1);
   });
 
   it("rejects a cross-participant or cross-activity command", async () => {

@@ -64,6 +64,16 @@ function createAttemptIdempotencyDatabase(): {
 }
 
 describe("PostgreSQL attempt mapping", () => {
+  it("refuses insertion outside the authorized transaction before writing any attempt", async () => {
+    const insert = vi.fn(() => ({ values: vi.fn(async () => undefined) }));
+    const db = { insert } as unknown as PostgresJsDatabase<typeof schema>;
+    const dependencies = createAttemptUseCaseDependencies(
+      db,
+      () => state.attemptId,
+    );
+    await expect(dependencies.attemptsPort.insert(state)).rejects.toThrow();
+    expect(insert).not.toHaveBeenCalled();
+  });
   it("maps a domain state to a persistence row without mutating it", () => {
     const row = attemptStateToRow(state);
 

@@ -99,7 +99,17 @@ describe("API HTTP boundary — operational boundary", () => {
     // Validation-first (ADV-2026-09-01 precedent): malformed input returns
     // 422 even when the optional draft port is unwired — no wiring-state leak.
     expect(response.status).toBe(422);
-    expect(audit.append).not.toHaveBeenCalled();
+    expect(audit.append).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        actorKind: "AUTHENTICATED",
+        principalId: attempt.participantId,
+        scopeId: "scope-1",
+        action: "HTTP_REQUEST_REJECTED",
+      }),
+    );
+    expect(JSON.stringify(audit.append.mock.calls)).not.toContain(
+      "99999999-9999-4999-8999-999999999999",
+    );
   });
   it("returns redacted dependency health and protects metrics export", async () => {
     const dependencyStatus = vi.fn(async () => ({

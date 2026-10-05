@@ -59,6 +59,7 @@ export type {
   DraftRubric,
   ModuleAnswer,
   ModuleEvaluationMode,
+  ModuleEvaluationCatalog,
   ModuleEvaluationResult,
   ModuleEvaluationStatus,
   ModuleLearningLoop,
@@ -69,6 +70,8 @@ export type {
   RetentionReviewResult,
   RetentionTemplate,
 } from "./learning-runtime.js";
+export { decodePersistedModuleAnswer } from "./persisted-module-answer.js";
+export type { PersistedModuleAnswerItem } from "./persisted-module-answer.js";
 export type {
   Assessment,
   AssessmentQuestion,

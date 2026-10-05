@@ -181,7 +181,18 @@ sintéticos verdes.
 - Qualquer stop mantém artefatos, falha e evidência; não reclassifica como
   `PASS`.
 
-## 8. Próxima ação
+## 8. Adendo — remediação da auditoria estática de 2026-10-01
+
+A auditoria do repositório produziu uma trilha específica que complementa as
+fases AAA acima: [roadmap de remediação](../../docs/58_roadmap_repository_remediation_2026-10-01.md)
+e [backlog executável](../../docs/59_backlog_repository_remediation_2026-10-01.md).
+As fases R1/R2 corrigem primeiro workflow candidate, cobertura TSX, harness de
+mutação e seleção E2E. A jornada somativa, decisões editoriais/operacionais,
+restore, acessibilidade, integrações e release seguem suas dependências e os
+itens SOA correspondentes; não há calendário prometido. H-LIVE e H-REMOTE
+continuam necessários para as provas respectivas.
+
+## 9. Próxima ação
 
 A rodada técnica corrente corrigiu o P1 encontrado no Gauntlet Round 6 e foi
 revalidada no Round 7 bounded e no Round 8 visual: os testes focais do proxy
@@ -198,3 +209,17 @@ contrato `0562`, usando os estados e E2E já existentes. O preflight live ainda
 exige `CVG_TEST_DATABASE_URL`. A decisão de G0 em `AAA-001`, o ambiente
 descartável autorizado e revisão independente adequada continuam necessários
 antes de `AAA-202`, live, produção, publicação clínica, deploy ou piloto.
+
+## 10. Roadmap corrente do recorte auditado em 2026-10-03
+
+[Roadmap 60](../../docs/60_roadmap_repository_remediation_2026-10-03.md)
+organiza R0–R6: preflight; respostas/identidade/regressões; currículo;
+resiliência/experiência; CI/evidência; integrações/candidato; validação/aceite.
+São 12 sprints de trabalho mais S0, sem promessa de calendário.
+[Backlog 61](../../docs/61_backlog_repository_remediation_2026-10-03.md)
+define as 44 tasks e suas dependências/testes/critérios de pronto.
+
+Essa ordem prevalece para a seleção de correções da auditoria de 2026-10-03;
+as fases AAA e decisões anteriores continuam vigentes no próprio escopo.
+G01 → T13 é a próxima seleção recomendada. Nenhuma fase de implementação
+foi concluída por este planejamento.

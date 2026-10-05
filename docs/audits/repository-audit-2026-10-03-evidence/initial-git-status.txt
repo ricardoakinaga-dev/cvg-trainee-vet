@@ -1,0 +1,151 @@
+ M .gauntlet/.writer.lock
+ M .gauntlet/history.jsonl
+ M .gauntlet/progress.md
+ M .gauntlet/state.json
+ M .github/workflows/candidate.yml
+ M .github/workflows/quality.yml
+ M .gitignore
+ M BRIEFING/03.BUILD/0300_build_engineer_master.md
+ M BRIEFING/03.BUILD/0301_roadmap.md
+ M BRIEFING/03.BUILD/0302_backlog_master.md
+ M BRIEFING/08.RUNTIME/0802_deploy_health_recovery.md
+ M BRIEFING/08.RUNTIME/0804_observability_operational_contract.md
+ M BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md
+ M BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md
+ M BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md
+ M BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md
+ M apps/api/src/features/accounts/accounts.handler.ts
+ M apps/api/src/features/activities/activities.handler.ts
+ M apps/api/src/features/appeals/appeals.handler.ts
+ M apps/api/src/features/attempts/attempts.handler.ts
+ M apps/api/src/features/audit/audit.handler.ts
+ M apps/api/src/features/content/content.handler.ts
+ M apps/api/src/features/curriculum/curriculum.handler.ts
+ M apps/api/src/features/diagnostics/diagnostics.handler.ts
+ M apps/api/src/features/feedback/feedback.handler.ts
+ M apps/api/src/features/invitations/invitations.handler.ts
+ M apps/api/src/features/ops/ops.handler.ts
+ M apps/api/src/features/reports/reports.handler.ts
+ M apps/api/src/features/session/session.handler.ts
+ M apps/api/src/http-boundary/content.http.test.ts
+ M apps/api/src/http-boundary/session.http.test.ts
+ M apps/api/src/http.ts
+ M apps/api/src/http/authorization.ts
+ M apps/api/src/http/rejection-audit.ts
+ M apps/api/src/main.ts
+ M apps/api/src/server.test.ts
+ M apps/api/src/server.ts
+ M apps/web/package.json
+ M docs/20_master_execution_log.md
+ M docs/30_backlog_master.md
+ M docs/45_aaa001_decision_packet.md
+ M docs/51_codex_master_prompt_triple_aaa_verdict_machine.md
+ M docs/99_runtime_state.md
+ M docs/operations/disaster-recovery.md
+ M docs/operations/slo.md
+ M docs/quality/residual-risk-register.json
+ M docs/quality/scorecard.md
+ M docs/runbooks/database-down.md
+ M docs/runbooks/restore-database.md
+ M package.json
+ M packages/application/src/authoring-use-cases.test.ts
+ M packages/application/src/authoring-use-cases.ts
+ M packages/application/src/authorization.test.ts
+ M packages/application/src/authorization.ts
+ M packages/application/src/content-review-queue-use-cases.test.ts
+ M packages/application/src/content-review-queue-use-cases.ts
+ M packages/application/src/content-use-cases.test.ts
+ M packages/application/src/content-use-cases.ts
+ M packages/application/src/index.ts
+ M packages/application/src/invitation-use-cases.test.ts
+ M packages/application/src/invitation-use-cases.ts
+ M packages/contracts/src/content.test.ts
+ M packages/contracts/src/content.ts
+ M packages/curriculum/src/learning-runtime.ts
+ M packages/curriculum/src/projection.ts
+ M packages/observability/src/observability.test.ts
+ M packages/observability/src/observability.ts
+ M packages/observability/src/operations.test.ts
+ M packages/observability/src/operations.ts
+ M packages/persistence/src/attempt-repository.ts
+ M packages/persistence/src/audit-repository.ts
+ M packages/persistence/src/authoring-repository.test.ts
+ M packages/persistence/src/authoring-repository.ts
+ M packages/persistence/src/content-repository.test.ts
+ M packages/persistence/src/content-repository.ts
+ M packages/persistence/src/test-support/fake-database.ts
+ M playwright.config.ts
+ M pnpm-lock.yaml
+ M scripts/real-e2e-fixture-server.mjs
+ M scripts/release-evidence.mjs
+ M scripts/verify-aaa-candidate.mjs
+ M scripts/verify-coverage-floor.mjs
+ M scripts/verify-cycles.mjs
+ M scripts/verify-evidence-consistency.mjs
+ M scripts/verify-mutation-closure.mjs
+ M scripts/verify-mutation-critical.mjs
+ M scripts/verify-postgres-restore.mjs
+ M scripts/verify-triple-aaa.mjs
+ M scripts/write-restore-summary.mjs
+ M stryker.authorization.mjs
+ M stryker.critical.mjs
+ M stryker.worker.mjs
+ M tests/e2e/real-runtime.spec.ts
+ M tests/integration/postgres-restore.test.ts
+ M tests/integration/release-evidence.test.ts
+ M tests/integration/triple-aaa-verifier.test.ts
+ M traceability.yml
+ M vitest.config.ts
+?? .agent/artifacts/remediation/
+?? .agent/plans/2026-10-01-remediation-quality-bar.json
+?? .agent/plans/2026-10-01-repository-remediation-execution.md
+?? .opencode/
+?? .orchestrate/
+?? BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0191_adendo_decisao_autorrevisao_mvp.md
+?? apps/api/src/http/contracts.ts
+?? apps/web/tests/
+?? config/
+?? docs/52_codex_master_prompt_remote_aaa_certification.md
+?? docs/53_codex_master_prompt_final_certification.md
+?? docs/54_codex_master_prompt_certification_matrix_gates.md
+?? docs/55_executive_plan_state_of_art.md
+?? docs/56_roadmap_state_of_art.md
+?? docs/57_backlog_state_of_art.md
+?? docs/58_roadmap_repository_remediation_2026-10-01.md
+?? docs/59_backlog_repository_remediation_2026-10-01.md
+?? docs/audits/construction-assessment-2026-09-17.md
+?? docs/audits/independent-review-v2.json
+?? docs/audits/repository-audit-2026-10-01.md
+?? docs/audits/state-of-art-final-audit-v7.json
+?? docs/audits/state-of-art-final-audit-v7.md
+?? docs/decisions/2026-10-02-rem06-summative-eligibility.md
+?? docs/modernization/0007_remote_aaa_certification_baseline.md
+?? packages/curriculum/src/draft-contracts.ts
+?? packages/persistence/src/clinical-publication-hold.ts
+?? packages/persistence/src/persistence-errors.ts
+?? scripts/discover-candidate-mutation.mjs
+?? scripts/gate-config.mjs
+?? scripts/mutation-bounded-contract.mjs
+?? scripts/mutation-closure-cli.mjs
+?? scripts/mutation-identity-validation.mjs
+?? scripts/mutation-report-path.mjs
+?? scripts/mutation-result-reporter.mjs
+?? scripts/mutation-result-validation.mjs
+?? scripts/mutation-safe-files.mjs
+?? scripts/mutation-summary-contract.mjs
+?? scripts/restore-integrity-contract.mjs
+?? scripts/restore-migration-compatibility.mjs
+?? scripts/restore-policy-contract.mjs
+?? scripts/restore-summary-contract.mjs
+?? scripts/restore-tool-runner.mjs
+?? scripts/verify-restore-migrations.mjs
+?? scripts/write-mutation-summary.mjs
+?? tests/integration/coverage-denominator.test.ts
+?? tests/integration/cycle-verifier.test.ts
+?? tests/integration/mutation-bounded-manifest.test.ts
+?? tests/integration/mutation-harness-candidate.test.ts
+?? tests/integration/mutation-harness.test.ts
+?? tests/integration/mutation-producer-filesystem.test.ts
+?? tests/integration/restore-migrations.test.ts
+?? tests/integration/restore-policy-contract.test.ts
+?? tests/integration/support/

@@ -1,0 +1,13 @@
+{
+  "name": "domain-worker-reproduction",
+  "command": [
+    "node",
+    "/tmp/cvg-audit-domain-worker-20261003.mjs"
+  ],
+  "startedAt": "2026-10-03T05:12:41.321074+00:00",
+  "durationSeconds": 0.12,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/domain-worker-reproduction.log",
+  "sha256": "3f35afb5a4c13406737af41676869d23f2cc047e64ff6d98f1b451d38b2209b5"
+}

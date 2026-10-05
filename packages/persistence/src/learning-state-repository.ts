@@ -29,6 +29,22 @@ import {
 } from "./schema.js";
 import type * as schema from "./schema.js";
 import { setDatabaseSecurityContext } from "./security-context.js";
+import type {
+  AppealInsertRow,
+  AppealRowShape,
+  AssessmentWorkflowInsertRow,
+  AssessmentWorkflowRowShape,
+  FeedbackTicketInsertRow,
+  FeedbackTicketRowShape,
+  LearningAssignmentInsertRow,
+  LearningAssignmentRowShape,
+  ScopedAppeal,
+  ScopedAssessmentWorkflow,
+  ScopedFeedbackTicket,
+  ScopedLearningAssignment,
+} from "./learning-state-shapes.js";
+import { bindAssignmentObligations } from "./module-obligation-assignment-binding.js";
+import { publishModuleInventoryForAssignment } from "./module-obligation-assignment-publisher.js";
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 type DatabaseTransaction = Parameters<
@@ -104,138 +120,20 @@ export type StaffPersistenceContext = Readonly<{
   readonly correlationId?: string;
 }>;
 
-export type ScopedLearningAssignment = Readonly<{
-  readonly scopeId: string;
-  readonly state: LearningAssignmentState;
-}>;
-
-export type ScopedAssessmentWorkflow = Readonly<{
-  readonly scopeId: string;
-  readonly participantId: string;
-  readonly state: AssessmentWorkflowState;
-}>;
-
-export type ScopedFeedbackTicket = Readonly<{
-  readonly scopeId: string;
-  readonly state: FeedbackTicketState;
-}>;
-
-export type ScopedAppeal = Readonly<{
-  readonly scopeId: string;
-  readonly state: AppealState;
-}>;
-
-export type LearningAssignmentRowShape = Readonly<{
-  readonly id: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly moduleId: string;
-  readonly availableAt: Date;
-  readonly status: string;
-  readonly version: number;
-  readonly blockReason: string | null;
-  readonly pausedFrom: string | null;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-}>;
-
-export type LearningAssignmentInsertRow = Readonly<{
-  readonly id: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly moduleId: string;
-  readonly availableAt: Date;
-  readonly status: LearningAssignmentStatus;
-  readonly version: number;
-  readonly blockReason: LearningAssignmentBlockReason | null;
-  readonly pausedFrom: Exclude<LearningAssignmentStatus, "PAUSADO"> | null;
-}>;
-
-export type AssessmentWorkflowRowShape = Readonly<{
-  readonly resultId: string;
-  readonly attemptId: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly ruleVersion: string;
-  readonly version: number;
-  readonly status: string;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-}>;
-
-export type AssessmentWorkflowInsertRow = Readonly<{
-  readonly resultId: string;
-  readonly attemptId: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly ruleVersion: string;
-  readonly version: number;
-  readonly status: AssessmentWorkflowStatus;
-}>;
-
-export type FeedbackTicketRowShape = Readonly<{
-  readonly id: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly type: string;
-  readonly description: string;
-  readonly createdAt: Date;
-  readonly version: number;
-  readonly status: string;
-  readonly priority?: string;
-  readonly assigneeId?: string | null;
-  readonly updatedAt: Date;
-}>;
-
-export type FeedbackTicketInsertRow = Readonly<{
-  readonly id: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly type: FeedbackTicketType;
-  readonly description: string;
-  readonly createdAt: Date;
-  readonly version: number;
-  readonly status: FeedbackTicketStatus;
-  readonly priority: FeedbackTicketPriority;
-  readonly assigneeId: string | null;
-}>;
-
-export type AppealRowShape = Readonly<{
-  readonly id: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly attemptId: string;
-  readonly itemId: string;
-  readonly justification: string;
-  readonly createdAt: Date;
-  readonly dueAt: Date;
-  readonly version: number;
-  readonly status: string;
-  readonly reviewerId: string | null;
-  readonly decision: string | null;
-  readonly decisionRationale: string | null;
-  readonly decisionAt: Date | null;
-  readonly decisionCorrelationId: string | null;
-  readonly updatedAt: Date;
-}>;
-
-export type AppealInsertRow = Readonly<{
-  readonly id: string;
-  readonly participantId: string;
-  readonly scopeId: string;
-  readonly attemptId: string;
-  readonly itemId: string;
-  readonly justification: string;
-  readonly createdAt: Date;
-  readonly dueAt: Date;
-  readonly version: number;
-  readonly status: AppealStatus;
-  readonly reviewerId: string | null;
-  readonly decision: AppealDecision | null;
-  readonly decisionRationale: string | null;
-  readonly decisionAt: Date | null;
-  readonly decisionCorrelationId: string | null;
-}>;
+export type {
+  AppealInsertRow,
+  AppealRowShape,
+  AssessmentWorkflowInsertRow,
+  AssessmentWorkflowRowShape,
+  FeedbackTicketInsertRow,
+  FeedbackTicketRowShape,
+  LearningAssignmentInsertRow,
+  LearningAssignmentRowShape,
+  ScopedAppeal,
+  ScopedAssessmentWorkflow,
+  ScopedFeedbackTicket,
+  ScopedLearningAssignment,
+} from "./learning-state-shapes.js";
 
 const assignmentStatuses: readonly LearningAssignmentStatus[] = [
   "NAO_ATRIBUIDO",
@@ -893,10 +791,19 @@ async function syncBoundActivityAssignmentStatus(
     );
 }
 
+export type SaveLearningAssignmentOptions = Readonly<{
+  readonly started?: boolean;
+}>;
+
+export type LearningStateRepositoryOptions = Readonly<{
+  readonly idFactory?: () => string;
+}>;
+
 export type LearningStateRepository = Readonly<{
   saveLearningAssignment: (
     context: PersistenceContext,
     state: LearningAssignmentState,
+    options?: SaveLearningAssignmentOptions,
   ) => Promise<ScopedLearningAssignment>;
   findLearningAssignment: (
     context: PersistenceContext,
@@ -947,72 +854,100 @@ function conflict(message: string): never {
   throw new LearningStatePersistenceConflictError(message);
 }
 
+const saveAssignmentState = async (
+  db: DatabaseExecutor,
+  idFactory: () => string,
+  context: PersistenceContext,
+  state: LearningAssignmentState,
+  saveOptions?: SaveLearningAssignmentOptions,
+): Promise<ScopedLearningAssignment> =>
+  withContext(db, context, async (tx) => {
+    const row = learningAssignmentStateToRow({
+      scopeId: context.scopeId,
+      state,
+    });
+    const now = new Date();
+    if (row.version === 0) {
+      const inserted = await tx
+        .insert(learningAssignments)
+        .values({ ...row, createdAt: now, updatedAt: now })
+        .onConflictDoNothing()
+        .returning({ id: learningAssignments.id });
+      if (inserted.length === 0) conflict("learning assignment already exists");
+    } else {
+      const updated = await tx
+        .update(learningAssignments)
+        .set({
+          participantId: row.participantId,
+          scopeId: row.scopeId,
+          moduleId: row.moduleId,
+          availableAt: row.availableAt,
+          status: row.status,
+          version: row.version,
+          blockReason: row.blockReason,
+          pausedFrom: row.pausedFrom,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(learningAssignments.id, row.id),
+            eq(learningAssignments.participantId, row.participantId),
+            eq(learningAssignments.scopeId, row.scopeId),
+            eq(learningAssignments.version, row.version - 1),
+          ),
+        )
+        .returning({ id: learningAssignments.id });
+      if (updated.length === 0) conflict("learning assignment version changed");
+    }
+    const rows = await tx
+      .select()
+      .from(learningAssignments)
+      .where(eq(learningAssignments.id, row.id))
+      .limit(1);
+    const saved = rows[0];
+    if (saved === undefined) conflict("learning assignment was not persisted");
+    if (row.status !== "NAO_ATRIBUIDO") {
+      await syncBoundActivityAssignmentStatus(
+        tx,
+        context,
+        row.id,
+        row.moduleId,
+        row.status,
+      );
+    }
+    const scoped = learningAssignmentRowToState(saved);
+    if (row.version === 0) {
+      // Step A: publish the approved inventory at creation, last in the
+      // transaction, so a failure rolls the assignment back with it.
+      await publishModuleInventoryForAssignment(tx, {
+        scopeId: context.scopeId,
+        moduleId: row.moduleId,
+        idFactory,
+      });
+    } else if (saveOptions?.started === true) {
+      // Step B: bind at the original INICIAR, after read-back and sync.
+      await bindAssignmentObligations(tx, {
+        assignmentId: row.id,
+        participantId: context.participantId,
+        scopeId: context.scopeId,
+        moduleId: row.moduleId,
+        expectedAssignmentVersion: scoped.state.version,
+      });
+    }
+    return scoped;
+  });
+
 export function createLearningStateRepository(
   db: DatabaseExecutor,
+  options?: LearningStateRepositoryOptions,
 ): LearningStateRepository {
-  const saveAssignment = async (
+  const idFactory = options?.idFactory ?? randomUUID;
+  const saveAssignment = (
     context: PersistenceContext,
     state: LearningAssignmentState,
+    saveOptions?: SaveLearningAssignmentOptions,
   ): Promise<ScopedLearningAssignment> =>
-    withContext(db, context, async (tx) => {
-      const row = learningAssignmentStateToRow({
-        scopeId: context.scopeId,
-        state,
-      });
-      const now = new Date();
-      if (row.version === 0) {
-        const inserted = await tx
-          .insert(learningAssignments)
-          .values({ ...row, createdAt: now, updatedAt: now })
-          .onConflictDoNothing()
-          .returning({ id: learningAssignments.id });
-        if (inserted.length === 0)
-          conflict("learning assignment already exists");
-      } else {
-        const updated = await tx
-          .update(learningAssignments)
-          .set({
-            participantId: row.participantId,
-            scopeId: row.scopeId,
-            moduleId: row.moduleId,
-            availableAt: row.availableAt,
-            status: row.status,
-            version: row.version,
-            blockReason: row.blockReason,
-            pausedFrom: row.pausedFrom,
-            updatedAt: now,
-          })
-          .where(
-            and(
-              eq(learningAssignments.id, row.id),
-              eq(learningAssignments.participantId, row.participantId),
-              eq(learningAssignments.scopeId, row.scopeId),
-              eq(learningAssignments.version, row.version - 1),
-            ),
-          )
-          .returning({ id: learningAssignments.id });
-        if (updated.length === 0)
-          conflict("learning assignment version changed");
-      }
-      const rows = await tx
-        .select()
-        .from(learningAssignments)
-        .where(eq(learningAssignments.id, row.id))
-        .limit(1);
-      const saved = rows[0];
-      if (saved === undefined)
-        conflict("learning assignment was not persisted");
-      if (row.status !== "NAO_ATRIBUIDO") {
-        await syncBoundActivityAssignmentStatus(
-          tx,
-          context,
-          row.id,
-          row.moduleId,
-          row.status,
-        );
-      }
-      return learningAssignmentRowToState(saved);
-    });
+    saveAssignmentState(db, idFactory, context, state, saveOptions);
 
   const findAssignment = async (
     context: PersistenceContext,

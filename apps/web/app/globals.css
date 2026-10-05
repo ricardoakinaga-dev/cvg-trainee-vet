@@ -908,6 +908,7 @@ textarea {
 .diagnostic-item {
   display: grid;
   gap: 0.9rem;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
 }
 
@@ -916,12 +917,21 @@ textarea {
   margin: 0;
 }
 
+.diagnostic-item > p,
+.item-card h2,
+.answer-area > label,
+.journey-activity-item strong {
+  overflow-wrap: anywhere;
+}
+
 .diagnostic-choice-fieldset {
   border: 1px solid var(--line);
   border-radius: 1rem;
   display: grid;
   gap: 0.85rem;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
+  min-width: 0;
   padding: 1rem;
 }
 
@@ -935,6 +945,8 @@ textarea {
 .diagnostic-choice-list {
   display: grid;
   gap: 0.65rem;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
 }
 
 .diagnostic-choice {
@@ -958,12 +970,17 @@ textarea {
 .diagnostic-choice input {
   accent-color: var(--green);
   flex: 0 0 auto;
+  height: 1.1rem;
   margin-top: 0.25rem;
+  padding: 0;
+  width: 1.1rem;
 }
 
 .diagnostic-choice span {
   display: grid;
   gap: 0.2rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .diagnostic-choice strong {
@@ -1096,7 +1113,17 @@ textarea {
 .item-list {
   display: grid;
   gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
   margin-top: 2rem;
+  min-width: 0;
+}
+
+.item-list > .item-card {
+  min-width: 0;
+}
+
+.item-list > .item-card > p {
+  overflow-wrap: anywhere;
 }
 
 .item-card,
@@ -1433,6 +1460,33 @@ textarea {
 
 .answer-area {
   margin-top: 1.25rem;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.answer-area > label:has(input[type="radio"], input[type="checkbox"]) {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.7rem;
+  min-width: 0;
+  min-height: 2.9rem;
+  padding: 0.6rem;
+}
+
+.answer-area > label:has(input[type="radio"], input[type="checkbox"]) > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.answer-area input[type="radio"],
+.answer-area input[type="checkbox"] {
+  accent-color: var(--green);
+  flex: 0 0 auto;
+  height: 1.1rem;
+  margin: 0.15rem 0 0;
+  min-height: 1.1rem;
+  padding: 0;
+  width: 1.1rem;
 }
 
 .secondary-button {
@@ -1455,6 +1509,28 @@ textarea {
 .privacy-card .eyebrow,
 .privacy-card p {
   color: var(--mint);
+}
+
+.privacy-card .section-heading {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.privacy-card .section-heading > div {
+  flex-basis: 100%;
+}
+
+.privacy-card .section-heading h2 {
+  font-size: 1.5rem;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.privacy-card .path-list,
+.privacy-card .profile-grid,
+.privacy-card .diagnostic-profile-grid {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .runtime-card {

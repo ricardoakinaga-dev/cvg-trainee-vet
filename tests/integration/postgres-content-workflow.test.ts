@@ -9,6 +9,8 @@ import {
 } from "../../packages/application/src/index.js";
 import {
   accounts,
+  auditEntries,
+  createContentRepository,
   contentVersions,
   contentEditorialRecords,
   contentReviewDecisions,
@@ -30,7 +32,7 @@ const databaseUrl = process.env.CVG_TEST_DATABASE_URL;
 describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
   "PostgreSQL content workflow integration",
   () => {
-    it("persists an authorized publication transition and a redacted outbox event", async ({
+    it("rejects publication under H-CONTENT and rolls back state, outbox and audit", async ({
       skip,
     }) => {
       if (databaseUrl === undefined)
@@ -152,7 +154,57 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           database.db,
           randomUUID,
         );
-        const published = await advanceContent(command, dependencies);
+        expect(harness.applicationRole).toMatchObject({
+          isSuperuser: false,
+          bypassesRls: false,
+        });
+        const held = await createContentRepository(admin.db).find(
+          contentId,
+          1,
+          approverId,
+        );
+        expect(held).toMatchObject({
+          publicationReady: false,
+          publicationBlockReasons: expect.arrayContaining([
+            "CLINICAL_PUBLICATION_HOLD_ACTIVE",
+            "PUBLICATION_PREFLIGHT_NOT_READY",
+          ]),
+        });
+        await expect(
+          advanceContent(command, dependencies),
+        ).rejects.toMatchObject({ code: "state_conflict" });
+        // An administrative fixture may claim readiness; H-CONTENT still wins.
+        await admin.db
+          .update(contentEditorialRecords)
+          .set({
+            preflight: {
+              ruleVersion: "authoring-preflight-v1",
+              technicalChecksPassed: true,
+              readyForClinicalReview: true,
+              readyForPublication: true,
+              checks: {
+                requiredFields: true,
+                correctionMetadata: true,
+                publicBoundary: true,
+                sourceTraceability: true,
+                publicationBlocked: false,
+              },
+              checkedAt: new Date().toISOString(),
+            },
+          })
+          .where(eq(contentEditorialRecords.id, editorialRecordId));
+        const forged = await createContentRepository(admin.db).find(
+          contentId,
+          1,
+          approverId,
+        );
+        expect(forged).toMatchObject({
+          publicationReady: false,
+          publicationBlockReasons: ["CLINICAL_PUBLICATION_HOLD_ACTIVE"],
+        });
+        await expect(
+          advanceContent(command, dependencies),
+        ).rejects.toMatchObject({ code: "state_conflict" });
         const stored = await admin.db
           .select({ status: contentVersions.status })
           .from(contentVersions)
@@ -162,13 +214,26 @@ describe.skipIf(!runLiveDatabaseTests || databaseUrl === undefined)(
           .from(outboxEvents)
           .where(eq(outboxEvents.aggregateId, contentId));
 
-        expect(published.status).toBe("PUBLICADO");
-        expect(stored[0]?.status).toBe("PUBLICADO");
-        expect(events).toHaveLength(1);
-        expect(events[0]?.eventType).toBe("content.published.v1");
-        expect(JSON.stringify(events[0]?.payload)).not.toContain(
-          "participantText",
-        );
+        expect(stored).toEqual([{ status: "AUTORIZADO_PARA_PUBLICACAO" }]);
+        expect(events).toHaveLength(0);
+        expect(
+          await admin.db
+            .select()
+            .from(auditEntries)
+            .where(eq(auditEntries.resourceId, contentId)),
+        ).toHaveLength(0);
+        expect(
+          await admin.db
+            .select()
+            .from(learningActivities)
+            .where(eq(learningActivities.scopeId, scopeId)),
+        ).toHaveLength(0);
+        expect(
+          await admin.db
+            .select({ decision: contentReviewDecisions.decision })
+            .from(contentReviewDecisions)
+            .where(eq(contentReviewDecisions.contentId, contentId)),
+        ).toEqual([{ decision: "APROVAR_CLINICAMENTE" }]);
       } finally {
         await admin.db
           .delete(outboxEvents)

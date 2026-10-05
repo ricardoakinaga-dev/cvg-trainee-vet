@@ -183,6 +183,12 @@ export const applicationTablePrivileges = Object.freeze({
     "UPDATE",
     "DELETE",
   ]),
+  curriculum_blueprint_versions: Object.freeze(["SELECT"]),
+  curriculum_form_versions: Object.freeze(["SELECT"]),
+  curriculum_form_items: Object.freeze(["SELECT"]),
+  curriculum_activity_forms: Object.freeze(["SELECT"]),
+  curriculum_attempt_forms: Object.freeze(["SELECT", "INSERT"]),
+  curriculum_attempt_items: Object.freeze(["SELECT", "INSERT"]),
   diagnostic_results: Object.freeze(["SELECT", "INSERT", "UPDATE", "DELETE"]),
   diagnostic_sessions: Object.freeze(["SELECT", "INSERT", "UPDATE"]),
   diagnostic_session_answers: Object.freeze([
@@ -222,6 +228,8 @@ export const rlsHelperProcedures = Object.freeze([
   "public.cvg_learning_activity_assignment_write_allowed(uuid,uuid,uuid,text,text)",
   "public.cvg_learning_activity_journey_visible(uuid,text)",
   "public.cvg_learning_activity_scope_for_participant(uuid,text)",
+  "public.cvg_curriculum_attempt_context(uuid)",
+  "public.cvg_validate_frozen_answer_response(jsonb,text)",
 ]);
 
 export function rlsHelperGrantSql(applicationRole, adminRole) {

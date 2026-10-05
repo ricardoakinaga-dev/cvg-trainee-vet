@@ -13,7 +13,7 @@
 | `AUDITOR` | leitura operacional autorizada | consultar trilhas de auditoria e evidências redigidas | alterar dados, gabaritos, papéis ou conteúdo |
 | `AUTHOR` | registros internos atribuídos | redigir conteúdo/protocolo e anexar metadados de construção | publicar, aprovar ou projetar fonte ao participante |
 
-No MVP, `CLINICAL_APPROVER` é concedido somente à identidade de Ricardo no bootstrap controlado. Não existe comitê obrigatório, segunda aprovação ou consulta externa como condição técnica. Revisões adicionais podem ser registradas como contribuição, mas não criam uma etapa operacional obrigatória.
+No MVP, o bootstrap controlado atribui `CLINICAL_APPROVER` à identidade configurada de Ricardo. Um revisor clínico distinto só pode atuar depois de receber atribuição explícita desse papel e do escopo correspondente pelo bootstrap/provisionamento controlado aprovado para o ambiente. O fluxo comum de convite não concede `CLINICAL_APPROVER`; a tentativa falha fechada porque a capability `GRANT_CLINICAL_APPROVER` continua negada por padrão na aplicação. Isso não cria delegação pelo fluxo editorial nem concessão self-service. Não existe comitê obrigatório, segunda aprovação ou consulta externa como condição técnica. Para publicação, permanece obrigatória a aprovação clínica mais recente da identidade configurada de Ricardo, conforme `RF-035`, mesmo quando um revisor distinto já aprovou o registro no fluxo editorial.
 
 ## 2. Autorização em camadas
 
@@ -152,10 +152,14 @@ ambiente server-side; produção rejeita a inicialização sem esse segredo.
 
 ## 9. Governança editorial materializada no item 10
 
-- `VIEW_INTERNAL_SOURCE` exige autor ou identidade clínica aprovada e escopo correspondente;
-- `MODERATE_CONTENT` permite solicitar ajustes, mas não substitui `APPROVE_CLINICAL_CONTENT`;
-- `APPROVE_CLINICAL_CONTENT` exige `CLINICAL_APPROVER`, identidade aprovada por configuração e escopo;
-- o autor não pode aprovar o próprio registro;
+- `VIEW_INTERNAL_SOURCE` exige `AUTHOR` ou `CLINICAL_APPROVER` ativo e escopo correspondente; `AUTHOR` pode abrir somente registros próprios, e só `CLINICAL_APPROVER` pode abrir registros de outros autores. Combinar `AUTHOR` com `MODERATOR` ou `ADMIN` não amplia acesso à fonte;
+- `MODERATE_CONTENT` permite solicitar ajustes a `MODERATOR`/`ADMIN`, mas não substitui `APPROVE_CLINICAL_CONTENT`;
+- a resposta HTTP de `SOLICITAR_AJUSTES` contém somente identidade da versão, status e recibo da decisão; não retorna item autoral, fonte, gabarito, rubrica ou preflight a `MODERATOR`/`ADMIN`;
+- `APPROVE_CLINICAL_CONTENT` exige `CLINICAL_APPROVER` ativo e escopo; para registro próprio, exige também igualdade com o `approvedClinicalApproverId` configurado no servidor conforme SPEC 0191;
+- um revisor clínico distinto pode aprovar o registro de outro autor sem coincidir com a identidade configurada; possuir `CLINICAL_APPROVER` sozinho não concede `MODERATE_CONTENT`;
+- a fila editorial permite `AUTHOR`, `MODERATOR`, `ADMIN` ou `CLINICAL_APPROVER` ativo no escopo; conta somente `AUTHOR` vê itens próprios. Para combinações de papéis, a fila usa a permissão operacional de equipe, mas `canOpenAuthoring` é calculado por item e não concede leitura cruzada sem `CLINICAL_APPROVER`;
+- `APROVAR_CLINICAMENTE` e `SOLICITAR_AJUSTES` só podem ser executados pelo endpoint/caso de uso de revisão autoral que persiste a decisão versionada; a transição genérica de conteúdo rejeita esses eventos;
+- o autor não pode aprovar o próprio registro fora da exceção configurada do MVP;
 - cada decisão grava revisor, justificativa, correlação e data no PostgreSQL e alimenta a auditoria de transição;
 - `publicationReady` é derivado do preflight e da última aprovação, nunca de IA, Qdrant ou frontend;
 - a fonte, gabarito e rubrica são internos e ficam fora de contratos/projeções do participante;
@@ -163,7 +167,7 @@ ambiente server-side; produção rejeita a inicialização sem esse segredo.
 
 `VIEW_CONTENT_REVIEW_QUEUE` é uma capability separada para leitura da fila
 editorial. Exige conta `ACTIVE`, papel `AUTHOR`, `MODERATOR`, `ADMIN` ou
-identidade clínica aprovada, além de `scopeId` presente nos escopos da sessão.
+`CLINICAL_APPROVER`, além de `scopeId` presente nos escopos da sessão.
 O resultado é uma projeção operacional redigida; possuir essa capability não
 concede `MODERATE_CONTENT`, `APPROVE_CLINICAL_CONTENT` ou `PUBLISH_CONTENT`.
 Reenvio, decisão clínica e publicação continuam casos de uso distintos e

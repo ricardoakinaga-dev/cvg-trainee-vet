@@ -27,7 +27,7 @@ import type {
   ApiHttpDependencies,
   ApiHttpRequest,
   ApiPrincipal,
-} from "../../http.js";
+} from "../../http/contracts.js";
 import { isAllowed } from "../../http/authorization.js";
 
 export function internalAuthoringProjection(
@@ -78,9 +78,13 @@ export function internalAuthoringAvailableActions(
   readonly approveClinically: boolean;
 }> {
   const reviewable = record.contentStatus === "EM_REVISAO_CLINICA";
+  const mayReviewRecord =
+    record.authorId !== principal.principalId ||
+    dependencies.approvedClinicalApproverId === principal.principalId;
   return {
     requestAdjustments:
       reviewable &&
+      mayReviewRecord &&
       isAllowed(
         principal,
         "MODERATE_CONTENT",
@@ -89,6 +93,7 @@ export function internalAuthoringAvailableActions(
       ),
     approveClinically:
       reviewable &&
+      mayReviewRecord &&
       isAllowed(
         principal,
         "APPROVE_CLINICAL_CONTENT",
@@ -296,22 +301,19 @@ export async function handleInternalAuthoringRecord(
   ) {
     return errorResponse("forbidden", requestId);
   }
+  const canReadOtherAuthors = principal.roles.includes("CLINICAL_APPROVER");
   const record = await dependencies.getInternalAuthoringRecord(
     contentId,
     version,
     parsedQuery.data.scopeId,
+    canReadOtherAuthors ? undefined : principal.principalId,
   );
   if (record === null) return errorResponse("not_found", requestId);
   if (record.scopeId !== parsedQuery.data.scopeId) {
-    return errorResponse("forbidden", requestId);
+    return errorResponse("not_found", requestId);
   }
-  const isScopedStaff =
-    principal.roles.includes("MODERATOR") ||
-    principal.roles.includes("ADMIN") ||
-    (principal.roles.includes("CLINICAL_APPROVER") &&
-      dependencies.approvedClinicalApproverId === principal.principalId);
-  if (!isScopedStaff && record.authorId !== principal.principalId) {
-    return errorResponse("forbidden", requestId);
+  if (!canReadOtherAuthors && record.authorId !== principal.principalId) {
+    return errorResponse("not_found", requestId);
   }
   const availableActions = {
     ...internalAuthoringAvailableActions(record, principal, dependencies),
@@ -369,6 +371,26 @@ export async function handleAuthoringReview(
         }),
   };
   const result = await dependencies.reviewAuthoringContent(command);
+  if (parsed.data.decision === "SOLICITAR_AJUSTES") {
+    return {
+      status: 200,
+      body: apiSuccessResponse(
+        {
+          contentId: result.record.contentId,
+          version: result.record.version,
+          scopeId: result.record.scopeId,
+          contentStatus: result.record.contentStatus,
+          review: {
+            decision: result.review.decision,
+            rationale: result.review.rationale,
+            reviewedAt: result.review.reviewedAt,
+            correlationId: result.review.correlationId,
+          },
+        },
+        requestId,
+      ),
+    };
+  }
   return {
     status: 200,
     body: apiSuccessResponse(

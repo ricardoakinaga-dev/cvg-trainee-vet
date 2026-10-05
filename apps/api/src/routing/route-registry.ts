@@ -200,6 +200,18 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = Object.freeze([
     riskClass: MUTATION,
     telemetryGap: false,
   }),
+  pattern(
+    "GET",
+    "/api/v1/attempts/:attemptId",
+    "^\\/api\\/v1\\/attempts\\/[^/]+$",
+    {
+      auth: "session",
+      capabilities: Object.freeze(["VIEW_OWN_ACTIVITY"]),
+      enforcement: "http",
+      riskClass: READ,
+      telemetryGap: false,
+    },
+  ),
   exact("POST", "/api/v1/attempts", {
     auth: "session",
     capabilities: Object.freeze(["START_OWN_ATTEMPT"]),

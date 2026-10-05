@@ -11,7 +11,10 @@ import {
   validationResponse,
   type ApiHttpResponse,
 } from "../../http/errors.js";
-import type { ApiHttpDependencies, ApiHttpRequest } from "../../http.js";
+import type {
+  ApiHttpDependencies,
+  ApiHttpRequest,
+} from "../../http/contracts.js";
 import { isPlainRecord } from "../../http/validation.js";
 
 export function redactDependencyStatus(

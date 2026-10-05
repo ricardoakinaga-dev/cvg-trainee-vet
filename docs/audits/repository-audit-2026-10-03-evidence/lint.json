@@ -1,0 +1,13 @@
+{
+  "name": "lint",
+  "command": [
+    "pnpm",
+    "lint"
+  ],
+  "startedAt": "2026-10-03T04:54:26.795786+00:00",
+  "durationSeconds": 21.39,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/lint.log",
+  "sha256": "e0d2d09b7aa5d15c16978a20d39f91f383efd7ec687be1844e73ea110c3bf5db"
+}

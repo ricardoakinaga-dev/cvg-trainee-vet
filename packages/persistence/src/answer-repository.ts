@@ -19,6 +19,12 @@ import {
   PersistenceStateConflictError,
 } from "./attempt-repository.js";
 import { createAuditRepository } from "./audit-repository.js";
+import { createAnswerAttemptWritePort } from "./answer-attempt-write-port.js";
+import {
+  readCapturedAnswerItem,
+  assertCapturedAnswerResponse,
+} from "./curriculum-attempt-answer-write.js";
+import type { CapturedAttemptItem } from "./curriculum-attempt-item-read.js";
 import type {
   PersistedAnswerSnapshot,
   PersistedAttemptSnapshot,
@@ -27,7 +33,6 @@ import {
   activityAssignments,
   answerIdempotency,
   answers,
-  attempts,
   contentVersions,
   learningActivities,
   learningAssignments,
@@ -200,7 +205,10 @@ type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
 function createAnswerOperations(
   db: DatabaseExecutor,
+  context?: TransactionSecurityContext,
 ): AnswerTransactionalOperations {
+  let lockedAttempt: AttemptState | null = null;
+  let capturedItem: CapturedAttemptItem | null | undefined;
   const answersPort = {
     findByAttemptAndItem: async (
       attemptId: string,
@@ -223,6 +231,18 @@ function createAnswerOperations(
       return row ? answerRowToState(row) : null;
     },
     save: async (answer: AnswerState): Promise<void> => {
+      if (capturedItem !== undefined) {
+        if (
+          capturedItem === null ||
+          capturedItem.itemId !== answer.itemId ||
+          lockedAttempt?.attemptId !== answer.attemptId
+        ) {
+          throw new PersistenceStateConflictError(
+            "Answer is outside its frozen attempt",
+          );
+        }
+        assertCapturedAnswerResponse(capturedItem, answer.response);
+      }
       await db
         .insert(answers)
         .values(answerStateToRow(answer))
@@ -243,6 +263,26 @@ function createAnswerOperations(
     scopeId: string,
     itemId: string,
   ): Promise<boolean> => {
+    if (
+      context?.scopeId !== undefined &&
+      lockedAttempt !== null &&
+      lockedAttempt.participantId === participantId &&
+      lockedAttempt.activityId === activityId &&
+      context.participantId === participantId &&
+      context.scopeId === scopeId
+    ) {
+      capturedItem = await readCapturedAnswerItem(
+        db,
+        {
+          participantId,
+          scopeId,
+          activityId,
+          attemptId: lockedAttempt.attemptId,
+        },
+        itemId,
+      );
+      if (capturedItem !== undefined) return capturedItem !== null;
+    }
     const rows = await db
       .select({ itemId: learningActivityItems.contentVersionId })
       .from(activityAssignments)
@@ -290,73 +330,14 @@ function createAnswerOperations(
     return rows.length > 0;
   };
 
-  const attemptsPort = {
-    findById: async (attemptId: string): Promise<AttemptState | null> => {
-      const rows = await db
-        .select({
-          id: attempts.id,
-          participantId: attempts.participantId,
-          activityId: attempts.activityId,
-          status: attempts.status,
-          version: attempts.version,
-          submittedAt: attempts.submittedAt,
-        })
-        .from(attempts)
-        .where(eq(attempts.id, attemptId))
-        .limit(1);
-      const row = rows[0];
-      if (!row) return null;
-      const supportedStatuses = [
-        "CRIADA",
-        "EM_ANDAMENTO",
-        "SALVA",
-        "SUBMETIDA",
-        "CORRIGIDA_AUTOMATICAMENTE",
-        "AGUARDA_CORRECAO_HUMANA",
-        "CORRIGIDA_HUMANAMENTE",
-        "ANULADA",
-      ] as const;
-      if (
-        !supportedStatuses.includes(
-          row.status as (typeof supportedStatuses)[number],
-        )
-      ) {
-        throw new PersistenceMappingError("attempt status is not supported");
-      }
-      return {
-        attemptId: row.id,
-        participantId: row.participantId,
-        activityId: row.activityId,
-        status: row.status as AttemptState["status"],
-        version: row.version,
-        ...(row.submittedAt
-          ? { submittedAt: row.submittedAt.toISOString() }
-          : {}),
-      };
+  const attemptsPort = createAnswerAttemptWritePort(
+    db,
+    (state) => {
+      lockedAttempt = state;
+      capturedItem = undefined;
     },
-    update: async (state: AttemptState): Promise<void> => {
-      const rows = await db
-        .update(attempts)
-        .set({
-          status: state.status,
-          version: state.version,
-          submittedAt: state.submittedAt ? new Date(state.submittedAt) : null,
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(attempts.id, state.attemptId),
-            eq(attempts.version, state.version - 1),
-          ),
-        )
-        .returning({ id: attempts.id });
-      if (rows.length === 0) {
-        throw new PersistenceStateConflictError(
-          "attempt version changed concurrently",
-        );
-      }
-    },
-  };
+    context,
+  );
 
   const idempotency = {
     lock: async (key: string): Promise<void> => {
@@ -467,7 +448,7 @@ export function createAnswerUseCaseDependencies(
           if (context !== undefined) {
             await setDatabaseSecurityContext(executor, context);
           }
-          return work(createAnswerOperations(executor));
+          return work(createAnswerOperations(executor, context));
         }),
     },
   });

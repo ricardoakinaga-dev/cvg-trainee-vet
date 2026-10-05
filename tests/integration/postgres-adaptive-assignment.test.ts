@@ -150,7 +150,6 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             diagnosticResultId: resultId,
             scopeId: randomUUID(),
             moduleIds: ["M01"],
-            availableAt: completedAt,
           }),
         ).rejects.toThrow();
       } finally {

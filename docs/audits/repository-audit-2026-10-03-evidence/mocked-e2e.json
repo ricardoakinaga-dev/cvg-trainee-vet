@@ -1,0 +1,13 @@
+{
+  "name": "mocked-e2e",
+  "command": [
+    "pnpm",
+    "test:e2e"
+  ],
+  "startedAt": "2026-10-03T05:02:10.321415+00:00",
+  "durationSeconds": 81.23,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/mocked-e2e.log",
+  "sha256": "07b54393ecc26e9c331edce16762db197bec91eb664985d0beb3f8afbb63d45d"
+}

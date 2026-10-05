@@ -1,0 +1,80 @@
+{
+  "format": "cvg-independent-review/v2",
+  "candidate_sha": "3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff",
+  "evidence_sha": "14b97a8b7e257b49ffc6fbf97ea3e46a9b842e39",
+  "generated_at": "2026-09-11T17:35:00-03:00",
+  "reviewer": "gauntlet-critic (fresh session, read-only, no shared context with builder)",
+  "scope": [
+    "auth bypass",
+    "BOLA",
+    "IDOR",
+    "scope escalation",
+    "RLS bypass",
+    "pool leak",
+    "session replay/fixation",
+    "recovery replay",
+    "CSRF bypass",
+    "XFF spoof",
+    "rate-limit bypass",
+    "Redis outage bypass",
+    "SQL injection",
+    "log/header injection",
+    "SSRF",
+    "Qdrant poisoning",
+    "AI authority leak",
+    "worker duplicate effect",
+    "same-SHA bypass",
+    "stale evidence",
+    "artifact substitution",
+    "coverage gaming",
+    "mutation gaming"
+  ],
+  "verdict": "PASS",
+  "p0": 0,
+  "p1": 0,
+  "p2": [
+    {
+      "id": "P2-EDGE-TRUST",
+      "location": "apps/api/src/server.ts:331, apps/api/src/main.ts:472-486, apps/api/src/security/trusted-proxy.ts:79",
+      "finding": "Edge trustedProxies defaults to [] and is never wired; if ever wired, leftmost-XFF is attacker-controlled under an appending proxy.",
+      "why_not_p1": "Not currently exploitable: spoof ignored, fail-closed (over-blocking). Requires future misconfiguration plus appending-proxy topology.",
+      "mitigation": "Wire CVG_TRUSTED_PROXIES explicitly, document strip-vs-append, rightmost-untrusted or proxy-strip, appending-proxy spoof test."
+    },
+    {
+      "id": "P2-EDGE-OUTAGE",
+      "location": "packages/persistence/src/rate-limit-repository.ts:51-132, apps/api/src/server.ts:377-379",
+      "finding": "Postgres rate-limiter DB errors propagate uncaught at the edge (500/hang) instead of explicit fail-closed 429 like the backend limiter.",
+      "why_not_p1": "Outage denies, never allows: no bypass; availability/observability only.",
+      "mitigation": "Wrap edge check in try/catch returning 429 retry-after:1 with rejection metric. Deferred: needs live-PG failure verification; do not change blind."
+    },
+    {
+      "id": "P2-EVID-SELF",
+      "location": "scripts/verify-triple-aaa.mjs (digests block)",
+      "finding": "digestsOk never cross-checked manifest.artifacts[].sha256; verdict trusts local files.",
+      "why_not_p1": "Requires repo write to forge; promotion regenerates remote-ci-summary live; bundle correctly REVISE.",
+      "mitigation": "IMPLEMENTED this round: manifest sha256 cross-check in verify-triple-aaa plus self-test 'manifest hash mismatch' (25/25 green)."
+    },
+    {
+      "id": "P2-FORGERY-SCREEN",
+      "location": "scripts/verify-triple-aaa.mjs FORBIDDEN_MARKERS",
+      "finding": "Marker list narrow (fixture/synthetic/example/mock/self-test) and excludes inventories; trivially avoidable.",
+      "why_not_p1": "Defense-in-depth only; primary is digests+freshness+remote. Bypass yields no PASS without forging digests+remote.",
+      "mitigation": "Keep as tripwire; expand schema validation over marker hunt (future hardening, accepted risk)."
+    }
+  ],
+  "strongest_evidence_first_hand": [
+    "Authorization deny-by-default triple-check (application/authorization.ts:127-217, http/authorization.ts:18-28, attempts.handler.ts server-derived scopeId + owner recheck)",
+    "Recovery single-use atomic consume + session revocation (account-recovery-use-cases.ts, account-recovery-repository.ts:248-266, session-repository.ts:210-242)",
+    "RLS transaction-local GUC clear + least-privilege healthcheck (security-context.ts, database.ts:117-169)"
+  ],
+  "weakest_link": "Edge rate-limit + trusted-proxy wiring (single wiring layer; prod LB topology untested in checked-in evidence).",
+  "agreement_with_previous_review": "AGREE with independent-review.json P0=0/P1=0 REVISE; disagree on nothing material.",
+  "limitations": [
+    "No live infra re-execution (PG/Redis/Qdrant/staging); checked-in summaries + code inspection only",
+    "No network (no live gh API runs, no CodeQL/OSV re-pull)",
+    "Full test suite not executed by reviewer",
+    "Same-session infrastructure as builder (no separate human reviewer)",
+    "Remote CI explicitly excluded from this verdict (remains RF-02/RF-09 blocked for promotion)"
+  ],
+  "result": "PASS"
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "CVG-REMEDIATION-2026-10-01",
+  "frozen_at": "2026-10-01T22:23:41-03:00",
+  "source": [
+    "docs/audits/repository-audit-2026-10-01.md",
+    "docs/58_roadmap_repository_remediation_2026-10-01.md",
+    "docs/59_backlog_repository_remediation_2026-10-01.md",
+    ".gauntlet/bar.json"
+  ],
+  "criteria": [
+    {"id":"R01","required":true,"pass":"candidate workflow gives both verifiers the same explicit, current bounded manifest and records provenance; removed CLI flags are absent"},
+    {"id":"R02","required":true,"pass":"missing, malformed, stale, or identity-mismatched manifests fail closed; valid bounded evidence is reproducible"},
+    {"id":"R03","required":true,"pass":"symlinked parent/final paths and traversal are rejected before writes; outside sentinel stays unchanged"},
+    {"id":"R04","required":true,"pass":"each source has its own baseline digest and verified restoration; multi-file identity crossing cannot pass"},
+    {"id":"R05","required":true,"pass":"production inventory includes owned TS and TSX, including unimported app pages, and preserves all established floors"},
+    {"id":"R06","required":true,"pass":"common Playwright selection excludes real-runtime; explicit-real selection includes it and missing services cannot yield PASS"},
+    {"id":"R07","required":true,"pass":"summative runtime follows an approved modality/version contract and leaves formative behavior intact, or the missing contract remains explicitly gated without invented behavior"},
+    {"id":"R08","required":true,"pass":"Ricardo's approved editorial/RPO decisions are recorded and reflected; live, remote, production and content gates remain separate"},
+    {"id":"R09","required":true,"pass":"current evidence identifies its checkout/worktree and hashes; historical scorecards remain historical"},
+    {"id":"R10","required":true,"pass":"restore runbook states observed backup/schema/migration compatibility, ordering, validation and abort; live drill is gated"},
+    {"id":"R11","required":true,"pass":"fresh integrated review and authorized verification leave no unhandled P0/P1 for claims being made; residual gaps are recorded"}
+  ],
+  "constraints": [
+    "No production, publication, remote dispatch/push, or live external service without the matching authorization.",
+    "Synthetic data only; no secrets or real clinical/tutor records.",
+    "A missing prerequisite is NOT RUN or BLOCKED, never PASS.",
+    "Every code task follows RED -> GREEN -> REFACTOR and is independently reviewed."
+  ]
+}

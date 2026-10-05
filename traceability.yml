@@ -6,6 +6,1619 @@ rules:
   - "participant projections never contain internal authorship/source fields"
   - "every completed item requires evidence"
 artifacts:
+  - id: "EXEC-AUDIT-20261003-R53-R54-R55-R57"
+    requirements:
+      [
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T31",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/module-obligation-validation.ts",
+        "packages/persistence/src/module-obligation-finalization.ts",
+        "packages/application/src/journey-use-cases.ts",
+      ]
+    tests:
+      [
+        "packages/persistence/src/module-obligation-validation.test.ts",
+        "packages/persistence/src/module-obligation-finalization.test.ts",
+        "apps/api/src/http-boundary/journey-prerequisite.http.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/r53-module-completion/builder/handoff.json",
+        ".agent/artifacts/remediation-20261003/r57-module-finalization/handoff.json",
+        ".agent/artifacts/remediation-20261003/lead-r54-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/r55-journey-prerequisite/handoff.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+  - id: "EXEC-AUDIT-20261003-R28-NATIVE-R27"
+    requirements:
+      [
+        "AUDIT-20261003-T03",
+        "AUDIT-20261003-T14",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T23",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/curriculum-publication-provenance.ts",
+        "apps/web/app/page.tsx",
+        "apps/web/app/participant-contracts.ts",
+        "scripts/run-staging.mjs",
+      ]
+    tests:
+      [
+        "packages/persistence/src/curriculum-publication-provenance.test.ts",
+        "tests/integration/curriculum-publication-provenance.test.ts",
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+        "apps/web/tests/participant-access.browser.test.tsx",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r28-native-final-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r22-ci-successor-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r27-feedback-fixture-coordination.json",
+        ".agent/artifacts/remediation-20261003/lead-r27-appeal-alert-measurement-coordination.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+  - id: "EXEC-AUDIT-20261003-R25-R26-R24"
+    requirements:
+      [
+        "AUDIT-20261003-T14",
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T23",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "apps/web/app/page.tsx",
+        "apps/api/src/composition/api-runtime-lifecycle.ts",
+        "packages/persistence/drizzle/0057_curriculum_publication_provenance.sql",
+      ]
+    tests:
+      [
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+        "apps/api/src/composition/api-runtime-lifecycle.test.ts",
+        "tests/integration/curriculum-publication-provenance.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r25-r23-r14-review-artifact-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r26-api-diagnostic-handoff.json",
+        ".agent/artifacts/remediation-20261003/lead-r24-historical-red-verification.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+  - id: "EXEC-AUDIT-20261003-R22-R23-R24-T23"
+    requirements:
+      [
+        "AUDIT-20261003-T03",
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T23",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "packages/application/src/journey-assignment-eligibility.ts",
+        "packages/application/src/journey-use-cases.ts",
+        "packages/application/src/dashboard-use-cases.ts",
+        "packages/persistence/drizzle/0057_curriculum_publication_provenance.sql",
+        "apps/api/src/composition/api-runtime-lifecycle.ts",
+        "apps/api/src/composition/http-server-lifecycle.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/journey-assignment-eligibility.test.ts",
+        "packages/application/src/journey-authorization.test.ts",
+        "tests/integration/curriculum-publication-provenance.test.ts",
+        "apps/api/src/composition/api-runtime-lifecycle.test.ts",
+        "apps/api/src/composition/http-server-lifecycle.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/r23-journey-canonical-final1-results.json",
+        ".agent/artifacts/remediation-20261003/r23-journey-probes-final1-results.json",
+        ".agent/artifacts/remediation-20261003/lead-r20-native-source-handoff-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r21-api-shutdown-handoff.json",
+        ".agent/artifacts/remediation-20261003/lead-ci-r18-independent-review-verification-corrected.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+  - id: "EXEC-AUDIT-20261003-R18-R19-PROVENANCE-REVISE"
+    requirements:
+      [
+        "AUDIT-20261003-T03",
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T23",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "scripts/run-staging.mjs",
+        "scripts/staging-owned-lifecycle.mjs",
+        "scripts/verify-aaa-candidate.mjs",
+        "scripts/verify-triple-aaa.mjs",
+        "packages/application/src/journey-module-authority.ts",
+        "packages/application/src/participant-curriculum-path.ts",
+        "apps/worker/src/lifecycle.ts",
+      ]
+    tests:
+      [
+        "tests/integration/staging-owned-lifecycle.test.ts",
+        "tests/integration/ci-claim-admission.test.ts",
+        "packages/application/src/journey-authorization.test.ts",
+        "apps/worker/src/lifecycle.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-native-journey-worker-current-review-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r19-journey-handoff-verification.json",
+        ".agent/artifacts/remediation-20261003/r18-ci-canonical-final1-results.json",
+        ".agent/artifacts/remediation-20261003/r18-ci-boundaries-green1-results.json",
+      ]
+    status: "IN_PROGRESS"
+    commits: []
+    limitations: "CI540 successor pending; journey R19 freshreview pending; nativeprovenance2P1 not yet runtime proven; worker local source only; no global/manual/clinical/remote/release acceptance."
+  - id: "EXEC-AUDIT-20261003-R17-NATIVE14-CURRENT"
+    requirements:
+      [
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T31",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "apps/web/app/page.tsx",
+        "packages/contracts/src/learning.ts",
+        "packages/contracts/src/diagnostic-session.ts",
+        "packages/persistence/src/published-choice-response.ts",
+        "packages/curriculum/src/projection.ts",
+      ]
+    tests:
+      [
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+        "packages/contracts/src/learning.test.ts",
+        "packages/contracts/src/diagnostic-session.test.ts",
+        "packages/application/src/diagnostic-catalog-boundary.test.ts",
+        "tests/integration/postgres-curriculum-evaluation.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-native-coherence14-current-verification.json",
+        ".agent/artifacts/remediation-20261003/r17-partial-canonical-final1-results.json",
+        ".agent/artifacts/remediation-20261003/r10-ci-final-seal.json",
+      ]
+    status: "IN_PROGRESS"
+    commits: []
+    limitations: "Native14 technical PG/compiled API pendingreview; R17 fivefindings unresolved, CI/journey freshreviews pending; secrets FAIL, Redis/RLS NOT_EXECUTED, clinical/global/manual/remote/release not accepted."
+  - id: "EXEC-AUDIT-20261003-FRESH-R14-NATIVE-COHERENCE-REVISE"
+    requirements:
+      [
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T31",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "apps/web/app/page.tsx",
+        "packages/contracts/src/learning.ts",
+        "packages/persistence/src/curriculum-attempt-capture-validation.ts",
+        "packages/persistence/src/curriculum-evaluation-mapping.ts",
+        "packages/persistence/src/published-choice-response.ts",
+      ]
+    tests:
+      [
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+        "packages/contracts/src/learning.test.ts",
+        "packages/persistence/src/published-choice-response.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-participant-r14-independent-review-verification.json",
+        ".agent/artifacts/remediation-20261003/native-publication-response-coherence-ready.json",
+        ".agent/artifacts/remediation-20261003/lead-ci-r9-independent-review-verification.json",
+      ]
+    verification:
+      [
+        "Native5RED367GREEN and public2RED14GREEN; R14critic318refs36PREPOSTCURRENT verifies one P2 with2actualFAIL; webpermanentRED2FAIL1PASS then repair in progress.",
+      ]
+    limitations:
+      [
+        "No PG/build after current native repair; full web regression/fresh review pending; historical9PG/114HTTP do not certify current assembledcandidate; clinical/global/release/manualG07 not accepted.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-NATIVE-CHOICE-GUARD-COMPILED-HTTP"
+    requirements: ["AUDIT-20261003-T18", "AUDIT-20261003-T27", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-native-attempt-evaluation.md",
+      ]
+    code:
+      [
+        "packages/contracts/src/learning.ts",
+        "packages/persistence/src/curriculum-attempt-capture-validation.ts",
+        "packages/persistence/src/curriculum-evaluation-mapping.ts",
+      ]
+    tests:
+      [
+        "packages/contracts/src/learning.test.ts",
+        "packages/persistence/src/curriculum-attempt-capture-validation.test.ts",
+        "packages/persistence/src/curriculum-evaluation-mapping.test.ts",
+        "tests/integration/postgres-curriculum-evaluation.test.ts",
+        "apps/api/src/http-boundary/session.http.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-native-choice-green1-current-verification.json",
+        ".agent/artifacts/remediation-20261003/native-choice-main-fresh-review-map.json",
+        ".agent/artifacts/remediation-20261003/lead-current-built-http-after-choice-build-verification.json",
+      ]
+    verification:
+      [
+        "Six valid RED failures then358unitPASS; scopedcontracts/persistence builds0/0; nine nativePG18.4 tests executed0skip and60checkpoint/2732PREPOSTCURRENT selected hashes match; compiledHTTP114PASS.",
+      ]
+    limitations:
+      [
+        "Fresh native review pending; technical synthetic published fixtures, no clinical publication, assembledweb, global or remote acceptance. Historical FAILs unchanged.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-WEB-R13-FRESH-REVISE"
+    requirements:
+      [
+        "AUDIT-20261003-T13",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T30",
+        "AUDIT-20261003-T31",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+      ]
+    code:
+      [
+        "apps/web/app/participant-mutation-receipt.ts",
+        "apps/web/app/diagnostic/page.tsx",
+        "apps/web/app/participant-contracts.ts",
+      ]
+    tests:
+      [
+        ".agent/artifacts/remediation-20261003/critic-participant-r13-i1-evidence/ownprobes/adversarial.browser.test.tsx",
+      ]
+    commit: "3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff"
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-participant-r13-independent-review-verification.json",
+      ]
+    status: "in_progress"
+    limitations: ["Fresh REVISE4; R14 repair pending; no global acceptance."]
+  - id: "EXEC-AUDIT-20261003-NATIVE-COMPILED-MAIN-GREEN"
+    requirements: ["AUDIT-20261003-T18", "AUDIT-20261003-T29", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-native-attempt-evaluation.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/curriculum-evaluation-repository.ts",
+        "packages/persistence/src/curriculum-evaluation-mapping.ts",
+        "packages/persistence/src/curriculum-attempt-capture-validation.ts",
+        "packages/persistence/src/index.ts",
+        "apps/api/src/main.ts",
+      ]
+    tests:
+      [
+        "packages/persistence/src/curriculum-evaluation-repository.test.ts",
+        "packages/persistence/src/curriculum-evaluation-mapping.test.ts",
+        "packages/persistence/src/curriculum-attempt-capture-validation.test.ts",
+        "tests/integration/postgres-curriculum-evaluation.test.ts",
+        "tests/integration/curriculum-native-fixtures.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-native-main-green1-current-verification.json",
+        ".agent/artifacts/remediation-20261003/native-main-coordinated-three-builds.log",
+        ".agent/artifacts/remediation-20261003/native-main-post-three-build-root-strict.log",
+        ".agent/artifacts/remediation-20261003/lead-native-evaluation-mapper-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/native-capture-public-contract-red1.log",
+        ".agent/artifacts/remediation-20261003/native-capture-public-contract-green1.log",
+      ]
+    commit: "uncommitted"
+    verification:
+      [
+        "Actual compiled API with real invitation/cookie/session/scoped authorization and native immutable evaluation passes seven genuinePG18.4 technical tests; form withdrawal observedblocked through runtime save.48checkpoint and2730PREPOSTCURRENT selectedfiles match; three scopedbuilds pass.",
+        "Fresh review pending; no clinical approval, assembledweb/wholecandidate/global/remote acceptance. Historical errors and revised contracts preserved; no thresholds weakened.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-BOUND-ANSWER-CI-WEB-REVISE"
+    requirements:
+      [
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T30",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-native-attempt-evaluation.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/curriculum-attempt-answer-write.ts",
+        "packages/persistence/src/answer-attempt-write-port.ts",
+        "packages/persistence/src/answer-repository.ts",
+        "packages/persistence/src/activity-repository.ts",
+        "packages/persistence/drizzle/0056_curriculum_capture_context.sql",
+        "scripts/provision-ci-postgres.mjs",
+      ]
+    tests:
+      [
+        "tests/integration/postgres-curriculum-attempt-start.test.ts",
+        "packages/persistence/src/curriculum-attempt-answer-write.test.ts",
+        "packages/persistence/src/answer-repository.test.ts",
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/native-answer-database-guard-green4-lead-verification.json",
+        ".agent/artifacts/remediation-20261003/native-bound-answer-write-refactor-static-green1.log",
+        ".agent/artifacts/remediation-20261003/lead-ci-r7-independent-review-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-participant-r12-independent-review-verification.json",
+      ]
+    commit: "uncommitted"
+    verification:
+      [
+        "Four genuine PG18.4 technical tests pass with captured save/replay, frozen-item authorization, invalid SQL response and submitted immutability denials; eight MULTIPLE SQL vectors pass. Native evaluation/read-save/main remains unproven.",
+        "85 focused unit tests and28 migration governance tests pass; fresh CI review revises3 findings and participant R12 revises2 findings. R13 and native mapper ongoing; no assembled or global acceptance.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-CAPTURE-COMMIT-R11-REVISE"
+    requirements:
+      [
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T30",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-native-attempt-evaluation.md",
+      ]
+    code:
+      [
+        "packages/persistence/drizzle/0056_curriculum_capture_context.sql",
+        "apps/web/app/page.tsx",
+      ]
+    tests:
+      [
+        "tests/integration/postgres-curriculum-attempt-start.test.ts",
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/native-capture-commit-green2-lead-verification.json",
+        ".agent/artifacts/remediation-20261003/native-capture-commit-static-green2.log",
+        ".agent/artifacts/remediation-20261003/lead-participant-r11-independent-review-verification.json",
+      ]
+    commit: "uncommitted"
+    verification:
+      [
+        "PG18.4 four native technical tests pass; direct bound attempt insertion without complete capture rejects23514 with zero committed attempts. Native evaluation/save/main remains unproven.",
+        "Independent web review134PASS2FAIL identifies divergent start/submit receipts; R12 repair ongoing. Existing89 tests do not accept the revised package.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-BOUND-PUBLIC-FRESH-REVIEWS"
+    requirements:
+      [
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T22",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T30",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-native-attempt-evaluation.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/curriculum-attempt-item-read.ts",
+        "packages/persistence/src/curriculum-attempt-activity-read.ts",
+        "packages/persistence/src/activity-row-types.ts",
+        "packages/persistence/src/activity-repository.ts",
+        "packages/persistence/src/participant-attempt-read-repository.ts",
+        "packages/persistence/drizzle/0056_curriculum_capture_context.sql",
+        "apps/web/app/participant-pending-mutations.ts",
+      ]
+    tests:
+      [
+        "packages/persistence/src/curriculum-attempt-item-read.test.ts",
+        "packages/persistence/src/curriculum-attempt-activity-read.test.ts",
+        "tests/integration/postgres-curriculum-attempt-start.test.ts",
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+        "apps/web/app/participant-pending-mutations.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/native-bound-public-green1-lead-verification.json",
+        ".agent/artifacts/remediation-20261003/native-bound-public-unit-green1.log",
+        ".agent/artifacts/remediation-20261003/lead-ci-r6-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-worker-r8-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/r11-participant-handoff-final-1.json",
+      ]
+    commit: "uncommitted"
+    verification:
+      [
+        "NativePG18.4 complete capture and bound public/answer reads4PASS0skip; unit225PASS; no evaluation/save/main/global accept.",
+        "CI fresh REVISE5P1 and worker source/doubles scopedACCEPT verified independently.",
+        "R11 own89PASS and101recursive refs verified; original28/1 unchanged; fresh18source review pending.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-NATIVE-START-GREEN4-R11-REPAIRS"
+    requirements:
+      [
+        "AUDIT-20261003-T07",
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T30",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-native-attempt-evaluation.md",
+      ]
+    code:
+      [
+        "packages/persistence/src/curriculum-attempt-capture.ts",
+        "packages/persistence/src/curriculum-attempt-capture-validation.ts",
+        "packages/persistence/src/curriculum-attempt-context.ts",
+        "packages/persistence/src/security-context.ts",
+        "packages/persistence/drizzle/0056_curriculum_capture_context.sql",
+        "scripts/provision-ci-postgres.mjs",
+        "scripts/verify-complexity.mjs",
+        "apps/api/src/http.ts",
+        "packages/application/src/journey-use-cases.ts",
+      ]
+    tests:
+      [
+        "tests/integration/postgres-curriculum-attempt-start.test.ts",
+        "packages/persistence/src/security-context.test.ts",
+        "packages/persistence/src/curriculum-attempt-context.test.ts",
+        "packages/persistence/src/curriculum-attempt-capture-validation.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/complexity-budget.test.ts",
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/native-attempt-start-green4-lead-verification.json",
+        ".agent/artifacts/remediation-20261003/native-capture-unit-green-current.log",
+        ".agent/artifacts/remediation-20261003/native-capture-reviewed-probes-current.log",
+        ".agent/artifacts/remediation-20261003/lead-participant-r9-independent-review-verification.json",
+      ]
+    commit: "uncommitted"
+    verification:
+      [
+        "PG18.4 atomic technical form start4PASS0skip; source/unit189 and independent probes104PASS.",
+        "R10 malformed-caller findings repaired; current native read/save/main remains NOT_PROVEN.",
+        "R9 independent REJECT2 preserved and R11 repairs pending fresh review; no global acceptance.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-R6-JOURNEY-R8-R9-NATIVE-START"
+    requirements:
+      [
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T19",
+        "AUDIT-20261003-T22",
+        "AUDIT-20261003-T28",
+        "AUDIT-20261003-T29",
+        "AUDIT-20261003-T30",
+        "AUDIT-20261003-T31",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-native-attempt-evaluation.md",
+      ]
+    code:
+      [
+        "packages/application/src/journey-use-cases.ts",
+        "packages/curriculum/src/module-evaluation-contracts.ts",
+        "apps/worker/src/reconcile.ts",
+        "scripts/release-evidence.mjs",
+        "apps/web/app/operations/operations-report-request.ts",
+        "apps/web/app/page.tsx",
+        "apps/web/app/participant-contracts.ts",
+        "apps/web/app/participant-answer-list.tsx",
+        "apps/web/app/diagnostic/page.tsx",
+        "packages/persistence/drizzle/0055_curriculum_attempt_bindings.sql",
+      ]
+    tests:
+      [
+        "packages/application/src/journey-use-cases.test.ts",
+        "apps/api/src/http-boundary/curriculum.http.test.ts",
+        "tests/integration/postgres-curriculum-attempt-start.test.ts",
+        "apps/web/tests/operations.browser.test.tsx",
+        "apps/web/tests/participant-resilience.browser.test.tsx",
+        "apps/web/tests/participant-access.browser.test.tsx",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-ci-r5-independent-review-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-worker-r7-independent-review-verification.json",
+        ".agent/artifacts/remediation-20261003/journey-r6-lead-frozen-pre.json",
+        ".agent/artifacts/remediation-20261003/lead-operations-r8-precritic-verification.json",
+        ".agent/artifacts/remediation-20261003/native-attempt-binding-schema-green-lead-verification.json",
+        ".agent/artifacts/remediation-20261003/native-attempt-start-red2-lead-verification.json",
+      ]
+    commit: "uncommitted"
+    verification:
+      [
+        "Scoped CI/worker executable REJECT retained; blind I1 limited.",
+        "Journey111+47PASS/cycles0, R8 hashes43; R9 implementation pending review.",
+        "PG18.4 schema1PASS/startRED3FAIL1denialPASS; no native evaluation/main/publication.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-R7-REVIEW-R8-T18-EXPANSION"
+    requirements:
+      [
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T27",
+        "AUDIT-20261003-T28",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "docs/security/data-classification.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+      ]
+    code:
+      [
+        "packages/application/src/participant-curriculum-path.ts",
+        "packages/application/src/session-expiry-policy.ts",
+        "packages/persistence/src/session-repository.ts",
+        "packages/contracts/src/session.ts",
+        "packages/contracts/src/invitation.ts",
+        "packages/contracts/src/account-recovery.ts",
+        "packages/persistence/src/curriculum-attempt-schema.ts",
+        "packages/persistence/src/persistence-snapshots.ts",
+        "packages/persistence/drizzle/0055_curriculum_attempt_bindings.sql",
+        "apps/web/app/operations/page.tsx",
+        "vitest.config.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/journey-use-cases.test.ts",
+        "packages/application/src/dashboard-use-cases.test.ts",
+        "apps/api/src/http-boundary/session-expiry.http.test.ts",
+        "tests/integration/postgres-session-expiry.test.ts",
+        "tests/integration/postgres-curriculum-attempt-binding.test.ts",
+        "apps/web/tests/operations.browser.test.tsx",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-session-r7-independent-verification.json",
+        ".agent/artifacts/remediation-20261003/r7-session-public-contract-final-corrected.log",
+        ".agent/artifacts/remediation-20261003/journey-completion-r5-final.log",
+        ".agent/artifacts/remediation-20261003/journey-r5-lead-frozen-pre.json",
+        ".agent/artifacts/remediation-20261003/native-attempt-binding-schema-red-lead-verification.json",
+        ".agent/artifacts/remediation-20261003/native-attempt-schema-migrations-manifest.log",
+        ".agent/artifacts/remediation-20261003/r8-operations-browser-red-20261003-1.log",
+      ]
+    commit: "uncommitted"
+    verification:
+      - "T27 fresh scopedACCEPT: Lead23 paths PRE=POST=CURRENT,14criticrefs,52rawrefs verified.91source/11historicalPG/31public/62critic testsPASS; no fullHTTPnative/global proof."
+      - "Journey RED4/GREEN155 and freshR5review; R8 Chromium RED4/GREEN4 focal pending regressions/review."
+      - "NativeT18 relation REDPG18.4 only; additive0055 staticPASS but runtime expansion/start/read-save/main not yet executed/proved. No publication/backfill."
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-R6-REVIEW-R7-SESSION"
+    requirements:
+      [
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T20",
+        "AUDIT-20261003-T21",
+        "AUDIT-20261003-T22",
+        "AUDIT-20261003-T27",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/90.ANEXOS/0020_alinhamento_produto_pre_spec.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+      ]
+    code:
+      [
+        "packages/application/src/journey-use-cases.ts",
+        "packages/application/src/dashboard-use-cases.ts",
+        "apps/api/src/composition/http-rate-limiter.ts",
+        "apps/worker/src/loop.ts",
+        "packages/persistence/src/outbox-repository.ts",
+        "packages/application/src/session-expiry-policy.ts",
+        "packages/persistence/src/session-repository.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/journey-use-cases.test.ts",
+        "packages/application/src/dashboard-use-cases.test.ts",
+        "apps/api/src/http-boundary/curriculum.http.test.ts",
+        "apps/api/src/composition/http-rate-limiter.test.ts",
+        "tests/integration/postgres-worker-fencing.test.ts",
+        "packages/application/src/session-expiry-policy.test.ts",
+        "tests/integration/postgres-session-expiry.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-ratelimit-r6-independent-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-worker-r6-independent-verification.json",
+        ".agent/artifacts/remediation-20261003/journey-completion-r4-red-owned.log",
+        ".agent/artifacts/remediation-20261003/journey-completion-r4-permanent-green.log",
+        ".agent/artifacts/remediation-20261003/r7-session-ready-20261003-1.json",
+        ".agent/artifacts/remediation-20261003/r7-session-lead-build-live-checkpoint.json",
+      ]
+    commit: "uncommitted"
+    verification:
+      - "Independent scoped ACCEPT R5/worker/T20 verified by Lead; no global/provider/nativeT18 acceptance."
+      - "Journey R4 RED8/GREEN162, new fresh review pending. T27 source91PASS; actual PG proof underway only under validated technical checkpoint."
+      - "Strict root stale dist exports and official worker complexity failures preserved; no exclusions or budget increase."
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-R5-R6-CHECKPOINT"
+    requirements:
+      [
+        "AUDIT-20261003-T02",
+        "AUDIT-20261003-T03",
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T19",
+        "AUDIT-20261003-T20",
+        "AUDIT-20261003-T32",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+      ]
+    code:
+      [
+        "scripts/real-e2e-fixture-server.mjs",
+        "packages/application/src/journey-use-cases.ts",
+        "apps/web/app/authoring/page.tsx",
+        "apps/web/app/authoring/authoring-contracts.ts",
+        "scripts/run-coverage-with-provenance.mjs",
+        "apps/api/src/composition/http-rate-limiter.ts",
+        "apps/api/src/server.ts",
+      ]
+    tests:
+      [
+        "tests/e2e/real-runtime.spec.ts",
+        "packages/application/src/journey-use-cases.test.ts",
+        "apps/api/src/http-boundary/curriculum.http.test.ts",
+        "apps/web/tests/authoring.browser.test.tsx",
+        "tests/integration/curriculum-catalog.test.ts",
+        "tests/integration/coverage-provenance-producer.test.ts",
+        "apps/api/src/main-rate-limit.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      - ".agent/artifacts/remediation-20261003/r5-runtime-handoff-successor5-20261003-1.json"
+      - ".agent/artifacts/remediation-20261003/r5-runtime-lead-successor5-verification.json"
+      - ".agent/artifacts/remediation-20261003/lead-ci-r4-independent-verification.json"
+      - ".agent/artifacts/remediation-20261003/critic-ci-r4-report.md"
+      - ".agent/artifacts/remediation-20261003/journey-r3-independent-findings-red.log"
+      - ".agent/artifacts/remediation-20261003/journey-r3-critic-probes-regression-final.log"
+      - ".agent/artifacts/remediation-20261003/journey-r3-application-build.log"
+      - ".agent/artifacts/remediation-20261003/catalog-calendar-r3-green.log"
+      - ".agent/artifacts/remediation-20261003/authoring-r3-independent-findings-red.log"
+      - ".agent/artifacts/remediation-20261003/authoring-r3-independent-findings-green.log"
+      - ".agent/artifacts/remediation-20261003/coverage-ci-head-r5-red.log"
+      - ".agent/artifacts/remediation-20261003/coverage-ci-head-r5-green.log"
+      - ".agent/artifacts/remediation-20261003/r6-ratelimit-unit-green-20261003-2.log"
+    verification:
+      - "R5 actualCLI0/2PASS0skip0flaky,6PNG,PG18.4 roles separated,13deletabletables0/audit24retained until actualdestroy; controlled interval only, freshreview pending. Historical FAILs untouched."
+      - "CI critic REJECT6, independently verified26sources/45rawlogs/16artifacts/4probes; F05RED5/GREEN11, consumers/workflow pending."
+      - "Journey RED6/GREEN24 expanded201PASS1optionalnativePGSKIP; T32RED8/GREEN31; catalog30/60/90. T20syntheticHTTP58PASS, actualPG/Redis not yet proved. NativeT18NOT_PROVEN."
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-R2-HANDOFF"
+    requirements:
+      [
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T19",
+        "PRD-RF-025",
+        "PRD-RF-049",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0109_dados_e_persistencia.md",
+      ]
+    code:
+      [
+        "packages/curriculum/src/learning-runtime.ts",
+        "packages/curriculum/src/retention.ts",
+        "packages/curriculum/src/objective-results.ts",
+        "packages/curriculum/src/persisted-module-answer.ts",
+        "packages/contracts/src/learning.ts",
+        "packages/application/src/curriculum-runtime-use-cases.ts",
+        "packages/application/src/dashboard-use-cases.ts",
+        "packages/application/src/journey-use-cases.ts",
+        "packages/persistence/src/curriculum-runtime-repository.ts",
+        "apps/api/src/features/curriculum/curriculum.handler.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/journey-use-cases.test.ts",
+        "packages/application/src/curriculum-runtime-use-cases.test.ts",
+        "packages/curriculum/src/retention.test.ts",
+        "packages/curriculum/src/persisted-module-answer.test.ts",
+        "tests/integration/curriculum-runtime.test.ts",
+        "apps/api/src/http-boundary/curriculum.http.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/r2-curriculum-handoff.json",
+        ".agent/artifacts/remediation-20261003/r2-curriculum-lead-handoff-verification.json",
+        ".agent/artifacts/remediation-20261003/r2-curriculum-native-binding-contract.md",
+        ".agent/artifacts/remediation-20261003/r2-curriculum-handoff-coverage.log",
+        ".agent/artifacts/remediation-20261003/r2-curriculum-final-postgres.log",
+        ".agent/artifacts/remediation-20261003/journey-partial-mastery-red.log",
+        ".agent/artifacts/remediation-20261003/journey-partial-mastery-green.log",
+        ".agent/artifacts/remediation-20261003/critic-curriculum-r2-report.md",
+        ".agent/artifacts/remediation-20261003/critic-curriculum-r2-sentinel.json",
+        ".agent/artifacts/remediation-20261003/lead-independent-reviews-r2-verification.json",
+        ".agent/plans/2026-10-03-native-attempt-evaluation.md",
+      ]
+    verification:
+      [
+        "Lead independently matched40 hashes; actual final11 files/117PASS including six new journey cases. Nine owned executable files91.26lines/87.46branches/93.93functions, decoder100all.",
+        "Journey partial mastery RED6/GREEN17; exact authorized activity/human correction precedes retention, no invented target.",
+        "GenuinePG18.4 storage/version/RLS/missingbinding denial1PASS/0SKIP; nativePublishedAttemptEvaluation NOT_PROVEN. Published metadata/atomic start/immutable keys/fenced read-save/main/realPGnative remain mandatory; technical plan prepared, no schema applied.",
+        "Fresh R2 critic accepted domain/dashboard T17, trusted reader contract T18 and synthetic retention T19; REJECT three journey defects and stale catalog calendar assertion. Independent190PASS/4FAIL/1nativePGSKIP; Lead verified30 pre/post/current hashes. Historical117PASS does not replace current failures.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-NATIVE-PRODUCERS"
+    requirements:
+      [
+        "AUDIT-20261003-T02",
+        "AUDIT-20261003-T03",
+        "AUDIT-20261003-T10",
+        "AUDIT-20261003-T12",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+      ]
+    code:
+      [
+        "playwright.config.ts",
+        "scripts/run-coverage-with-provenance.mjs",
+        "scripts/native-evidence-measurement.mjs",
+        "scripts/run-staging.mjs",
+        "scripts/run-ratelimit-live.mjs",
+        "package.json",
+      ]
+    tests:
+      [
+        "tests/integration/e2e-profile-selection.test.ts",
+        "tests/integration/coverage-provenance-producer.test.ts",
+        "tests/integration/native-evidence-producer.test.ts",
+        "tests/integration/ratelimit-live-execution-contract.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/e2e-profile-selection-red-isolated.log",
+        ".agent/artifacts/remediation-20261003/e2e-profile-selection-green.log",
+        ".agent/artifacts/remediation-20261003/coverage-producer-wiring-red.log",
+        ".agent/artifacts/remediation-20261003/coverage-producer-wiring-green.log",
+        ".agent/artifacts/remediation-20261003/native-producer-wiring-red.log",
+        ".agent/artifacts/remediation-20261003/native-producer-green.log",
+        ".agent/artifacts/remediation-20261003/native-producer-static-verified.log",
+        ".agent/artifacts/remediation-20261003/r5-runtime-red-2026-10-03T14-44-37-721Z-12c9f97c-summary.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T14-45-32-374Z-38033f68-summary.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-failed-green-teardown-20261003-1.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-repair-exit-contract-20261003-1.log",
+        ".agent/artifacts/remediation-20261003/r5-runtime-repair-baked-output-reuse-20261003-1.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-07-51-443Z-d34fa66c-summary.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-07-51-443Z-d34fa66c-cleanup.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-07-51-443Z-d34fa66c-teardown.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-15-29-392Z-52db6618-summary.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-15-29-392Z-52db6618-cleanup.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-15-29-392Z-52db6618-teardown.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-23-12-478Z-af258458-summary.json",
+        ".agent/artifacts/remediation-20261003/r5-runtime-green-2026-10-03T15-30-44-202Z-b1e4b3bd-summary.json",
+      ]
+    verification:
+      [
+        "Real/staging CLI selection semanticRED2/GREEN3; no fake proxycookie. Real R5 RED fullbuild0/PG18.4 reproduced missing staff; first GREEN participant1PASS/staff1FAIL/0skip and cleanupFAILED preserved. Later directory/port absence does not relabel cleanup. Owned harness repairs checked; successor runtime pending.",
+        "Official coverage wiring RED1/GREEN6; original raw/normalized digests/time/CI bound. Native wiring RED2; combined producer/rate contracts22PASS, lint and strict rootPASS.",
+        "Git fixture contracts are synthetic tests of the producer boundary, not actual coverage/load/OTel/Redis evidence. Dirty/nogit/changedHEAD has sha:null/NOT_VERIFIED provenance; final promotion rejects diagnostics.",
+        "R5 successor1 FAIL retained: participant1PASS/staff1FAIL/0skip, actualCLI1, pre/post identities stable. Cleanup deletable0/immutableaudit14 retained until cluster destruction; directory/ports teardownPASS. Set-Cookie observation now allHeaders per installed SDK, assertions preserved; successor2 not executed at this record.",
+        "R5 successor2 FAIL retained: staff real invitation/cookie/session/scopes/dashboard/UI core passed then networkidle screenshot wait timedout30s. Participant1PASS/staff1FAIL/0skip, CLI1, identities stable, deletablecleanup0/immutableaudit15 and teardownPASS. Staff PNG/deny/revoke NOT_EXECUTED, spec-only paint readiness repair authorized before successor3.",
+        "R5 successor3 FAIL retained: staff core/six painted PNGs, foreignscope403, participant internal/report403/dashboardkind200 and redirect passed. Spec wrongly expected anonymous invitation form on authenticated participant landing. Revocation/final staffproof NOT_EXECUTED; spec-only landing repair authorized, deny gates unchanged, cleanup/teardownPASS.",
+        "R5 successor4 FAIL retained: authenticated landing verified, additional GET typo sessions/current returned404; singular literal repair only, assertions retained. Participant1PASS/staff1FAIL/0skip CLI1 identities stable, deletablecleanup0/audit19 immutable and teardownPASS; revoked/finalstaffproof NOT_EXECUTED.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-T11"
+    requirements: ["AUDIT-20261003-T11", "AGENTS.md#Estado e continuidade"]
+    documents:
+      [
+        "docs/00_current_index.md",
+        "docs/current-index.json",
+        "docs/99_runtime_state.md",
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/05.AGENT_LOOP-SESSION_PERSISTENCE/0501_runtime_state_contract.md",
+      ]
+    code: ["scripts/current-continuity.mjs", "scripts/verify-documentation.mjs"]
+    tests:
+      [
+        "tests/integration/current-continuity.test.ts",
+        "tests/integration/documentation-governance.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/current-continuity-red.log",
+        ".agent/artifacts/remediation-20261003/current-continuity-green-hardened.log",
+        ".agent/artifacts/remediation-20261003/current-continuity-gates-initial.log",
+        ".agent/artifacts/remediation-20261003/critic-continuity-receipt-r1-report.md",
+        ".agent/artifacts/remediation-20261003/critic-continuity-receipt-r1-sentinel.json",
+        ".agent/artifacts/remediation-20261003/current-continuity-r2-red.log",
+        ".agent/artifacts/remediation-20261003/current-continuity-r2-green.log",
+        ".agent/artifacts/remediation-20261003/critic-continuity-receipt-r2-independent-report.md",
+        ".agent/artifacts/remediation-20261003/critic-continuity-receipt-r2-independent-sentinel.json",
+        ".agent/artifacts/remediation-20261003/lead-independent-reviews-r2-verification.json",
+      ]
+    verification:
+      [
+        "RED 7 failures/1 pass; GREEN 12/12 across current and historical documentation contracts.",
+        "Only unique first prevalent checkpoint supplies current fields; historical report/manifest and frozen quality bar digests remain pinned.",
+        "Documentation, traceability, audit-consistency, secrets and diff-check passed locally before fresh scoped review.",
+        "Previous independent REJECT coherent rehash and impossible February30 corrected RED4/GREEN16. Fresh R2 critic T11 ACCEPT:21 independent probes plus16 canonical; Lead verified16 pre/post/current hashes. T11 completed scoped; same-UID G03 and candidate G05 remain separate. Historical failures preserved.",
+      ]
+    status: "completed_scoped"
+  - id: "EXEC-AUDIT-20261003-QUALITY-DATA"
+    requirements:
+      [
+        "AUDIT-20261003-T01",
+        "AUDIT-20261003-T06",
+        "AUDIT-20261003-T08",
+        "AUDIT-20261003-T12",
+        "AUDIT-20261003-T25",
+        "AUDIT-20261003-T26",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+      ]
+    code:
+      [
+        "packages/application/src/content-use-cases.ts",
+        "packages/integrations/src/ai.ts",
+        "scripts/run-ratelimit-live.mjs",
+        "tsconfig.tests.json",
+        "package.json",
+        "pnpm-lock.yaml",
+      ]
+    tests:
+      [
+        "apps/api/src/http-boundary/content-conflict.http.test.ts",
+        "tests/integration/postgres-content-conflict.test.ts",
+        "packages/integrations/src/ai-wrapped-errors.test.ts",
+        "tests/integration/postgres-authoring-workflow.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/r1-tests-handoff.json",
+        ".agent/artifacts/remediation-20261003/dependency-audit-green.json",
+        ".agent/artifacts/remediation-20261003/dependency-audit-production-green.json",
+        ".agent/artifacts/remediation-20261003/dependency-harness-regression.log",
+        ".agent/artifacts/remediation-20261003/content-conflict-red.log",
+        ".agent/artifacts/remediation-20261003/content-conflict-green-current-build.log",
+        ".agent/artifacts/remediation-20261003/content-conflict-green-postgres.json",
+        ".agent/artifacts/remediation-20261003/ai-classification-red.log",
+        ".agent/artifacts/remediation-20261003/ai-classification-green.log",
+      ]
+    verification:
+      [
+        "T01 final real PG18.4 2/2 no skips; root test strict 75/75 at handoff; focused88pass/1optionalrestoreskip.",
+        "T06 dependency audits zero; harness regression41/41 and actual Stryker CLI smoke.",
+        "T25 CAS mapped to public409; unknownerror500 remainsredacted; rebuilt HTTP22/22; realPGconcurrency1/1 exactly oneevent/audit.",
+        "T26 wrapped timeout/network/abort RED5/GREEN32; bounded cause chain and permanentstatus priority.",
+        "All evidence is scoped local; full current integrated build/typecheck/live tests and freshcritics remain pending. T12 actual missingRedisNOT_EXECUTED/exit2, no Redisacceptance.",
+      ]
+    status: "in_progress"
+  - id: "EXEC-AUDIT-20261003-R1"
+    requirements:
+      [
+        "user request implement all roadmap/backlog improvements",
+        "AUDIT-20261003-T13",
+        "AUDIT-20261003-T14",
+        "AUDIT-20261003-T15",
+        "AUDIT-20261003-T16",
+        "AUDIT-20261003-T32",
+        "AUDIT-20261003-T33",
+        "AGENTS.md#BUILD",
+      ]
+    documents:
+      [
+        "docs/60_roadmap_repository_remediation_2026-10-03.md",
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0114_superficie_web_spa_e_acessibilidade.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "packages/application/src/idempotency-fingerprint.ts",
+        "packages/application/src/answer-use-cases.ts",
+        "packages/application/src/attempt-use-cases.ts",
+        "packages/application/src/participant-attempt-read.ts",
+        "packages/application/src/session.ts",
+        "packages/persistence/src/participant-attempt-read-repository.ts",
+        "packages/persistence/src/session-repository.ts",
+        "packages/contracts/src/internal-context.ts",
+        "apps/api/src/main.ts",
+        "apps/api/src/features/attempts/attempts.handler.ts",
+        "apps/api/src/features/session/session.handler.ts",
+        "apps/web/app/page.tsx",
+        "apps/web/app/participant-answer-list.tsx",
+        "apps/web/app/participant-contracts.ts",
+        "apps/web/app/globals.css",
+        "apps/api/src/composition/session-principal.ts",
+        "packages/persistence/src/authoring/commit-review.ts",
+        "apps/web/app/authoring/draft-recovery.ts",
+        "apps/web/app/authoring/page.tsx",
+        "apps/web/app/authoring/authoring-contracts.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/answer-use-cases.test.ts",
+        "packages/application/src/attempt-use-cases.test.ts",
+        "packages/application/src/participant-attempt-read.test.ts",
+        "packages/application/src/session.test.ts",
+        "apps/api/src/http-boundary/attempt-replay.http.test.ts",
+        "apps/api/src/http-boundary/attempt-read.http.test.ts",
+        "apps/api/src/http-boundary/session.http.test.ts",
+        "packages/contracts/src/internal-context.test.ts",
+        "packages/persistence/src/session-repository.test.ts",
+        "apps/web/tests/participant-access.browser.test.tsx",
+        "apps/web/tests/authoring.browser.test.tsx",
+        "tests/integration/postgres-answer-session.test.ts",
+        "tests/integration/postgres-attempt-repository.test.ts",
+        "tests/e2e/real-runtime.spec.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/plans/2026-10-03-remediation-quality-bar.json",
+        ".agent/artifacts/remediation-20261003/preflight.json",
+        ".agent/artifacts/remediation-20261003/replay-real-e2e.json",
+        ".agent/artifacts/remediation-20261003/authoring-report.json",
+        ".agent/artifacts/remediation-20261003/authoring-binding-green.log",
+        ".agent/artifacts/remediation-20261003/authoring-binding-production-red.log",
+        ".agent/artifacts/remediation-20261003/authoring-binding-production-green.log",
+        ".agent/artifacts/remediation-20261003/replay-postgres.log",
+        ".agent/artifacts/remediation-20261003/critic-core-r1-report.md",
+        ".agent/artifacts/remediation-20261003/lead-shared-fixtures-and-authoring-receipt.json",
+        ".agent/artifacts/remediation-20261003/critic-continuity-receipt-r2-independent-report.md",
+        ".agent/artifacts/remediation-20261003/critic-continuity-receipt-r2-independent-sentinel.json",
+      ]
+    verification:
+      [
+        "Replay TDD RED 4 failures, GREEN 20; legacy persisted timestamps remain compatible while changed semantic payload conflicts.",
+        "HTTP save/submit with advanced server clock passed; browser lost-response retry and dirty-submission passed.",
+        "Authorized attempt GET and snapshot ownership tests passed; browser choice/text rehydration and recovery preserve dirty edits (15/15).",
+        "Disposable browser-to-API-to-PostgreSQL E2E 1/1 passed concurrent save/submit, committed response loss, stable client retry and reload with 2 outbox events.",
+        "Authoring builder reports 24/24; server identity/session binding added with RED 3 failures/GREEN 24 focal unit/contract/HTTP tests.",
+        "Production authenticateSessionCookie omitted the internal session binding; RED 2/GREEN 27 covers propagation and rotation. Public current-session projection omits internal identity.",
+        "Historical PG focal 4/4 and real E2E1/1 passed; corecritic now requires source/build/dependency identity on new realproof. Clinicalhold preserved.",
+        "Corecritic REJECT T32 actual reducedreceipt; canonical RED1/23pass, correctedbrowserGREEN25/25 with privatefield negatives and retainedack afterqueuefailure. Static focal checks passed; freshreview pending.",
+        "Fresh R2 T32 REJECT: non-2xx success envelope accepted, missing rationale accepted, impossible February30 accepted. Canonical25 browser/83 web/14 API pass but seven independent negative assertions fail; repair and new review required. HTTP/PG current proof NOT_RUN.",
+      ]
+    status: "in_progress"
+    limitations:
+      [
+        "Local synthetic evidence only; no production, remote CI or clinical publication acceptance.",
+        "Full 44-task objective remains active; this record does not close the sprint or overall plan.",
+      ]
+  - id: "EXEC-AUDIT-20261003-CI"
+    requirements:
+      [
+        "AUDIT-20261003-T03",
+        "AUDIT-20261003-T04",
+        "AUDIT-20261003-T05",
+        "AUDIT-20261003-T09",
+        "AUDIT-20261003-T10",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "docs/99_runtime_state.md",
+      ]
+    code:
+      [
+        "scripts/evidence-freshness.mjs",
+        "scripts/verify-aaa-candidate.mjs",
+        "scripts/verify-triple-aaa.mjs",
+        "scripts/same-sha.mjs",
+        "scripts/verify-same-sha.mjs",
+        "scripts/write-security-summary.mjs",
+        ".github/workflows/candidate.yml",
+      ]
+    tests:
+      [
+        "tests/integration/triple-aaa-verifier.test.ts",
+        "tests/integration/same-sha-contract.test.ts",
+        "tests/integration/evidence-freshness.test.ts",
+        "tests/integration/security-summary.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/gates-ci-evidence-handoff.json",
+        ".agent/artifacts/remediation-20261003/critic-ci-ar03-report.md",
+        ".agent/artifacts/remediation-20261003/critic-ci-ar03-evidence.json",
+        ".agent/artifacts/remediation-20261003/critic-ci-r2-report.md",
+        ".agent/artifacts/remediation-20261003/critic-ci-r3-report.md",
+        ".agent/artifacts/remediation-20261003/critic-ci-r3-sentinel.json",
+        ".agent/artifacts/remediation-20261003/r4-ci-checkpoint-before-r5-runtime-proof.json",
+        ".agent/artifacts/remediation-20261003/r4-ci-worker-fixture-transfer.json",
+        ".agent/artifacts/remediation-20261003/lead-worker-fixture-typing-green.log",
+      ]
+    verification:
+      [
+        "Builder RED/GREEN 70 focused tests; independent fresh critic I1 fork=false returned REJECT with an unchanged 11-file sentinel independently verified by Lead.",
+        "CI R3 fresh REJECT after151passingfocaltests; Lead verified18pre=post=current hashes beforeR4. T04/T09/T08CIstrict accepted locally; stalecoverage reidentification, executingrun binding, strictphase/auth/provenance and incompletesummaries/auditreadiness still need fixes. RemoteNOT_RUN/G08.",
+        "CI R4 checkpoint205/205 with strict/lint/format/secrets/diff scopedPASS; Lead checked64 hashes,15 sources frozen and owner processes settled. Fresh review pending; remoteCI NOT_RUN. Authorized worker fixture annotation only: official production/web/root typecheck0 and worker3/3; other seven worker sources unchanged, realPG/fencing/review pending.",
+      ]
+    status: "in_progress"
+  - id: "PLAN-AUDIT-20261003"
+    requirements:
+      [
+        "user request roadmap/backlog 2026-10-03",
+        "AGENTS.md#BUILD",
+        "AUDIT-REPOSITORY-20261003 A01-A34",
+      ]
+    documents:
+      [
+        "docs/60_roadmap_repository_remediation_2026-10-03.md",
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code: []
+    tests: []
+    commit: "uncommitted"
+    artifacts:
+      [
+        "docs/60_roadmap_repository_remediation_2026-10-03.md",
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "docs/audits/repository-remediation-plan-2026-10-03-validation.json",
+      ]
+    verification:
+      [
+        "Planning delivery only: 34 finding tasks T01-T34 and 10 continuity/validation tasks G01-G10; each finding A01-A34 mapped once to its principal task; seven phases R0-R6, twelve work sprints plus preflight S0.",
+        "All task definitions include origin, role owner, scope, paths, approach, dependencies, tests and acceptance; shared TDD/review/security/evidence/rollback rules apply. Local code work was not started.",
+        "Documentation/traceability/audit-consistency, secrets, diff, Markdown links, task coverage and dependency validation recorded in the planning validation artifact; original audit manifest is preserved as a historical snapshot.",
+      ]
+    status: "documented"
+  - id: "AUDIT-REPOSITORY-20261003"
+    requirements: ["AGENTS.md#AUDIT", "user request 2026-10-03"]
+    documents:
+      [
+        "docs/audits/repository-audit-2026-10-03.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        "apps/api/src/features/attempts/attempts.handler.ts",
+        "packages/application/src/answer-use-cases.ts",
+        "packages/application/src/attempt-use-cases.ts",
+        "packages/curriculum/src/learning-runtime.ts",
+        "apps/worker/src/handlers.ts",
+        "scripts/evidence-freshness.mjs",
+        "scripts/verify-triple-aaa.mjs",
+        ".github/workflows/candidate.yml",
+        "playwright.config.ts",
+      ]
+    tests:
+      [
+        "tests/integration/postgres-authoring-workflow.test.ts",
+        "tests/integration/postgres-content-workflow.test.ts",
+        "tests/integration/rls-full-matrix.test.ts",
+        "tests/integration/ratelimit-redis-live.test.ts",
+        "tests/integration/ratelimit-redis-restart.test.ts",
+        "tests/e2e/real-runtime.spec.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        "docs/audits/repository-audit-2026-10-03.md",
+        "docs/audits/repository-audit-2026-10-03-evidence/docs-inventory.json",
+        "docs/audits/repository-audit-2026-10-03-evidence/audit-manifest.json",
+      ]
+    verification:
+      [
+        "Local repository audit at HEAD 3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff plus preexisting dirty worktree; 85 docs, 40445 lines inventoried and reviewed; no production code edits, commits, push or deployment.",
+        "Node 22.23.2/pnpm 10.33.0: full coverage 1571 passed/69 skipped, 217 passed files, 90.03/85.31/94.71/91.24; coverage-floor PASS (174 included/212 excluded).",
+        "PostgreSQL 18.4 disposable provisioned integration: 245 passed, 2 failed, 16 skipped; RLS full matrix PASS. PostgreSQL 16 synthetic restore 0053 to 0054 PASS; duration is not operational RTO.",
+        "Mocked E2E 45/45 PASS; full real-mode E2E 30 passed/16 failed, with the single real participant journey PASS; mixed staff authentication fixtures remain incompatible.",
+        "Redis 7.0.15 disposable live 5/5 and restart 2/2 PASS; the initial no-binary exit-0 SKIP is NOT_EXECUTED, not evidence of success.",
+        "Global dependency audit reports 4 high and 3 moderate dev-tool advisory occurrences; production-only audit reports zero. Complexity FAIL with three budget violations; evidence consistency FAIL without current mutation run ID; AAA candidate FAIL and Triple AAA REVISE.",
+        "Controlled adapter reproductions confirm timestamp-dependent replay conflicts, wrapped AI timeout misclassification, digital mastery with two unanswered open items, retention 7/30/90, withdraw-before-delayed-upsert ordering and content concurrency mapped to HTTP 500. No real Qdrant/AI provider used.",
+        "Freshness helper reproduced fresh=true at HEAD with 69 tracked runtime paths modified. Static findings and unexecuted operational/remote/clinical evidence are explicitly distinguished in report A01-A34.",
+      ]
+    status: "reviewed-with-gaps"
+  - id: "AUDIT-REPOSITORY-STATIC-20261001"
+    requirements: ["AGENTS.md#AUDIT", "user request 2026-10-01"]
+    documents:
+      [
+        "docs/audits/repository-audit-2026-10-01.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        ".github/workflows/candidate.yml",
+        "scripts/verify-mutation-closure.mjs",
+        "scripts/verify-mutation-critical.mjs",
+        "vitest.config.ts",
+        "playwright.config.ts",
+        "packages/domain/src/assessment-policy.ts",
+        "packages/application/src/attempt-use-cases.ts",
+      ]
+    tests:
+      [
+        "tests/integration/mutation-harness.test.ts",
+        "tests/integration/mutation-harness-candidate.test.ts",
+        "tests/e2e/real-runtime.spec.ts",
+      ]
+    commit: "uncommitted"
+    artifacts: ["docs/audits/repository-audit-2026-10-01.md"]
+    verification:
+      [
+        "Static inspection only at HEAD 3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff plus dirty worktree; git diff --check passed; test, build, lint, typecheck, live runtime and remote CI were not executed",
+        "Historical pnpm verify entry from 2026-09-17 retained as historical evidence only",
+      ]
+    status: "reviewed-with-gaps"
+  - id: "AUDIT-REMEDIATION-PLAN-20261001"
+    requirements:
+      [
+        "docs/audits/repository-audit-2026-10-01.md",
+        "AGENTS.md#AUDIT",
+        "AGENTS.md#Estado-e-continuidade",
+      ]
+    documents:
+      [
+        "BRIEFING/03.BUILD/0300_build_engineer_master.md",
+        "BRIEFING/03.BUILD/0301_roadmap.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "docs/58_roadmap_repository_remediation_2026-10-01.md",
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+        "docs/56_roadmap_state_of_art.md",
+        "docs/57_backlog_state_of_art.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+      ]
+    code:
+      [
+        ".github/workflows/candidate.yml",
+        "scripts/verify-mutation-closure.mjs",
+        "scripts/verify-mutation-critical.mjs",
+        "vitest.config.ts",
+        "playwright.config.ts",
+        "packages/domain/src/assessment-policy.ts",
+        "packages/application/src/attempt-use-cases.ts",
+        "docs/operations/disaster-recovery.md",
+      ]
+    tests:
+      [
+        "Planned RED/GREEN and verification criteria are listed per task in docs/59; none were executed in this planning step",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        "docs/58_roadmap_repository_remediation_2026-10-01.md",
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+      ]
+    verification:
+      [
+        "Planning crosswalk covers nine findings and all 28 scored dimensions; implementation and runtime evidence remain pending",
+      ]
+    status: "planned"
+  - id: "AUDIT-REM-06-CONTRACT-DECISION-20261002"
+    requirements:
+      [
+        "PRD UC-006, RF-041/RF-043–047, RN-020–022/RN-026–029",
+        "SPEC 0104/0106/0107",
+        "AUDIT-20261001-06",
+      ]
+    documents:
+      [
+        "docs/decisions/2026-10-02-rem06-summative-eligibility.md",
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-10-01-repository-remediation-execution.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0104_modelo_de_dominio.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0107_contratos_de_api.md",
+      ]
+    code:
+      [
+        "packages/domain/src/assessment-policy.ts",
+        "packages/domain/src/attempt.ts",
+        "packages/application/src/attempt-use-cases.ts",
+        "packages/contracts/src/assessment.ts",
+      ]
+    tests: []
+    commit: "uncommitted"
+    artifacts: ["docs/decisions/2026-10-02-rem06-summative-eligibility.md"]
+    verification:
+      [
+        "Static trace confirmed that approved PRD defines the trigger/rules but SPEC and runtime do not define authoritative modality, frozen assessment version, module eligibility, item selection or summative history at StartAttempt. No product source or contract changed while approval is pending.",
+      ]
+    status: "waiting-human-approval"
+  - id: "AUDIT-REM-07B-RPO-RTO-RECONCILIATION-20261002"
+    requirements: ["RNF-015", "D-107", "AAA-001", "AUDIT-20261001-07"]
+    documents:
+      [
+        "docs/45_aaa001_decision_packet.md",
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "docs/operations/slo.md",
+        "docs/operations/disaster-recovery.md",
+        "docs/runbooks/database-down.md",
+        "docs/runbooks/restore-database.md",
+        "BRIEFING/08.RUNTIME/0802_deploy_health_recovery.md",
+        "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md",
+        ".agent/plans/2026-10-01-repository-remediation-execution.md",
+      ]
+    code: []
+    tests: []
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation/rem-07b-rpo-rto-reconciliation-20261002.md",
+      ]
+    verification:
+      [
+        "Cross-references consistently retain RNF-015/D-107 RPO ≤1h and RTO ≤4h as normative, label AAA-001 D3 RPO ≤24h as proposed, and keep operational/production acceptance gated. No live restore or operational target claim was made.",
+      ]
+    status: "completed-local-documentation"
+  - id: "AUDIT-REM-09-RESTORE-MIGRATION-CONTRACT-20261002"
+    requirements: ["AUDIT-20261001-09", "SOA-12", "SOA-37", "SPEC-0109"]
+    documents:
+      [
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+        "docs/operations/disaster-recovery.md",
+        "docs/runbooks/restore-database.md",
+        "docs/runbooks/database-down.md",
+        "BRIEFING/08.RUNTIME/0802_deploy_health_recovery.md",
+        "BRIEFING/08.RUNTIME/0804_observability_operational_contract.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/51_codex_master_prompt_triple_aaa_verdict_machine.md",
+        "docs/53_codex_master_prompt_final_certification.md",
+        "docs/54_codex_master_prompt_certification_matrix_gates.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        ".agent/plans/2026-10-01-repository-remediation-execution.md",
+      ]
+    code:
+      [
+        "scripts/restore-migration-compatibility.mjs",
+        "scripts/restore-integrity-contract.mjs",
+        "scripts/restore-policy-contract.mjs",
+        "scripts/restore-tool-runner.mjs",
+        "scripts/provision-ci-postgres.mjs",
+        "scripts/verify-restore-migrations.mjs",
+        "scripts/verify-postgres-restore.mjs",
+        "scripts/verify-migrations.mjs",
+        "scripts/write-restore-summary.mjs",
+        "scripts/restore-summary-contract.mjs",
+        "scripts/verify-triple-aaa.mjs",
+        "drizzle.config.ts",
+        "packages/persistence/drizzle/meta/_journal.json",
+      ]
+    tests:
+      [
+        "tests/integration/restore-migrations.test.ts",
+        "tests/integration/restore-policy-contract.test.ts",
+        "tests/integration/migration-governance.test.ts",
+        "tests/integration/postgres-restore.test.ts",
+        "tests/integration/triple-aaa-verifier.test.ts",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation/rem-09-restore-migration-contract-20261002.md",
+      ]
+    verification:
+      [
+        "Static review found that the no-external-source local smoke applies all repository migrations to a disposable PostgreSQL 16 source and then verifies a same-head dump/restore marker. The migration verifier checks the repository SQL/journal manifest only. Historical-snapshot migration, owner/grants/RLS validation and a live drill remain unproven.",
+        "RED reproduced the legacy/duration cases and, after a fresh review, missing/stale SHA and unverified/unisolated restore evidence. The v2 producer helper and strict consumer passed the full focused Triple AAA integration suite (35/35). After final gate additions, typecheck, focused ESLint, Prettier, secret scan, documentation, traceability, audit/product-definition consistency, script syntax and git diff --check passed. No PostgreSQL live restore ran.",
+        "A second fresh review found one manual-checklist P2 in docs/53; its acceptance criteria now match the executable v2 gate for format, SHA, status, marker, isolation, integrity and duration. Documentation, traceability, Prettier and diff checks passed after this alignment; the final independent review is pending.",
+        "The third review found G45 omitted the explicit PASS condition; the matrix row now includes it, and verify:documentation, verify:traceability, Prettier and git diff --check passed afterward. A final narrow fresh review is pending.",
+        "The next review required G45 to state that verificationDurationMs is a safe nonnegative integer and partial, not operational RTO. The row now says so; documentation, traceability, Prettier and diff checks passed. Final narrow review remains pending.",
+        "Final fresh critic returned PASS on docs/51, docs/53 and G45; the pre-review fingerprint matched exactly. This is a bounded documentation/contract PASS only; REM-09 still lacks historical migration and operational drill evidence.",
+        "A fresh review found P1 cluster-identity and P2 policy-contract gaps. The local drill now uses only a private Unix socket, checks PID/directory before DDL and requires inet_client_addr() IS NULL; the local summary writer delegates to that drill. Policy verification checks table, command, role, permissiveness and the full normalized catalog expression. RED reproduced NOT acceptance, split-EXISTS acceptance for ai_suggestions, and a status decoy for content_versions. GREEN requires status='PUBLICADO' on the protected content_versions row and binds content_id, version and published status inside the same ai_suggestions EXISTS; it rejects NOT, OR, CASE and non-allowlisted calls. PostgreSQL 16 opt-in migration/policy suite passed 7/7 under Node 22.23.2; direct drill PASS with targetIsolated=true, privateSocketVerified=true and verificationDurationMs=1664 for the full synthetic fixture. First fresh-context reviewer stayed running and closed without verdict; before/after fingerprints matched, no PASS inferred, another review pending. The checker preserves casts and only normalizes whitespace, punctuation and nonliteral case.",
+        "Follow-up RED/GREEN added offline custom-archive preflight before target creation: pg_restore --list and SQL extraction both pass for the valid PG16 dump, while a synthetic archive with a mutated magic header is rejected and pg_database confirms the target remains absent. The extraction file is removed on success/error. Under Node 22.23.2 the opt-in restore test passed 4/4, combined migration/policy suite 7/7, and direct drill PASS returned snapshotPreflightVerified=true, corruptSnapshotAbortVerified=true and verificationDurationMs=1730. Scope is synthetic header corruption only; schema-semantic incompatibility, authorized grants/constraints, migration-principal approval and operational RPO/RTO remain open. Fresh critic has no verdict; no Gauntlet rebaseline.",
+        "After the documentation and ledger sync, Node 22.23.2 typecheck, focal ESLint/Prettier, verify:documentation, verify:traceability, verify:audit-consistency, verify:product-definition, verify:migrations (55 through 0054), verify:secrets, node --check, JSON parse and git diff --check passed. The final focused opt-in migration/policy suite passed 7/7.",
+        "RED/GREEN added table-integrity catalog comparison between synthetic source 0053 and restored target after 0054 for content_versions and ai_suggestions: column type/nullability/identity/generated/default, every pg_constraint definition/validated flag, and pg_index unique/primary/valid/ready/definition. Restore test 4/4; combined migration/policy suite 7/7 under Node 22.23.2 with --no-cache, and SHA-256 of the pre-existing ignored Vitest results cache remained unchanged. Direct drill PASS: constraintsVerified=true, verificationDurationMs=1723. Full-database constraints, production grants, semantic backup compatibility and approved migration principal remain open; valid fresh critic still pending.",
+        "Fresh review C1 returned APPROVE but rewrote only ignored node_modules/.vite/.../results.json while running tests; the full fingerprint changed despite an unchanged Git diff, so the verdict is INVALID and the cache remains preserved. Fresh sealed C2 produced no verdict after about 150 seconds and was closed while running; its before/after fingerprint matched. No valid independent review or Gauntlet rebaseline. Next local slice compares cataloged validated constraints between synthetic source 0053 and restored content_versions/ai_suggestions; grants and migration-principal approval remain unresolved.",
+        "Final no-cache revalidation: restore-migrations 4/4 and combined migration/policy 7/7 under Node 22.23.2; the pre-existing ignored Vitest cache SHA remained 6013aaa8f1bb8d6ac472f678d1a2328e30c40de66b01d195c9a5656c48035ef8. Direct disposable PG16 drill PASS with snapshotPreflightVerified=true, corruptSnapshotAbortVerified=true, constraintsVerified=true and verificationDurationMs=1762. Constraint parity remains limited to content_versions and ai_suggestions; semantic backup compatibility, whole-database constraints, production grants, approved migration principal and operational RPO/RTO remain open. Fresh bounded review and official Gauntlet sync pending.",
+        "RED failed because the restore catalog comparator module did not exist. GREEN extracted restoreIntegrityCatalogMatches and connected it to the drill; tests reject changed column types, constraint/index definitions, missing table columns, unvalidated constraints and unusable indexes. Focused restore tests passed 6/6 with the PostgreSQL case skipped; final opt-in PG16 migration/policy suite passed 10/10. Direct drill PASS: constraintsVerified=true, snapshotPreflightVerified=true, corruptSnapshotAbortVerified=true, verificationDurationMs=1774. The ignored Vitest cache SHA remained 6013aaa8f1bb8d6ac472f678d1a2328e30c40de66b01d195c9a5656c48035ef8.",
+        "Fresh sealed critic C3 was closed after about 150 seconds without a verdict. Official complete fingerprint matched pre/post at 1175c8824ab98a2924e53d5c97764065a320118c81304cf41cbd5b540393b4c9; no review verdict or rebaseline was inferred. The structural mismatch oracle is limited to two synthetic content-table catalogs and does not establish compatibility of arbitrary archives; grants, whole-database checks and migration-principal approval remain open.",
+        "Fresh sealed C4 independently approved only the preceding structural-catalog/dependency delta; official full pre/post fingerprint matched at 38bdac60a9ef3aa8144d6369abe0fdf252141436c5719daeb388daf41629ce6b. It does not cover the later semantic-drift fixture and did not trigger a rebaseline.",
+        "RED reproduced the missing semanticSnapshotMismatchRejected result. GREEN creates a second valid custom archive by adding a synthetic column to content_versions while preserving the Drizzle journal through 0053; preflight, restore and 0054 pass, the catalog comparison against the pristine source rejects the drift. Opt-in restore-migrations passed 7/7 under Node 22.23.2; direct disposable PG16 drill PASS returned semanticSnapshotMismatchRejected=true and verificationDurationMs=2172. Fresh sealed C5 statically approved this exact delta with no findings; the complete official pre/post fingerprint matched at 673584d9c4ed3c2674a2fc53a6a99456212d899859ad840759fb541826c2a6da. The review ran no tests. This remains one controlled structural mismatch, not arbitrary or external archive compatibility, and does not establish global Gauntlet PASS.",
+      ]
+    status: "in-progress"
+  - id: "AUDIT-REM-08-CHECKPOINT-PROVENANCE-20261002"
+    requirements: ["AUDIT-20261001-08", "SOA-02", "SOA-06", "SOA-07", "SOA-39"]
+    documents:
+      [
+        "docs/55_executive_plan_state_of_art.md",
+        "docs/56_roadmap_state_of_art.md",
+        "docs/57_backlog_state_of_art.md",
+        "docs/58_roadmap_repository_remediation_2026-10-01.md",
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+        "docs/quality/scorecard.md",
+        "docs/audits/state-of-art-final-audit-v7.md",
+        "docs/audits/state-of-art-final-audit-v7.json",
+        ".agent/plans/2026-10-01-repository-remediation-execution.md",
+        ".orchestrate/repository-remediation-state.json",
+      ]
+    code: []
+    tests: []
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation/rem-08-provenance-reconciliation-20261002.md",
+      ]
+    verification:
+      [
+        "Scorecard v7 and its audit remain explicitly historical (candidate SHA 3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff; evidence SHA 14b97a8b7e257b49ffc6fbf97ea3e46a9b842e39); no new scorecard is emitted for the dirty worktree. Current C6 review returned REVISE P2 with matching official pre/post fingerprint; a bounded stderr-suppression follow-up passed its local tests and synthetic PostgreSQL 16 drill. Hashes and artifact origins are recorded in the provenance note; current candidate certification and human/remote gates remain open.",
+      ]
+    status: "in-progress"
+  - id: "AUDIT-REM-09-GRANT-DIAGNOSTIC-HARDENING-20261002"
+    requirements: ["AUDIT-20261001-09", "SOA-37", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+        "docs/runbooks/restore-database.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+      ]
+    code:
+      [
+        "scripts/restore-integrity-contract.mjs",
+        "scripts/restore-tool-runner.mjs",
+        "scripts/verify-restore-migrations.mjs",
+      ]
+    tests: ["tests/integration/restore-migrations.test.ts"]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/artifacts/remediation/rem-09-restore-migration-contract-20261002.md",
+      ]
+    verification:
+      [
+        "Fresh C6 returned REVISE P2 on possible psql stderr credential echo; the full pre/post fingerprint matched at 17f5373ca79eb7ffd36fb864427fc210a3dac4123a73f08da528a341fa9ef12a. A follow-up review by Kepler returned REVISE P2 because the first regression tested the formatter but not the call-site wiring; its full fingerprint matched at 02afceb869730af4291e3c5e9fff255a63521bc7652e736e36b552a2e7437455. RED reproduced the absent injectable runner; GREEN extracted the runner and role-provisioning command so the test injects psql stderr containing a synthetic password, exercises the production call path, and checks the propagated error/cause/argv. Malformed catalog-row cases remain covered. Node 22.23.2 focused restore-migrations passed 10/10 with one conditional live skip; opt-in restore/policy/governance passed 42/42; disposable PG16 drill passed with all flags and verificationDurationMs=2226. Review of this updated follow-up remains pending; production grants and migration principal are not covered.",
+        "After runner extraction, lint/typecheck/format, focal Prettier, documentation, traceability, audit-consistency, product-definition, exposure, CI contract, migrations, secrets, syntax, ledger JSON and diff-check passed. verify:evidence-consistency confirms coverage/audit but fails only for the missing genuine mutation run ID of a committed candidate.",
+        "The append-only log entries were restored to chronological order at EOF. Focal Prettier, verify:documentation, verify:traceability, verify:audit-consistency, ledger JSON parsing and git diff --check passed after that correction. These documentation checks used Node v24.20.0 outside the declared engine range; earlier implementation tests used Node 22.23.2. Fresh static review of the extracted runner/call-site remains pending.",
+        "C7 fresh static review returned REVISE P2 with matching official repository+state fingerprint 183b1b9810604a6187f7306d2138fb84004de40129febf940e7be8353e7b3807: identical malformed source/target schema catalogs could pass. RED reproduced it; GREEN validates row shapes/types, contract-listed tables and unique catalog keys. Restore/policy/migration-governance passed 42 tests with one conditional live skip; direct PG16 drill passed in 2192 ms; tsc -b, focused lint and format passed under Node 22.23.2. Fresh review of the corrected comparator remains pending.",
+        "Post-sync C7 verification under Node 22.23.2 passed 42 restore/policy/governance tests with one conditional live skip; full workspace lint/typecheck/format, Prettier and CI/secrets/traceability/migrations/product/exposure/documentation/audit-consistency gates passed. Direct PG16 drill passed with all flags in 3313 ms (partial technical interval, not RTO). New fresh review of the corrected catalog comparator is pending; no global rebaseline.",
+        "C8 fresh review returned REVISE P2 with matching official repository+state fingerprint cc3fd50ba26b1a3a41da59328e7c31f0de2917e0d0e54a5c46796e221dbf0041: an empty tableNames element could match empty catalog rows. RED reproduced it; GREEN requires each entry to be nonempty and tests identical source/target catalogs with an empty table name. Under Node 22.23.2, 43 restore/policy/governance tests passed with one conditional live skip; lint, typecheck, format and applicable docs/security/CI gates passed; PG16 drill passed in 2343 ms (partial, not RTO). C9 fresh review remains pending.",
+      ]
+    status: "in-progress"
+  - id: "SECURITY-PRODUCTION-DEPENDENCY-AUDIT-20261002"
+    requirements: ["SPEC-0118"]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0118_estrategia_de_testes_rastreabilidade_e_verificacao.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "BRIEFING/03.BUILD/0302_backlog_master.md",
+      ]
+    code: ["apps/web/package.json", "package.json", "pnpm-lock.yaml"]
+    tests: ["apps/web/tests/operations.browser.test.tsx", "pnpm audit --prod"]
+    commit: "uncommitted"
+    artifacts:
+      [".agent/artifacts/remediation/dependency-audit-remediation-20261002.md"]
+    verification:
+      [
+        "Production audit decreased from 11 advisories to zero after pinning next@16.3.6 and overriding undici@7.29.0 to 7.29.1. Full workspace lint/typecheck and web/integrations typechecks passed; operations browser tests passed 23/23; frozen-lockfile install and migration/secret gates passed. No production deployment or unrelated dependency claim.",
+      ]
+    status: "verified-local"
+  - id: "AUDIT-REM-02-BROWSER-COVERAGE-20261002"
+    requirements: ["AUDIT-20261001-02", "SOA-30", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/58_roadmap_repository_remediation_2026-10-01.md",
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        ".agent/plans/2026-10-01-repository-remediation-execution.md",
+      ]
+    code:
+      [
+        "package.json",
+        "pnpm-lock.yaml",
+        ".github/workflows/quality.yml",
+        ".github/workflows/candidate.yml",
+        "vitest.config.ts",
+        "scripts/verify-coverage-floor.mjs",
+        "apps/web/app/page.tsx",
+        "apps/web/app/recovery/page.tsx",
+        "apps/web/app/diagnostic/page.tsx",
+        "apps/web/app/authoring/page.tsx",
+        "apps/web/app/operations/page.tsx",
+      ]
+    tests:
+      [
+        "tests/integration/coverage-denominator.test.ts",
+        "apps/web/tests/participant-access.browser.test.tsx",
+        "apps/web/tests/recovery.browser.test.tsx",
+        "apps/web/tests/diagnostic.browser.test.tsx",
+        "apps/web/tests/authoring.browser.test.tsx",
+        "apps/web/tests/operations.browser.test.tsx",
+        "tests/e2e/visual-gauntlet.spec.ts",
+        "pnpm test:browser",
+        "pnpm test:coverage",
+        "pnpm verify:coverage-floor",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [".agent/artifacts/remediation/remediation-verification-20261002.md"]
+    verification:
+      [
+        "Browser suite PASS 39/39 across five files, including a restored active session with a synthetic SALVA reflection attempt and persisted response, answer update, submission, participant path/profile/diagnostic projections, and M01 runtime; prior authoring, participant feedback, Operations, recovery and diagnostic Browser cases remain covered.",
+        "Full coverage run: 215 files, 1521 passed, 68 skipped; 87.53/82.41/91.59/88.88 against unchanged 90/85/90/90 floors. Functions passes; statements, branches and lines remain red. Test execution passed; command exits 1 at the unchanged coverage gates; inventory remains 174 included/212 excluded.",
+        "Typecheck, focused browser ESLint, repository format check, focused Prettier for code/docs, secret scan, diff-check, traceability, documentation, audit-consistency, product-definition, exposure and CI contract passed under Node 22.23.2. Official Gauntlet rebaseline completed; validate --check-drift returned valid:true. Run remains ACTIVE/FIX_RETEST/STALE at seven rounds without a new critic or verdict. Same-UID threat-model decision remains pending.",
+        "verify:evidence-consistency fails closed because CVG_MUTATION_CANDIDATE_ID is unavailable; real Stryker producer remains pending a compatible committed candidate, with no synthetic run ID.",
+        "verify:coverage-floor confirms 174 included/212 excluded production sources; functions at 91.59% passes and statements 87.53%, branches 82.41%, lines 88.88% remain below their floors. The prior visual matrix PASS 11/11 is historical and was not rerun in this checkpoint.",
+        "Browser suite PASS 48/48 across five files, including a read-only scoped authoring queue, synthetic request-adjustments success and 403 denial with generic error/no false publication, CSV formula-injection sanitization with UTF-8 BOM, audit pagination/contract retry/401-403 redaction, confirmed account recovery, and scoped invitation resend; no production page or API source changed.",
+        "Current integrated coverage: 215 files, 1530 passed, 68 skipped; 88.52/84.15/92.56/89.89 against frozen 90/85/90/90 floors. Inventory remains 174 included/212 excluded. Functions passes; statements, branches and lines remain below floors.",
+        "Typecheck, focused ESLint and Prettier, repository format, traceability, documentation, audit-consistency, product-definition, exposure, CI contract, secrets, JSON and diff-check passed under Node 22.23.2. Coverage inventory confirms 174 included/212 excluded; evidence consistency validates the coverage summary but remains fail-closed because a real current mutation run ID from a compatible committed candidate is unavailable. Official Gauntlet rebaseline and validate --check-drift returned valid:true; the run remains ACTIVE/FIX_RETEST/STALE at seven rounds without a fresh critic. Same-UID human decision remains pending.",
+        "Browser suite PASS 57/57 across five files under Node 22.23.2, including synthetic remediation start guarded by the prioritized target and activity status, opening that target with deep-link update, activity and journey retry after transient 503 without backend-detail exposure, diagnostic current-session retry, denied impact preview, and feedback-ticket transition states.",
+        "Latest integrated coverage: 215 files, 1539 passed and 68 skipped in 36 skipped files; statements 89.04% (9583/10762), branches 84.65% (8482/10019), functions 92.82% (2109/2272), lines 90.43% (9151/10119), against frozen 90/85/90/90 floors. Inventory is 174 included/212 excluded; functions and lines pass, statements and branches remain below floors.",
+        "Typecheck, focused ESLint and Prettier passed. verify:coverage-floor confirms two remaining floor failures. verify:evidence-consistency validates coverage and fails closed only because no genuine mutation run ID from a compatible committed candidate is available. No production source, floor, or exclusion changed in this slice.",
+        "Documentation, traceability, audit-consistency, product-definition, exposure, CI contract, secrets, repository format, focused Prettier, orchestration JSON and diff-check passed. Official Gauntlet rebaseline completed; validate --check-drift returned valid:true. Run remains ACTIVE/FIX_RETEST/STALE at seven rounds without a fresh critic or new verdict.",
+        "Browser suite passed 61/61 across five files under Node 22.23.2, including malformed feedback-history JSON recovery, feedback status filtering and cursor next/previous navigation with previous-page status assertion. Typecheck, focused ESLint, Prettier and diff-check passed. Integrated coverage: 215 files; 1543 passed, 68 skipped; statements 90.03% (9690/10762), branches 85.31% (8548/10019), functions 94.71% (2152/2272), lines 91.24% (9233/10119). verify:coverage-floor PASS with 174 included/212 excluded. Fresh independent R05 review of the final bounded delta returned PASS with no P0-P2 findings. verify:evidence-consistency confirms coverage/audit consistency and fails one global gate because a genuine mutation run ID from a compatible committed candidate is unavailable. Official Gauntlet rebaseline and validate --check-drift returned valid:true; the broader run remains ACTIVE/FIX_RETEST/STALE at seven rounds with no global PASS. REM-02 is completed locally; no production source, floor or exclusion changed.",
+      ]
+    status: "implemented-verified"
+  - id: "SOA-20260917-CYCLES-SLO"
+    requirements: ["SPEC-0113", "SPEC-0118", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/55_executive_plan_state_of_art.md",
+        "docs/56_roadmap_state_of_art.md",
+        "docs/57_backlog_state_of_art.md",
+        "docs/operations/slo.md",
+      ]
+    code:
+      [
+        "scripts/verify-cycles.mjs",
+        "apps/api/src/http/contracts.ts",
+        "apps/api/src/server.ts",
+        "packages/curriculum/src/draft-contracts.ts",
+        "packages/persistence/src/persistence-errors.ts",
+        "packages/observability/src/observability.ts",
+        "packages/observability/src/operations.ts",
+      ]
+    tests:
+      [
+        "tests/integration/cycle-verifier.test.ts",
+        "apps/api/src/server.test.ts",
+        "packages/observability/src/observability.test.ts",
+        "packages/observability/src/operations.test.ts",
+        "pnpm verify",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      ["docs/57_backlog_state_of_art.md", "docs/20_master_execution_log.md"]
+    verification:
+      [
+        "RED cycle fixtures 2 failures then GREEN; corrected detector exposed source cycles, extracted leaf contracts without weakening graph; fresh critic REJECT then syntax parser and monotonic clock corrections; final review pending",
+        "Node22.23.2 verify PASS before review followups: 1416 tests and 68 skips, coverage 91.57/86.15/95.94/92.18; followup cycle tests 6/6 and server tests 18/18",
+        "2026-09-17 full pnpm verify exit 0 honest (no pipe): 207 files/1441 tests PASS, 36/68 skipped, coverage 91.57/86.15/95.94/92.18, Node 22.23.2/22.22.0 pnpm 10.33.0; A02 investigation: policy has no runtime consumers, StartAttempt lacks modality, wiring would invent product",
+      ]
+    status: "in_progress"
   - id: "GIT-PUBLISH-AAA-V6-20260911"
     requirements: ["SPEC-0118", "D-110", "AGENTS-TDD"]
     documents:
@@ -1313,6 +2926,7 @@ artifacts:
         "docs/99_runtime_state.md",
         "docs/20_master_execution_log.md",
         "docs/30_backlog_master.md",
+        "docs/runbooks/restore-database.md",
       ]
     code:
       [
@@ -1323,6 +2937,10 @@ artifacts:
         "packages/observability/src/observability.ts",
         "packages/observability/src/operations.ts",
         "scripts/verify-postgres-restore.mjs",
+        "scripts/restore-migration-compatibility.mjs",
+        "scripts/restore-policy-contract.mjs",
+        "scripts/verify-restore-migrations.mjs",
+        "scripts/write-restore-summary.mjs",
       ]
     tests:
       [
@@ -1333,6 +2951,8 @@ artifacts:
         "packages/observability/src/operations.test.ts",
         "tests/integration/api-health.test.ts",
         "tests/integration/postgres-restore.test.ts",
+        "tests/integration/restore-migrations.test.ts",
+        "tests/integration/restore-policy-contract.test.ts",
       ]
     verification:
       [
@@ -1343,6 +2963,12 @@ artifacts:
         "pnpm test:e2e",
         "CVG_RUN_LIVE_DB_TESTS=true CVG_RUN_LIVE_QDRANT_TESTS=true pnpm test:integration",
         "CVG_RUN_LIVE_RESTORE_TESTS=true pnpm vitest run tests/integration/postgres-restore.test.ts --project integration",
+        "pnpm verify:restore-migrations",
+        "CVG_RUN_RESTORE_MIGRATION_DRILL=true pnpm exec vitest run --project integration tests/integration/restore-migrations.test.ts",
+        "Historical PG16 fixture: 0053 restore → 0054 applied as NOSUPERUSER NOBYPASSRLS; marker, Drizzle prefix/head, four policies, forced RLS and content table owners verified; 4/4 tests passed.",
+        "Follow-up: private Unix socket only, no TCP listener; server PID/directory checked before DDL; inet_client_addr() null on final connection. Four policies verified by table, command, role, permissiveness and complete catalog expression. content_versions requires status='PUBLICADO' on the protected row; ai_suggestions binds content_id, version and status in one EXISTS. Opt-in PG16 restore/policy integration 7/7 under Node 22.23.2, direct drill PASS, verificationDurationMs=1664 for the full fixture. The checker preserves casts and only normalizes whitespace, punctuation and nonliteral case.",
+        "Historical migrations through 0053 reproduced recursive learning_activities RLS under a role without BYPASSRLS at migration 0030; the disposable source uses the local privileged postgres principal. Production migration-principal validation, production grants, external archive operation and operational RPO/RTO remain open.",
+        "The disposable PG16 restore applies the local CI roleProvisionSql and verifies effective table grants against applicationTablePrivileges across public relations, knowledge_documents exclusion, default-deny on a post-provision table, no app ownership, no elevated capabilities, CONNECT/USAGE only. RED exposed four missing drill signals; migration/policy/governance passed 40/40, and direct drill PASS returned all four application grant/least-privilege flags true at verificationDurationMs=2230 after role passwords moved to a private mode-0600 SQL file. This is local synthetic provisioner evidence, not production grants or migration-principal approval.",
         "pnpm audit --audit-level=high",
         "pnpm verify:secrets",
         "pnpm verify:documentation",
@@ -4647,6 +6273,7 @@ artifacts:
         "apps/api/src/http.ts",
         "apps/web/next.config.ts",
         "playwright.config.ts",
+        "scripts/real-e2e-fixture-server.mjs",
         "tests/e2e/real-runtime.spec.ts",
       ]
     tests:
@@ -5943,6 +7570,525 @@ artifacts:
         "Disposable services run outside the repository in /tmp and are not part of the deliverable; CI remains the canonical live proof.",
         "Production owners/grants, load, failover, provider IA real, clinical review, pilot and production remain human-gated.",
       ]
+  - id: "AUDIT-REMEDIATION-EXECUTION-20261001"
+    requirements:
+      [
+        "RF-034",
+        "RN-043",
+        "RN-044",
+        "RNF-015",
+        "D-083",
+        "D-107",
+        "SPEC-0106",
+        "SPEC-0118",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/58_roadmap_repository_remediation_2026-10-01.md",
+        "docs/59_backlog_repository_remediation_2026-10-01.md",
+        "docs/56_roadmap_state_of_art.md",
+        "docs/57_backlog_state_of_art.md",
+        "docs/99_runtime_state.md",
+        "docs/20_master_execution_log.md",
+        "docs/30_backlog_master.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0111_permissoes_governanca_e_auditoria.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0191_adendo_decisao_autorrevisao_mvp.md",
+        "docs/operations/disaster-recovery.md",
+        "docs/operations/slo.md",
+        ".agent/plans/2026-10-01-repository-remediation-execution.md",
+      ]
+    code:
+      [
+        "packages/application/src/authoring-use-cases.ts",
+        "packages/application/src/authorization.ts",
+        "packages/application/src/content-review-queue-use-cases.ts",
+        "apps/api/src/features/content/content.handler.ts",
+        "packages/persistence/src/authoring-repository.ts",
+        "packages/persistence/src/clinical-publication-hold.ts",
+        "scripts/discover-candidate-mutation.mjs",
+        "scripts/mutation-bounded-contract.mjs",
+        "scripts/mutation-closure-cli.mjs",
+        "scripts/mutation-safe-files.mjs",
+        "scripts/mutation-summary-contract.mjs",
+        "scripts/release-evidence.mjs",
+        "scripts/verify-triple-aaa.mjs",
+        "scripts/verify-mutation-closure.mjs",
+        "vitest.config.ts",
+        "playwright.config.ts",
+        "tests/e2e/real-runtime.spec.ts",
+      ]
+    tests:
+      [
+        "packages/application/src/authoring-use-cases.test.ts",
+        "packages/application/src/authorization.test.ts",
+        "packages/application/src/content-review-queue-use-cases.test.ts",
+        "apps/api/src/http-boundary/content.http.test.ts",
+        "apps/api/src/http-boundary/session.http.test.ts",
+        "packages/persistence/src/authoring-repository.test.ts",
+        "tests/e2e/authoring-review.spec.ts",
+        "tests/integration/mutation-harness-candidate.test.ts",
+        "tests/integration/mutation-bounded-manifest.test.ts",
+        "tests/integration/mutation-harness.test.ts",
+        "tests/integration/mutation-producer-filesystem.test.ts",
+        "tests/integration/support/mutation-closure-test-runner.mjs",
+        "tests/integration/release-evidence.test.ts",
+        "tests/integration/triple-aaa-verifier.test.ts",
+        "tests/integration/coverage-denominator.test.ts",
+        "Playwright static test selection",
+      ]
+    commit: "uncommitted"
+    artifacts:
+      [
+        ".agent/plans/2026-10-01-remediation-quality-bar.json",
+        ".orchestrate/repository-remediation-state.json",
+        ".agent/artifacts/remediation/editorial-independent-review-20261001.md",
+        ".agent/artifacts/remediation/editorial-publication-hold-review-20261002.md",
+        ".agent/artifacts/remediation/remediation-verification-20261002.md",
+      ]
+    verification:
+      [
+        "TDD RED reproduced six expected authorization/queue/API failures (49 passed); GREEN passed 56/56 focused unit tests under Node 22.23.2/pnpm 10.33.0.",
+        "@cvg/application build and @cvg/api typecheck passed; authoring-review.spec.ts passed 5/5 with the local fixture servers.",
+        "Playwright list under Node 22.23.2: 45 common tests/8 files and 46 real-mode tests/9 files; the single real-runtime.spec.ts journey is selected only when CVG_RUN_REAL_E2E=true.",
+        "Fresh independent review found no P0/P1 and one P2 capability ambiguity; SPEC 0111/0191 now clarify clinical approval versus MODERATE_CONTENT adjustment requests, with regression coverage.",
+        "A second independent review of the clarified contract and current source remains pending.",
+        "Mutation harness lane reported 25/25 under Node 24; canonical Node 22 rerun and independent review remain pending.",
+        "Playwright mode-selection listing and Prettier passed in the builder lane; repeat with supported Node 22 and no runtime was started.",
+        "H-LIVE was used for a disposable PostgreSQL 16 browser-to-API E2E; Qdrant was not started.",
+        "Current Node 22.23.2 focal run: mutation/release/Triple AAA integration 63/63; persistence authoring repository 26/26; typecheck, broad Prettier, CI contract, release-evidence self-test, Node syntax, and git diff --check PASS.",
+        "Current full coverage run: 209 files/1461 tests PASS, 36 files/68 skipped; exit 1 at 76.24/66.22/79.09/77.20 against 90/85/90/90. Inventory is 174 included and 207 excluded; no floor was lowered.",
+        "Mutation producer now runs Stryker from a git-archive candidate root, binds runner input digests to HEAD, and rejects dirty control files; real Stryker was not run because this worktree differs from HEAD. Triple AAA and strict release evidence require the current run ID.",
+        "Fresh integrated review found one P2 in standalone strict release-evidence replay; strict validation now requires CVG_MUTATION_CANDIDATE_ID and recomputes the current chain, while evidence consistency requires the expected ID. RED was reproduced when current-chain validation was temporarily removed; GREEN passed 1/1, and the fresh re-review returned PASS with no P0/P1/P2 remaining in scope. The archived candidate root is not uploaded, so post-job recomputation requires rebuilding it from the candidate SHA.",
+        "Producer filesystem follow-up passed 4/4 under Node 22.23.2 using a synthetic Git fixture and fake pnpm: rejects an external reports symlink, detects reports-parent swaps, removes only invocation-owned output/temp state on late failure, and retains the candidate root on success.",
+        "Earlier integrated mutation harness, producer filesystem, bounded manifest and legacy harness suites passed 41/41 under Node 22.23.2.",
+        "A subsequent independent review found a P2 in provenance report reads after path validation and noted FIFO reads outside the timeout. Provenance, CLI manifest and producer control-file reads now use descriptor-backed O_NOFOLLOW/O_NONBLOCK; focused mutation suites passed 29/29 under Node 22.23.2, including report symlink and FIFO manifest cases.",
+        "A later fresh review found two P2s: root symlink rebinding could invalidate containment during restoration, and the exported fixture bypass could emit KILLED without provenance. Root/dev-inode binding and detached-restore refusal now fail closed; test-only closure emits TEST_ONLY_KILLED without candidate identity. RED reproduced both behaviors; GREEN passed the three focused suites 31/31 under Node 22.23.2. Result writes use an exclusive hard link after a complete synced temp file.",
+        "A follow-up fresh review found P1 runner-input mutation after provenance validation and P2 ordinary-directory root rebinding during baseline, plus a mixed test-only nested KILLED output. RED reproduced the cases; GREEN retains the candidate root lease, anchors Vitest cwd to its descriptor, checks all manifest runner-input digests after baseline and each mutant, verifies all source bytes after restoration, stops after HARNESS_ERROR, and downgrades each unprovenanced kill. Three focused suites passed 34/34 under Node 22.23.2. The independent review of this current fix is pending.",
+        "Bohr's subsequent fresh review returned NOT PASS (high): absolute --config could follow a transient candidate-root rebind even with descriptor cwd. RED loaded the replacement test/config. GREEN rejects absolute config in descriptor-backed suites; strict provenance also uses relative Vitest and reporter paths rooted at the retained directory lease. The regression requires rejection of absolute config/Vitest paths and a passing relative config/Vitest/reporter run; three focused suites passed 35/35 under Node 22.23.2. A fresh review of this latest change is pending. Polling cannot detect same-UID mutations fully reverted between checkpoints.",
+        "Bernoulli's fresh independent review of the corrected REM-03/04 surface returned NOT PASS P2, conditional on adversarial same-UID candidate code. Descriptor-relative config/Vitest/reporter and root-rebind defenses passed review, but the test process can race replacement of --outputFile and change/restore runner inputs between digest checkpoints. The reviewer ran no tests. The backlog does not resolve whether same-UID candidate code is trusted; the user was asked to select isolation or explicit trust-boundary narrowing. No review PASS is claimed.",
+        "The real PostgreSQL 16 E2E passed 1/1 under Node 22.23.2 using a disposable container and a directly pre-provisioned synthetic activity; invite, participant journey, submit, session resume and persisted attempt/answer/outbox/audit evidence passed. The fixture did not execute editorial review or publication.",
+        "Business fixture rows were zero after shutdown. Ten synthetic append-only audit events remained until the disposable --rm container was removed; container absence and free ports 3100-3102/15433 were verified.",
+        "Canonical Node 22.23.2 checks passed: source-directory ESLint, typecheck, Prettier, traceability, documentation, CI contract, product-definition, public exposure, secret scan, Node syntax, ledger JSON, and git diff --check with .gauntlet excluded.",
+      ]
+    status: "in_progress"
+    limitations:
+      [
+        "H-REMOTE, AAA-001 and H-CONTENT remain open; no production or publication claims.",
+        "AUDIT-REM-01 remains open until the committed candidate producer runs against a clean current HEAD and its evidence is reviewed; H-REMOTE and historical-summary non-promotion remain explicit.",
+        "Producer and closure path checks bind Linux directory descriptors and validate locations/inodes, but the mutation suite still shares the runner UID: it can tamper with the absolute result file or transiently alter and restore runner inputs. Scope depends on the pending same-UID threat-model decision; no isolation or trust-boundary exclusion is currently established.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R28-REVIEWS-R29-FREEZE"
+    requirements:
+      [
+        "AUDIT-20261003-T14",
+        "AUDIT-20261003-T18",
+        "AUDIT-20261003-T20",
+        "AUDIT-20261003-T23",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md",
+      ]
+    code:
+      [
+        "apps/api/src/server.ts",
+        "apps/worker/src/main.ts",
+        "apps/web/app/page.tsx",
+        "packages/persistence/src/curriculum-publication-provenance.ts",
+      ]
+    tests:
+      [
+        "tests/integration/ratelimit-redis-live.test.ts",
+        "tests/integration/ratelimit-redis-restart.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r28-r26-r29-independent-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r27-current-regression-verification.json",
+      ]
+    status: "in_progress"
+    limitations:
+      [
+        "Native and CI scoped fresh PASS only; APIworker P1 plus three P2 remain. Web352 current, fresh review pending. Redis8 NOT_EXECUTED before checkpoint; no global/clinical/G07/release acceptance.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R29-LOCAL-REDIS-REVIEW"
+    requirements:
+      ["AUDIT-20261003-T12", "AUDIT-20261003-T20", "AUDIT-20261003-T23"]
+    documents: ["docs/61_backlog_repository_remediation_2026-10-03.md"]
+    code:
+      [
+        "apps/api/src/composition/http-rate-limiter.ts",
+        "apps/api/src/security/rate-limit-store.ts",
+      ]
+    tests:
+      [
+        "tests/integration/ratelimit-redis-live.test.ts",
+        "tests/integration/ratelimit-redis-restart.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r29-live-current-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r29-fresh-and-r30-prep-verification.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "Original eight local Redis PASS and fresh14pure controls scopedPASS; sameOS HTTP listeners, synthetic outage assertions, nonpersistent restart; no ordinaryCI/global/compiledcandidate acceptance. R30 introduces later source changes requiring current integrated regression.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R30-R32-R33"
+    requirements:
+      ["AUDIT-20261003-T23", "AUDIT-20261003-T24", "AUDIT-20261003-T31"]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0113_observabilidade_runtime_e_operacao.md",
+      ]
+    code:
+      [
+        "apps/api/src/composition/http-request-drain.ts",
+        "apps/api/src/http/rejection-audit.ts",
+        "packages/observability/src/tracing.ts",
+        "apps/worker/src/main.ts",
+        "apps/web/app/globals.css",
+      ]
+    tests:
+      [
+        "apps/api/src/http/rejection-audit.test.ts",
+        "apps/api/src/server.test.ts",
+        "apps/web/tests/diagnostic-choice.browser.test.tsx",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r30-implementation-verification.json",
+        ".agent/artifacts/remediation-20261003/r32-current/handoff.json",
+        ".agent/artifacts/remediation-20261003/lead-r33-diagnostic-choice-handoff.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "Current626 sourcePASS/2RedisNOT_EXECUTED and frontend358PASS; fresh reviews pending. Referenced interval is only for active callback drain, not total deadline. No trusted scope implies diagnostic only. Real Chromium geometry does not establish assembled runtime/clinical/G07/global/release acceptance.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R36-R34-PREP"
+    requirements: ["AUDIT-20261003-T31", "AUDIT-20261003-G05"]
+    documents: ["docs/61_backlog_repository_remediation_2026-10-03.md"]
+    code:
+      [
+        "apps/web/app/globals.css",
+        "apps/web/app/participant-answer-list.tsx",
+        "scripts/run-rls-live.mjs",
+      ]
+    tests:
+      [
+        "apps/web/tests/participant-choice.browser.test.tsx",
+        "tests/integration/rls-full-matrix.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r36-participant-choice-handoff.json",
+        ".agent/artifacts/remediation-20261003/lead-r34-preparation-verification.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "Current364 source/browser PASS and14copied geometry checks; no clean I1/global accept yet. RLS23pure preparation tests only, PG/defaultmatrix7 NOT_EXECUTED before checkpoint. Native source and isolated snapshot identities will differ.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R38-R35"
+    requirements:
+      [
+        "AUDIT-20261003-G05",
+        "AUDIT-20261003-T21",
+        "AUDIT-20261003-T23",
+        "AUDIT-20261003-T24",
+      ]
+    documents: ["docs/61_backlog_repository_remediation_2026-10-03.md"]
+    code:
+      [
+        "scripts/run-rls-live.mjs",
+        "scripts/evidence-freshness.mjs",
+        "apps/api/src/server.ts",
+        "apps/worker/src/loop.ts",
+        "apps/worker/src/main.ts",
+      ]
+    tests:
+      [
+        "tests/integration/rls-full-matrix.test.ts",
+        "apps/worker/src/loop.test.ts",
+        "apps/api/src/server.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r34-default-freshness-preflight-red.json",
+        ".agent/artifacts/remediation-20261003/r38-rls-proof-successor/contracts-green1.log",
+        ".agent/artifacts/remediation-20261003/lead-r35-fresh-review-verification.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "R34 generated symlink layout failed freshness before PG. Successorlayout24purePASS only, originalproducer/freshness untouched. R35 observerREVISE3 findings remains, unrefadapter gap does not prove production PG premature exit. No global/release/clinical/G07 acceptance.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R38-R39-R40"
+    requirements:
+      [
+        "AUDIT-20261003-T01",
+        "AUDIT-20261003-T23",
+        "AUDIT-20261003-T24",
+        "AUDIT-20261003-T31",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "scripts/rls-execution-evidence.mjs",
+        "apps/api/src/server.ts",
+        "apps/worker/src/loop.ts",
+        "apps/worker/src/main.ts",
+        "packages/observability/src/observer-isolation.ts",
+        "apps/web/app/diagnostic/page.tsx",
+      ]
+    tests:
+      [
+        "tests/integration/rls-full-matrix.test.ts",
+        "apps/api/src/server-observer.test.ts",
+        "apps/worker/src/loop-observer.test.ts",
+        "apps/worker/src/main-observer.test.ts",
+        "packages/observability/src/observer-isolation.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r38-default-live-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r38-review-r39-worker-verification.json",
+        ".agent/artifacts/remediation-20261003/r39-integrated-observers/verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r37-fresh-review-verification.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "R38 technical seven original assertions only LOCAL_MEASURED/NOT_VERIFIED, admin-only grants receipt and qualified blindness. Source wholecandidate historical after authorized R39 drift. R39 synchronous writers only/source aliases, no new provider/build. R40 keyboardfocus TDD pending. No clinical/G07/global/release acceptance.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R40-R41-R42"
+    requirements:
+      [
+        "AUDIT-20261003-T31",
+        "AUDIT-20261003-T34",
+        "AUDIT-20261003-G06",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "docs/quality/mutation-classification-v4.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "apps/web/app/diagnostic/page.tsx",
+        "packages/application/src/authorization.ts",
+        "packages/integrations/src/qdrant.ts",
+      ]
+    tests:
+      [
+        "apps/web/tests/diagnostic-focus.browser.test.tsx",
+        "tests/integration/qdrant-live.test.ts",
+        "tests/integration/worker-qdrant-live.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r40-diagnostic-focus-verification.json",
+        ".agent/artifacts/remediation-20261003/r41-historical-mutation-review/handoff.json",
+        ".agent/artifacts/remediation-20261003/lead-r39-secrets-current-metadata.json",
+        ".agent/artifacts/remediation-20261003/r42-services-preparation/qdrant-image-inspect.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "R40 canonical374 unique source/browser PASS is not manualAT/assembledruntime. Historical mutation6REAL4equivalent exactoldsource; no currentStryker/closure/score. Freshreviews pending. R42 imagepreparation only no services/provider execution. Secrets22CLI1 remains. No clinical/global/release/G07accept.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R41-R43"
+    requirements: ["AUDIT-20261003-T23", "AUDIT-20261003-T34", "AGENTS-TDD"]
+    documents:
+      [
+        "docs/quality/mutation-classification-v4.md",
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "apps/worker/src/lifecycle.ts",
+        "packages/application/src/authorization.ts",
+      ]
+    tests:
+      [
+        "apps/worker/src/lifecycle-process.test.ts",
+        "apps/worker/src/lifecycle.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r39-r41-fresh-review-verification-final2.json",
+        ".agent/artifacts/remediation-20261003/critic-historical-mutation-r41-i1/final-ref-manifest.json",
+        ".agent/artifacts/remediation-20261003/r43-worker-drain/handoff.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "T34 correction complete only exacthistoricalsource; no currentStryker/score/closure/global. R43 naturalnativecallback proof from exactexported ASTdeclarations and source650 PASS; no concretePG/provider operational impact claim. Referenced drain timer is not deadline/cancellation. Fresh91 pending, secrets22FAIL and integratedgates remain.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R44-R47"
+    requirements:
+      [
+        "AUDIT-20261003-T23",
+        "AUDIT-20261003-T31",
+        "AUDIT-20261003-G04",
+        "AUDIT-20261003-G06",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "docs/operations/disaster-recovery.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "apps/api/src/composition/api-runtime-lifecycle.ts",
+        "apps/api/src/server.ts",
+        "scripts/restore-integrity-contract.mjs",
+        "apps/web/app/diagnostic/page.tsx",
+        "apps/web/app/globals.css",
+      ]
+    tests:
+      [
+        "apps/api/src/composition/api-runtime-process.test.ts",
+        "apps/api/src/server-rate-limit-failure.test.ts",
+        "tests/integration/restore-migrations.test.ts",
+        "apps/web/tests/diagnostic-recovery.browser.test.tsx",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r40-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r43-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r44-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/r46-api-callbacks/handoff.json",
+        ".agent/artifacts/remediation-20261003/r47-restore-comparator/native-launcher.log",
+        ".agent/artifacts/remediation-20261003/lead-r42-final-prep-verification.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "Sourcecallback/nativeHTTP and PG16 technical restore only; no alltable data/RPO/RTO/provider/publication/globalaccept. Rootstrict staleOBSdist failure retained; source655/fresh93, C10fresh76 and frontendR45 pending; G06runtime CLOSED.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R49-R50"
+    requirements:
+      [
+        "AUDIT-20261003-T31",
+        "AUDIT-20261003-G04",
+        "AUDIT-20261003-G06",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+        "docs/operations/disaster-recovery.md",
+        ".agent/plans/2026-10-03-remediation-execution.md",
+      ]
+    code:
+      [
+        "apps/web/app/diagnostic-session-client.ts",
+        "apps/web/app/globals.css",
+        "scripts/restore-integrity-contract.mjs",
+      ]
+    tests:
+      [
+        "apps/web/app/diagnostic-session-client.test.ts",
+        "apps/web/tests/diagnostic-recovery.browser.test.tsx",
+        "tests/integration/restore-migrations.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/lead-r14-handoff-receipt-20261004.json",
+        ".agent/artifacts/remediation-20261003/lead-r45-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/lead-r46-fresh-review-verification.json",
+        ".agent/artifacts/remediation-20261003/r49-restore-comparator/handoff.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "Historical R14 receipt only; current frontend P1/P2 under repair/freshreview. C10PG16 technical source-bound drill and localAPIcallbacks do not accept operational RPO/RTO, fullcandidate, clinical, G07 or release.",
+      ]
+
+  - id: "EXEC-AUDIT-20261003-R51-R52"
+    requirements:
+      [
+        "AUDIT-20261003-T17",
+        "AUDIT-20261003-T26",
+        "AUDIT-20261003-T27",
+        "AUDIT-20261003-T30",
+        "D-091",
+        "AGENTS-TDD",
+      ]
+    documents:
+      [
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/01.PRD/0012_regras_de_negocio.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0105_maquina_de_estados_e_fluxos.md",
+        "BRIEFING/09.PROJETO_CVG_TREINAMENTO/02.SPEC/0106_contratos_de_aplicacao.md",
+        "docs/61_backlog_repository_remediation_2026-10-03.md",
+      ]
+    code:
+      [
+        "packages/application/src/participant-curriculum-path.ts",
+        "packages/application/src/journey-assignment-eligibility.ts",
+        "packages/application/src/journey-use-cases.ts",
+        "packages/application/src/account-recovery-use-cases.ts",
+        "packages/curriculum/src/learning-runtime.ts",
+        "packages/contracts/src/dashboard.ts",
+        "apps/web/app/page.tsx",
+      ]
+    tests:
+      [
+        "packages/application/src/participant-curriculum-path.test.ts",
+        "packages/application/src/journey-assignment-eligibility.test.ts",
+        "packages/application/src/attempt-mutation-closure.test.ts",
+        "packages/application/src/recovery-mutation-closure.test.ts",
+        "packages/contracts/src/dashboard.test.ts",
+      ]
+    artifacts:
+      [
+        ".agent/artifacts/remediation-20261003/r51-journey-availability/handoff.json",
+        ".agent/artifacts/remediation-20261003/r51-journey-availability/shared-supersession.json",
+        ".agent/artifacts/remediation-20261003/lead-r50-handoff-verification.json",
+        ".agent/artifacts/remediation-20261003/r52-application-contract-reconciliation/red1.results.json",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
+    limitations:
+      [
+        "Source-only F01 operational availability and D091/T26 contract reconciliation: current730 PASS, fresh review pending. Full immutable mandatory inventory and historical completion authority F02 remain pending; no native/fullcandidate/G07/clinical/release acceptance.",
+      ]
+
 notes:
   - "Test IDs with * remain planned suites for later B phases; the listed B0 contract tests are implemented."
   - "This manifest contains technical IDs only; it never stores source excerpts, photos, PDFs, prompts, or participant data."
@@ -5967,7 +8113,7 @@ notes:
   - "AUTHORING-GOVERNANCE-012 closes item 10 at 95/100 for the technical authoring/review scope: versioned M02/24/B-07 banks, deterministic preflight, independent clinical review, publication gate, migration 0014, internal API/web projection and live workflow. Verification passed with 74 files/341 tests and 12 configuration skips, coverage 84.69% statements/80.08% branches/85.74% functions/85.38% lines, 7/7 synthetic E2E scenarios and 16 live files/22 PostgreSQL/Qdrant tests with 1 configuration skip. Clinical approval, item-by-item review/application, complete summative appeal, real browser-to-API E2E and atomic editorial transition remain gaps."
   - "AUTHORING-GOVERNANCE-012 closes item 10 at 95/100 for the technical authoring/review scope: versioned M02/24/B-07 banks, deterministic preflight, independent clinical review, publication gate, migration 0014, internal API/web projection and live workflow. Verification passed with 74 files/341 tests and 12 configuration skips, coverage 84.69% statements/80.08% branches/85.74% functions/85.38% lines, 7/7 synthetic E2E scenarios and 16 live files/22 PostgreSQL/Qdrant tests with 1 configuration skip. Clinical approval, item-by-item review/application, complete summative appeal, real browser-to-API E2E and atomic editorial transition remain gaps."
   - "WORKER-RESILIENCE-013 closes item 11 at 95/100 for worker, Qdrant, IA assistiva and recovery: seven recognized event types, non-empty PostgreSQL→Qdrant reconciliation with divergence/orphan/replay/removal, expired lease reclaim, retry and dead-letter passed using synthetic records. Verification passed with 74 coverage files/343 tests/14 skips, 84.70% statements/80.08% branches/85.76% functions/85.38% lines, 7/7 synthetic E2E scenarios and 18 live integration files/25 tests without skips. Restart observability, production providers, external telemetry, load, restore and real browser-to-API remain gaps."
-  - "OBSERVABILITY-OPERATIONS-014 closes item 12 at 95/100 in the technical/documental scope: dependency health, protected Prometheus export, redaction, SLO/alert evaluation, local correlation, runbooks and synthetic PostgreSQL restore passed. The local restore recovered a synthetic marker into an isolated target with RTO 2.581 seconds. External collector/OTel, effective retention, provisioned dashboards, distributed traces, crash/failover, load and multiple replicas remain explicit operational gaps."
+  - "OBSERVABILITY-OPERATIONS-014 closes item 12 at 95/100 in the technical/documental scope: dependency health, protected Prometheus export, redaction, SLO/alert evaluation, local correlation, runbooks and synthetic PostgreSQL restore passed. The local restore recovered a synthetic marker into an isolated target. Its legacy rtoMs value of 2.581 seconds covers only dump, target creation, restore and marker read; it is not operational RTO. External collector/OTel, effective retention, provisioned dashboards, distributed traces, crash/failover, load and multiple replicas remain explicit operational gaps."
   - "WEB-UX-ACCESSIBILITY-015 closes item 13 at 96/100 in the implemented web scope: participant, authoring and operations surfaces expose bounded experience states; axe, keyboard/focus, unique IDs, reduced motion and narrow viewport checks pass; 12 mock E2E and 14 real-mode E2E scenarios pass, with the real mode reaching API/PostgreSQL through the web proxy and persisted participant fixture. Screen-reader/user review and complete PRD surfaces remain gaps."
   - "QUALITY-TEST-EVIDENCE-016 closes item 14 at 96/100: named contract/worker/live/restore/migration/E2E gates pass; PostgreSQL live passed 18/26 without skips, Qdrant extended 21/29 without skips, restore 1/1, standard E2E 12/12 and real persisted participant E2E 14/14. Coverage is 84.92% statements, 80.34% branches, 85.89% functions and 85.61% lines; module-level entrypoints remain explicit gaps and the remote CI execution is the next item."
   - "CI-REPRODUCIBILITY-017 closes item 15 at 95/100 with gaps: pinned Node/pnpm/lockfile and environment contract, PostgreSQL 16 and Qdrant 1.15.5 disposable services, readiness, migrations, live, restore, build, audit, standard E2E 12/12, real E2E 14/14 and conditional coverage/JUnit/Playwright artifact upload passed locally and remotely. The private repository is origin/main at commit dd4790973e31e1c3799c58cf99701128367b055b; Actions run 31380183984/job 93428409312 passed in 4m20s and artifact 9059654877 contains 99 files with SHA256 fe7e25c3701dd511bec0000397076b063c00cf5d115d155acefb6637f1f625ee. Runs 31378647864 and 31379006703 preserve the pnpm bootstrap and NODE_ENV API failures; the pnpm cache miss was observed, while deployment rollback, cache hit, load, failover and restart remain gaps. Item 16 is released by order."

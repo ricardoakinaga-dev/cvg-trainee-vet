@@ -386,6 +386,34 @@
       "when": 1788712441430,
       "tag": "0054_aaa_content_indexer_service",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1791049557125,
+      "tag": "0055_curriculum_attempt_bindings",
+      "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1791055000000,
+      "tag": "0056_curriculum_capture_context",
+      "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1791079000000,
+      "tag": "0057_curriculum_publication_provenance",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1791106944880,
+      "tag": "0058_module_obligations",
+      "breakpoints": true
     }
   ]
 }

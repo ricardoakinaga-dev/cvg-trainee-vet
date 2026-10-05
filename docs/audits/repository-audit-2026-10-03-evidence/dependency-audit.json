@@ -1,0 +1,14 @@
+{
+  "name": "dependency-audit",
+  "command": [
+    "pnpm",
+    "audit",
+    "--json"
+  ],
+  "startedAt": "2026-10-03T04:54:49.381513+00:00",
+  "durationSeconds": 0.72,
+  "exitCode": 1,
+  "result": "FAIL",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/dependency-audit.log",
+  "sha256": "9c0dea67dc1d794e6115cdbc1be4c82623b6b864f0cc98eeabe500c08f660b53"
+}

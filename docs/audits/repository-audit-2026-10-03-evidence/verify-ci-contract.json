@@ -1,0 +1,13 @@
+{
+  "name": "verify-ci-contract",
+  "command": [
+    "pnpm",
+    "verify:ci-contract"
+  ],
+  "startedAt": "2026-10-03T04:54:27.411870+00:00",
+  "durationSeconds": 0.36,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-ci-contract.log",
+  "sha256": "9055b5b029d51b038d0510de6bfff02bb8c7b7acbb0f10c20466623eb99493ba"
+}

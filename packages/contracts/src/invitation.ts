@@ -25,7 +25,7 @@ export const createInvitationRequestSchema = z
 export const acceptInvitationRequestSchema = z
   .object({
     token: tokenSchema,
-    sessionExpiresInSeconds: z.number().int().min(60).max(604_800),
+    sessionExpiresInSeconds: z.number().int().min(60).max(43_200),
   })
   .strict();
 

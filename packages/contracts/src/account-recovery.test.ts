@@ -7,6 +7,23 @@ import {
 } from "./account-recovery.js";
 
 describe("account recovery contracts", () => {
+  it("bounds recovered sessions to the approved 12-hour absolute lifetime", () => {
+    expect(
+      accountRecoveryAcceptRequestSchema.parse({
+        token: "a".repeat(32),
+        sessionExpiresInSeconds: 43_200,
+      }).sessionExpiresInSeconds,
+    ).toBe(43_200);
+    for (const sessionExpiresInSeconds of [43_201, 604_800]) {
+      expect(() =>
+        accountRecoveryAcceptRequestSchema.parse({
+          token: "a".repeat(32),
+          sessionExpiresInSeconds,
+        }),
+      ).toThrow();
+    }
+  });
+
   it("accepts only a bounded, scoped issue request", () => {
     const parsed = accountRecoveryIssueRequestSchema.parse({
       scopeId: "22222222-2222-4222-8222-222222222222",

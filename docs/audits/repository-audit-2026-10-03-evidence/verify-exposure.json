@@ -1,0 +1,13 @@
+{
+  "name": "verify-exposure",
+  "command": [
+    "pnpm",
+    "verify:exposure"
+  ],
+  "startedAt": "2026-10-03T04:54:32.173862+00:00",
+  "durationSeconds": 0.58,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-exposure.log",
+  "sha256": "3dff4c3e4c41d08dd568c6306f2fc7fe5e6a3fb224f83cb93a79037a0d92d8d4"
+}

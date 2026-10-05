@@ -6,6 +6,10 @@ import type {
   SessionRepositoryPort,
 } from "@cvg/application";
 import type { AccountStatus, Role } from "@cvg/application";
+import {
+  isSessionWithinExpiryPolicy,
+  SESSION_ABSOLUTE_LIFETIME_SECONDS,
+} from "@cvg/application";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
 import { accounts, sessions } from "./schema.js";
@@ -114,6 +118,7 @@ export function sessionRecordToRow(record: SessionRecord): SessionInsertRow {
 }
 
 export type SessionPrincipalRow = Readonly<{
+  readonly sessionId?: string;
   readonly accountId: string;
   readonly status: string;
   readonly roles: unknown;
@@ -124,8 +129,17 @@ export function sessionRowToPrincipal(
   row: SessionPrincipalRow,
 ): SessionPrincipal {
   assertNonEmpty(row.accountId, "accountId");
+  if (
+    row.sessionId !== undefined &&
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/iu.test(
+      row.sessionId,
+    )
+  ) {
+    throw new PersistenceMappingError("sessionId must be a UUID");
+  }
   const accountStatus = parseStatus(row.status);
   return Object.freeze({
+    ...(row.sessionId === undefined ? {} : { sessionId: row.sessionId }),
     accountId: row.accountId,
     accountStatus,
     roles: parseRoles(row.roles),
@@ -134,6 +148,66 @@ export function sessionRowToPrincipal(
 }
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
+
+async function lockActiveSession(
+  executor: DatabaseExecutor,
+  tokenHash: string,
+  now: Date,
+) {
+  const [row] = await executor
+    .select({
+      accountId: accounts.id,
+      status: accounts.status,
+      roles: sessions.roles,
+      scopes: sessions.scopes,
+      sessionId: sessions.id,
+      createdAt: sessions.createdAt,
+      lastSeenAt: sessions.lastSeenAt,
+      expiresAt: sessions.expiresAt,
+      revokedAt: sessions.revokedAt,
+    })
+    .from(sessions)
+    .innerJoin(accounts, eq(sessions.accountId, accounts.id))
+    .where(
+      and(
+        eq(sessions.tokenHash, tokenHash),
+        isNull(sessions.revokedAt),
+        gt(sessions.expiresAt, now),
+        eq(accounts.status, "ACTIVE"),
+      ),
+    )
+    .for("update", { of: sessions })
+    .limit(1);
+  if (row === undefined) return null;
+  const principal = sessionRowToPrincipal(row);
+  if (
+    principal.accountStatus !== "ACTIVE" ||
+    !isSessionWithinExpiryPolicy({ ...row, roles: principal.roles }, now)
+  )
+    return null;
+  return { row, principal };
+}
+
+function assertRotationBinding(
+  next: SessionInsertRow,
+  previous: NonNullable<Awaited<ReturnType<typeof lockActiveSession>>>,
+  now: Date,
+): void {
+  const { row, principal } = previous;
+  if (
+    next.accountId !== principal.accountId ||
+    JSON.stringify(next.roles) !== JSON.stringify(principal.roles) ||
+    JSON.stringify(next.scopes) !== JSON.stringify(principal.scopes) ||
+    next.createdAt.getTime() !== row.createdAt.getTime() ||
+    next.lastSeenAt.getTime() !== now.getTime() ||
+    next.expiresAt.getTime() >
+      row.createdAt.getTime() + SESSION_ABSOLUTE_LIFETIME_SECONDS * 1_000 ||
+    !isSessionWithinExpiryPolicy({ ...next, roles: principal.roles }, now)
+  )
+    throw new PersistenceMappingError(
+      "rotation must preserve session identity and absolute deadline",
+    );
+}
 
 export function createSessionRepository(
   db: PostgresJsDatabase<typeof schema>,
@@ -165,32 +239,21 @@ export function createSessionRepository(
       return db.transaction(async (transaction) => {
         const executor = transaction as unknown as DatabaseExecutor;
         await setDatabaseSessionSecurityContext(executor, { tokenHash });
-        const rows = await transaction
-          .select({
-            accountId: accounts.id,
-            status: accounts.status,
-            roles: sessions.roles,
-            scopes: sessions.scopes,
-            sessionId: sessions.id,
-          })
-          .from(sessions)
-          .innerJoin(accounts, eq(sessions.accountId, accounts.id))
-          .where(
-            and(
-              eq(sessions.tokenHash, tokenHash),
-              isNull(sessions.revokedAt),
-              gt(sessions.expiresAt, now),
-              eq(accounts.status, "ACTIVE"),
-            ),
-          )
-          .limit(1);
-        const row = rows[0];
-        if (!row) return null;
+        const active = await lockActiveSession(executor, tokenHash, now);
+        if (active === null) return null;
+        const { row, principal } = active;
         await transaction
           .update(sessions)
           .set({ lastSeenAt: now })
           .where(eq(sessions.id, row.sessionId));
-        return sessionRowToPrincipal(row);
+        return Object.freeze({
+          ...principal,
+          sessionLifetime: Object.freeze({
+            createdAt: new Date(row.createdAt.getTime()),
+            lastSeenAt: new Date(now.getTime()),
+            expiresAt: new Date(row.expiresAt.getTime()),
+          }),
+        });
       });
     },
     revoke: async (tokenHash: string, revokedAt: Date): Promise<void> => {
@@ -227,6 +290,10 @@ export function createSessionRepository(
           tokenHash,
           scopeId,
         });
+        const active = await lockActiveSession(executor, tokenHash, rotatedAt);
+        if (active === null)
+          throw new PersistenceMappingError("session is no longer active");
+        assertRotationBinding(nextRow, active, rotatedAt);
         const revoked = await transaction
           .update(sessions)
           .set({ revokedAt: rotatedAt })

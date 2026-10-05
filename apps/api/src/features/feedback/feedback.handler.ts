@@ -34,7 +34,7 @@ import type {
   ApiHttpDependencies,
   ApiHttpRequest,
   ApiPrincipal,
-} from "../../http.js";
+} from "../../http/contracts.js";
 import { isAllowed } from "../../http/authorization.js";
 
 export function publicCorrectionProjection(

@@ -1,0 +1,13 @@
+{
+  "name": "verify-traceability-release",
+  "command": [
+    "pnpm",
+    "verify:traceability:release"
+  ],
+  "startedAt": "2026-10-03T04:54:29.061674+00:00",
+  "durationSeconds": 0.98,
+  "exitCode": 1,
+  "result": "FAIL",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-traceability-release.log",
+  "sha256": "7a047b934c7a04f1c6f686a3b3c327b527db2c22f2fc9e5d4a0c5106af13fe90"
+}

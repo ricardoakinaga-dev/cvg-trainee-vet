@@ -1,7 +1,7 @@
 {
   "format": "cvg-risk-register/v1",
-  "candidate_sha": "14b97a8b7e257b49ffc6fbf97ea3e46a9b842e39",
-  "generatedAt": "2026-09-11T14:30:00-03:00",
+  "candidate_sha": "3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff",
+  "generatedAt": "2026-09-11T17:40:00-03:00",
   "entries": [
     {
       "id": "RF-02",
@@ -28,10 +28,10 @@
     {
       "id": "RF-03R",
       "severity": "P2",
-      "finding": "Mutation assurance covers 5 critical files; worker/outbox, diagnostic machine and remaining use-cases unmutated.",
+      "finding": "Mutation assurance covers 6 critical scopes (1139 mutants); diagnostic machine and remaining use-cases unmutated.",
       "impact": "Undetected logic gaps possible outside the measured scope.",
       "owner": "maintainer (human)",
-      "mitigation": "Adjusted 97.82% on covered scope; expand by criticality next.",
+      "mitigation": "Adjusted 98.84% on covered scope (G10 >= 95% PASS); expand by criticality next.",
       "validation": "reports/mutation-summary.json",
       "accepted_risk": true,
       "material": false
@@ -66,6 +66,50 @@
       "owner": "maintainer (human)",
       "mitigation": "Axe clean; AT audit when users onboard.",
       "validation": "tests/e2e accessibility specs",
+      "accepted_risk": true,
+      "material": false
+    },
+    {
+      "id": "RF-10",
+      "severity": "P2",
+      "finding": "P2-EDGE-TRUST (independent review v2): edge trustedProxies unwired; leftmost-XFF attacker-controlled if ever wired under appending proxy.",
+      "impact": "Future misconfiguration could over-trust or spoof client IP; currently fail-closed (spoof ignored).",
+      "owner": "maintainer (human)",
+      "mitigation": "Wire CVG_TRUSTED_PROXIES explicitly with strip-vs-append docs + appending-proxy spoof test before any prod topology.",
+      "validation": "independent-review-v2.json P2-EDGE-TRUST",
+      "accepted_risk": true,
+      "material": false
+    },
+    {
+      "id": "RF-11",
+      "severity": "P2",
+      "finding": "P2-EDGE-OUTAGE (independent review v2): Postgres rate-limiter DB errors propagate uncaught at edge (500/hang) instead of explicit fail-closed 429.",
+      "impact": "Availability/observability only: outage denies, never allows; no bypass.",
+      "owner": "maintainer (human)",
+      "mitigation": "Wrap edge check in try/catch returning 429 retry-after:1 with metric; deferred pending live-PG failure verification — do not change blind.",
+      "validation": "independent-review-v2.json P2-EDGE-OUTAGE",
+      "accepted_risk": true,
+      "material": false
+    },
+    {
+      "id": "RF-12",
+      "severity": "P2",
+      "finding": "P2-FORGERY-SCREEN (independent review v2): anti-forgery marker list narrow and trivially avoidable.",
+      "impact": "Negligible alone: screen is defense-in-depth; bypass yields no PASS without forging digests+remote.",
+      "owner": "maintainer (human)",
+      "mitigation": "Keep as tripwire; expand schema validation over marker hunt in future hardening.",
+      "validation": "independent-review-v2.json P2-FORGERY-SCREEN",
+      "accepted_risk": true,
+      "material": false
+    },
+    {
+      "id": "RF-13",
+      "severity": "P2",
+      "finding": "P2-EVID-SELF (independent review v2): verifier never cross-checked manifest.artifacts[].sha256. REMEDIATED this round.",
+      "impact": "None remaining: manifest cross-check implemented in verify-triple-aaa plus self-test 'manifest hash mismatch'.",
+      "owner": "maintainer (human)",
+      "mitigation": "Implemented and verified: 25/25 verifier self-tests green.",
+      "validation": "tests/integration/triple-aaa-verifier.test.ts (25 passed)",
       "accepted_risk": true,
       "material": false
     }

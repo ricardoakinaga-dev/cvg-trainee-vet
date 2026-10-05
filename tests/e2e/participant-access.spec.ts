@@ -638,7 +638,13 @@ test.describe("participant access and learning projection", () => {
               activityId,
               status: "SALVA",
               version: 2,
-              answers: [{ itemId: choiceItemId, response: '["a","c"]' }],
+              answers: [
+                {
+                  itemId: choiceItemId,
+                  response: '["a","c"]',
+                  savedAt: "2026-08-23T20:00:00.000Z",
+                },
+              ],
             }),
           ),
         });
@@ -715,7 +721,13 @@ test.describe("participant access and learning projection", () => {
               activityId,
               status: "SALVA",
               version: 2,
-              answers: [{ itemId, response: "Prioridade sintética." }],
+              answers: [
+                {
+                  itemId,
+                  response: "Prioridade sintética.",
+                  savedAt: "2026-08-23T20:00:00.000Z",
+                },
+              ],
             }),
           ),
         });
@@ -733,7 +745,13 @@ test.describe("participant access and learning projection", () => {
               activityId,
               status: "SUBMETIDA",
               version: 3,
-              answers: [{ itemId, response: "Prioridade sintética." }],
+              answers: [
+                {
+                  itemId,
+                  response: "Prioridade sintética.",
+                  savedAt: "2026-08-23T20:00:00.000Z",
+                },
+              ],
             }),
           ),
         });
@@ -813,7 +831,13 @@ test.describe("participant access and learning projection", () => {
               activityId,
               status: "SALVA",
               version: 2,
-              answers: [{ itemId, response: "Prioridade sintética." }],
+              answers: [
+                {
+                  itemId,
+                  response: "Prioridade sintética.",
+                  savedAt: "2026-08-23T20:00:00.000Z",
+                },
+              ],
             }),
           ),
         });
@@ -863,7 +887,13 @@ test.describe("participant access and learning projection", () => {
               activityId,
               status: "CORRIGIDA_AUTOMATICAMENTE",
               version: 3,
-              answers: [{ itemId, response: "Prioridade sintética." }],
+              answers: [
+                {
+                  itemId,
+                  response: "Prioridade sintética.",
+                  savedAt: "2026-08-23T20:00:00.000Z",
+                },
+              ],
             }),
           ),
         });
@@ -1070,7 +1100,7 @@ test.describe("participant access and learning projection", () => {
               attemptVersion: 2,
               resultVersion: 1,
               score: 78,
-              outcome: "REFORCO_RECOMENDADO",
+              outcome: "REFORCO",
               feedback: "Feedback de reforço sintético.",
             }),
           ),
@@ -1125,6 +1155,23 @@ test.describe("participant access and learning projection", () => {
         });
       },
     );
+
+    await page.route(`**/api/v1/attempts/${attemptId}`, async (route) => {
+      expect(route.request().method()).toBe("GET");
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            attemptId,
+            activityId,
+            status: "CORRIGIDA_AUTOMATICAMENTE",
+            version: 3,
+            answers: [],
+          }),
+        ),
+      });
+    });
 
     await page.goto(`/?activityId=${activityId}`);
     await page.getByLabel("Token de convite").fill(invitationToken);
@@ -1191,7 +1238,7 @@ test.describe("participant access and learning projection", () => {
                 remediationCount: 0,
                 retentionReviews: [
                   {
-                    day: 7,
+                    day: 90,
                     dueAt: "2026-08-31T22:00:00.000Z",
                     status: "PENDENTE",
                   },
@@ -1199,7 +1246,6 @@ test.describe("participant access and learning projection", () => {
                 practicalCompetenceClaim: "PROIBIDO_MVP",
               },
             ],
-            nextActionTarget: { kind: "ACTIVITY", activityId },
             nextAction: "REVISAR_RETENCAO",
           }),
         ),
@@ -1268,6 +1314,23 @@ test.describe("participant access and learning projection", () => {
         });
       },
     );
+
+    await page.route(`**/api/v1/attempts/${attemptId}`, async (route) => {
+      expect(route.request().method()).toBe("GET");
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            attemptId,
+            activityId,
+            status: "CORRIGIDA_AUTOMATICAMENTE",
+            version: 3,
+            answers: [],
+          }),
+        ),
+      });
+    });
 
     await page.goto(`/?activityId=${activityId}`);
     await page.getByLabel("Token de convite").fill(invitationToken);
@@ -1363,6 +1426,23 @@ test.describe("participant access and learning projection", () => {
         });
       },
     );
+
+    await page.route(`**/api/v1/attempts/${attemptId}`, async (route) => {
+      expect(route.request().method()).toBe("GET");
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            attemptId,
+            activityId,
+            status: "CORRIGIDA_AUTOMATICAMENTE",
+            version: 3,
+            answers: [],
+          }),
+        ),
+      });
+    });
 
     await page.goto(`/?activityId=${activityId}`);
     await page.getByLabel("Token de convite").fill(invitationToken);
@@ -1483,6 +1563,23 @@ test.describe("participant access and learning projection", () => {
       },
     );
 
+    await page.route(`**/api/v1/attempts/${attemptId}`, async (route) => {
+      expect(route.request().method()).toBe("GET");
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          successEnvelope({
+            attemptId,
+            activityId,
+            status: "SUBMETIDA",
+            version: 3,
+            answers: [],
+          }),
+        ),
+      });
+    });
+
     await page.goto(`/?activityId=${activityId}`);
     await page.getByLabel("Token de convite").fill(invitationToken);
     await page.getByRole("button", { name: "Ativar acesso" }).click();
@@ -1598,7 +1695,13 @@ test.describe("participant access and learning projection", () => {
               activityId,
               status: "SALVA",
               version: 2,
-              answers: [{ itemId, response: "Próxima ação sintética." }],
+              answers: [
+                {
+                  itemId,
+                  response: "Próxima ação sintética.",
+                  savedAt: "2026-08-23T20:00:00.000Z",
+                },
+              ],
             }),
           ),
         });
@@ -1616,7 +1719,13 @@ test.describe("participant access and learning projection", () => {
               activityId,
               status: "SUBMETIDA",
               version: 3,
-              answers: [{ itemId, response: "Próxima ação sintética." }],
+              answers: [
+                {
+                  itemId,
+                  response: "Próxima ação sintética.",
+                  savedAt: "2026-08-23T20:00:00.000Z",
+                },
+              ],
             }),
           ),
         });
@@ -1699,7 +1808,7 @@ test.describe("participant access and learning projection", () => {
               remediationCount: 0,
               retentionReviews: [
                 {
-                  day: 7,
+                  day: 90,
                   dueAt: "2026-08-17T01:00:00.000Z",
                   status: "PENDENTE",
                 },

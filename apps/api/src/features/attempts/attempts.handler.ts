@@ -20,7 +20,7 @@ import type {
   ApiHttpDependencies,
   ApiHttpRequest,
   ApiPrincipal,
-} from "../../http.js";
+} from "../../http/contracts.js";
 import {
   isAllowed,
   type ParticipantActivityItemKind,
@@ -41,6 +41,44 @@ export function publicAttemptProjection(
       savedAt: answer.savedAt,
     })),
   });
+}
+
+export async function handleGetAttempt(
+  attemptId: string,
+  requestId: string,
+  principal: ApiPrincipal,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse> {
+  if (!submitAttemptRequestSchema.shape.attemptId.safeParse(attemptId).success)
+    return validationResponse(requestId);
+  const current = await dependencies.resolveAttempt(attemptId, {
+    participantId: principal.principalId,
+  });
+  if (current === null) return errorResponse("not_found", requestId);
+  const scopeId = await dependencies.resolveActivityScope(current.activityId, {
+    participantId: principal.principalId,
+  });
+  if (scopeId === null) return errorResponse("not_found", requestId);
+  if (
+    !isAllowed(principal, "VIEW_OWN_ACTIVITY", {
+      ownerId: current.participantId,
+      scopeId,
+    })
+  )
+    return errorResponse("forbidden", requestId);
+  if (dependencies.getParticipantAttempt === undefined)
+    return errorResponse("internal_error", requestId, 503);
+  const snapshot = await dependencies.getParticipantAttempt(
+    principal.principalId,
+    attemptId,
+  );
+  return {
+    status: 200,
+    body: apiSuccessResponse(
+      publicAttemptProjection(snapshot.attempt, snapshot.answers),
+      requestId,
+    ),
+  };
 }
 
 export async function handleStart(

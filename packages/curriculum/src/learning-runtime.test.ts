@@ -5,7 +5,7 @@ import {
   buildPersonalizedCurriculumPath,
   curriculumDraftPacks,
   evaluateDiagnosticAttempt,
-  evaluateModuleAttempt,
+  evaluateModuleAttempt as evaluateCatalogAttempt,
   getModuleDraftPack,
   preflightCurriculumDrafts,
   type ModuleAnswer,
@@ -20,7 +20,61 @@ import {
   toParticipantActivityFromDraft,
 } from "./projection.js";
 
+// Offline draft characterization supplies its catalog explicitly. Application evaluation
+// must resolve the published attempt snapshot instead of calling this fixture helper.
+function evaluateModuleAttempt(
+  input: Omit<Parameters<typeof evaluateCatalogAttempt>[0], "catalog">,
+) {
+  return evaluateCatalogAttempt({
+    ...input,
+    catalog: getModuleDraftPack(input.moduleId),
+  });
+}
+
 describe("curriculum learning runtime", () => {
+  it("recognizes the M02 quiz without completing its two missing open activities or unlocking M03", () => {
+    const pack = getModuleDraftPack("M02");
+    expect(
+      pack.items.filter((item) => item.responseMode === "TEXT"),
+    ).toHaveLength(2);
+    const result = evaluateModuleAttempt({
+      moduleId: "M02",
+      answers: pack.items
+        .filter((item) => item.responseMode === "CHOICE")
+        .map((item) => ({
+          itemId: item.id,
+          selectedChoiceIds: item.correctChoiceIds ?? [],
+        })),
+      completedAt: "2026-08-10T12:00:00.000Z",
+      mode: "FORMATIVE_CHOICE",
+    });
+    expect(result.status).toBe("DOMINIO_DIGITAL");
+    expect(result).toMatchObject({ activityProgress: "ATIVIDADES_PENDENTES" });
+    const path = buildPersonalizedCurriculumPath({
+      masteredModuleIds: ["M01", "M02"],
+      remediationModuleIds: [],
+      retentionDueModuleIds: [],
+      assignedModuleIds: ["M01", "M02", "M03"],
+    });
+    expect(path.find((item) => item.moduleId === "M02")?.status).toBe(
+      "EM_ANDAMENTO",
+    );
+    expect(path.find((item) => item.moduleId === "M03")?.status).toBe(
+      "BLOQUEADO_PRE_REQUISITO",
+    );
+  });
+
+  it("keeps unproven retention forms in draft without reused baseline items", () => {
+    for (const pack of curriculumDraftPacks) {
+      expect(pack.learningLoop.retention.map((form) => form.day)).toEqual([
+        30, 60, 90,
+      ]);
+      for (const form of pack.learningLoop.retention) {
+        expect(form.equivalentForm).toBe(false);
+        expect(form.itemIds).toEqual([]);
+      }
+    }
+  });
   it("materializes a complete internal draft pack for all 24 modules", () => {
     expect(curriculumDraftPacks).toHaveLength(24);
     expect(
@@ -49,7 +103,7 @@ describe("curriculum learning runtime", () => {
         (pack) =>
           pack.learningLoop.retention.length === 3 &&
           pack.learningLoop.retention.map((item) => item.day).join(",") ===
-            "7,30,90" &&
+            "30,60,90" &&
           pack.learningLoop.simulation.practicalCompetenceClaim ===
             "PROIBIDO_MVP",
       ),
@@ -108,7 +162,7 @@ describe("curriculum learning runtime", () => {
     expect(result.criticalErrorItemIds).toContain(firstChoice.id);
   });
 
-  it("schedules D+7, D+30 and D+90 after digital mastery", () => {
+  it("schedules D+30, D+60 and D+90 after digital mastery", () => {
     const pack = getModuleDraftPack("M03");
     const answers: readonly ModuleAnswer[] = pack.items
       .filter((item) => item.responseMode === "CHOICE")
@@ -127,8 +181,8 @@ describe("curriculum learning runtime", () => {
     expect(result.status).toBe("DOMINIO_DIGITAL");
     expect(result.nextAction).toBe("REVISAR_RETENCAO");
     expect(result.retentionReviews).toEqual([
-      { day: 7, dueAt: "2026-08-17T12:00:00.000Z", status: "PENDENTE" },
       { day: 30, dueAt: "2026-09-09T12:00:00.000Z", status: "PENDENTE" },
+      { day: 60, dueAt: "2026-10-09T12:00:00.000Z", status: "PENDENTE" },
       { day: 90, dueAt: "2026-11-08T12:00:00.000Z", status: "PENDENTE" },
     ]);
     expect(result.objectiveResults.every((item) => item.percent === 100)).toBe(
@@ -160,9 +214,10 @@ describe("curriculum learning runtime", () => {
     expect(result.openResponseItemIds.length).toBeGreaterThan(0);
   });
 
-  it("blocks the next module until the prerequisite has digital mastery", () => {
+  it("unlocks the next module only with an explicitly completed prerequisite", () => {
     const path = buildPersonalizedCurriculumPath({
       masteredModuleIds: ["M01"],
+      completedModuleIds: ["M01"],
       remediationModuleIds: [],
       retentionDueModuleIds: [],
       assignedModuleIds: ["M01", "M02", "M03"],
@@ -262,6 +317,7 @@ describe("curriculum learning runtime", () => {
     ).toHaveLength(24);
     const projection = toParticipantActivityFromDiagnosticDraft(
       b07DiagnosticDraftPack,
+      { boundary: "INTERNAL_DIAGNOSTIC_CATALOG" },
     );
     const seed = createDiagnosticContentSeed(
       "44444444-4444-4444-8444-444444444444",

@@ -6,9 +6,64 @@ import {
   evaluateSlo,
   type SloDefinition,
 } from "./operations.js";
-import type { MetricsSnapshot } from "./observability.js";
+import { createObservability, type MetricsSnapshot } from "./observability.js";
 
 describe("operational SLO evaluation", () => {
+  it("derives independent p95 estimates from cumulative buckets, not means", () => {
+    const metrics = createObservability({
+      service: "api",
+      sink: () => undefined,
+    }).metrics;
+    for (let index = 0; index < 20; index += 1) {
+      metrics.observe("api.slo.duration_ms", index < 18 ? 100 : 1_000, {
+        operation: "read",
+      });
+      metrics.observe("api.slo.duration_ms", 2_000, { operation: "mutation" });
+    }
+    metrics.observe("api.request.duration_ms", 99_000, {
+      route: "/health/live",
+    });
+    metrics.observe("api.slo.duration_ms", 99_000, { operation: "unknown" });
+    const snapshot = deriveOperationalSnapshot("READY", metrics.snapshot());
+    expect(snapshot.slos[1]).toMatchObject({
+      status: "BREACHED",
+      observed: 900,
+    });
+    expect(snapshot.slos[2]).toMatchObject({
+      status: "BREACHED",
+      observed: 1_975,
+    });
+  });
+
+  it("retains NO_DATA for legacy aggregates and missing operations", () => {
+    const metrics = createObservability({
+      service: "api",
+      sink: () => undefined,
+    }).metrics;
+    metrics.observe("api.slo.duration_ms", 0, { operation: "read" });
+    const snapshot = deriveOperationalSnapshot("READY", metrics.snapshot());
+    expect(snapshot.slos[1]).toMatchObject({ status: "PASS", observed: 0 });
+    expect(snapshot.slos[2]).toMatchObject({
+      status: "NO_DATA",
+      observed: null,
+    });
+    expect(
+      deriveOperationalSnapshot("READY", {
+        counters: [],
+        histograms: [
+          {
+            name: "api.slo.duration_ms",
+            count: 20,
+            sum: 3_800,
+            min: 100,
+            max: 1_000,
+            labels: { operation: "read" },
+          },
+        ],
+      }).slos[1],
+    ).toMatchObject({ status: "NO_DATA", observed: null });
+  });
+
   it("derives a redacted operational snapshot from process metrics", () => {
     const metrics: MetricsSnapshot = {
       counters: [

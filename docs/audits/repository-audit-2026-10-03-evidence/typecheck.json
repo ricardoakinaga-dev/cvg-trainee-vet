@@ -1,0 +1,13 @@
+{
+  "name": "typecheck",
+  "command": [
+    "pnpm",
+    "typecheck"
+  ],
+  "startedAt": "2026-10-03T04:54:26.795954+00:00",
+  "durationSeconds": 0.62,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/typecheck.log",
+  "sha256": "6c19977ccdb96bf15664868e3b410d978ab101ce669aff2710d6433d82772ea2"
+}

@@ -38,6 +38,11 @@ export type {
   GetAuditTrailCommand,
 } from "./audit-trail-use-cases.js";
 export { startAttempt, submitAttempt } from "./attempt-use-cases.js";
+export { getParticipantAttempt } from "./participant-attempt-read.js";
+export type {
+  ParticipantAttemptSnapshot,
+  ParticipantAttemptReadPort,
+} from "./participant-attempt-read.js";
 export type {
   AttemptActivityPort,
   AttemptEventPublisherPort,
@@ -67,9 +72,11 @@ export type {
 export { correctOpenResponse } from "./correction-use-cases.js";
 export type {
   AssessmentCorrectedEvent,
+  CorrectionCompletionInput,
   CorrectionEventPublisherPort,
   CorrectionIdempotencyPort,
   CorrectionIdempotencyRecord,
+  CorrectionModuleCompletionPort,
   CorrectionResult,
   CorrectionResultsPort,
   CorrectionAttemptsPort,
@@ -162,6 +169,8 @@ export {
   getParticipantCurriculumRuntime,
 } from "./curriculum-runtime-use-cases.js";
 export type {
+  CurriculumEvaluationAttempt,
+  CurriculumEvaluationAttemptReadPort,
   CurriculumRuntimeReadPort,
   CurriculumRuntimeState,
   CurriculumRuntimeWriteInput,
@@ -232,6 +241,7 @@ export type {
   AuthoringRepositoryPort,
   AuthoringReview,
   AuthoringReviewDecision,
+  AuthoringReviewTransition,
   AuthoringRubric,
   AuthoringSourceRef,
   AuthoringWorkflowDependencies,
@@ -317,6 +327,10 @@ export type {
   ParticipantJourneyReadPort,
   ParticipantLearningJourneyState,
 } from "./journey-use-cases.js";
+export type {
+  ModuleAuthorityFacts,
+  ModuleCompletionReceiptFact,
+} from "./journey-module-authority.js";
 export {
   deriveParticipantCompetencyProfile,
   deriveParticipantDashboard,
@@ -434,3 +448,7 @@ export type {
   ContinuingEducationReportState,
   GetContinuingEducationReportCommand,
 } from "./continuing-education-report-use-cases.js";
+export {
+  isSessionWithinExpiryPolicy,
+  SESSION_ABSOLUTE_LIFETIME_SECONDS,
+} from "./session-expiry-policy.js";

@@ -1,10 +1,20 @@
 import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { Buffer } from "node:buffer";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 
 import { ephemeralPort, startEmbeddedPostgres } from "./live-embedded-pg.mjs";
+import {
+  executionIdentity,
+  selectedAssertionInventory,
+  RLS_SUITE,
+} from "./ci-proof-contract.mjs";
+import { isEvidenceFresh } from "./evidence-freshness.mjs";
+import { composeRlsExecutionEvidence } from "./rls-execution-evidence.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
@@ -40,6 +50,139 @@ async function migrate(databaseUrl) {
     timeout: 240000,
     maxBuffer: 16 * 1024 * 1024,
   });
+}
+
+/** @typedef {import('./ci-proof-contract.mjs').AssertionIdentity} AssertionIdentity */
+/** @typedef {{clock: ()=>string, head:(root:string)=>Promise<string>, fresh:(root:string,sha:string)=>Promise<{fresh:boolean,detail:string}>, collect:(root:string,environment:Record<string,string|undefined>)=>Promise<AssertionIdentity[]>, temp:()=>Promise<string>, mkdir:(path:string)=>Promise<void>, remove:(path:string)=>Promise<void>, run:(report:string,root:string,environment:Record<string,string|undefined>)=>Promise<unknown>, read:(path:string)=>Promise<Uint8Array>, write:(path:string,bytes:Uint8Array)=>Promise<void>}} RlsIo */
+/** @type {RlsIo} */
+const measuredIo = {
+  clock: () => new Date().toISOString(),
+  head: async (checkoutRoot) =>
+    (
+      await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: checkoutRoot })
+    ).stdout.trim(),
+  fresh: (checkoutRoot, sha) => isEvidenceFresh(checkoutRoot, sha, sha),
+  collect: (checkoutRoot, environment) =>
+    selectedAssertionInventory(checkoutRoot, {
+      filters: [RLS_SUITE],
+      environment,
+    }),
+  temp: () => mkdtemp(join(tmpdir(), "cvg-rls-")),
+  mkdir: async (path) => {
+    await mkdir(path, { recursive: true });
+  },
+  remove: (path) => rm(path, { recursive: true, force: true }),
+  run: (report, checkoutRoot, environment) =>
+    execFileAsync(
+      "pnpm",
+      [
+        "exec",
+        "vitest",
+        "run",
+        "--project",
+        "integration",
+        "--reporter=json",
+        `--outputFile=${report}`,
+        RLS_SUITE,
+      ],
+      {
+        cwd: checkoutRoot,
+        env: environment,
+        timeout: 600000,
+        maxBuffer: 64 * 1024 * 1024,
+      },
+    ),
+  read: (path) => readFile(path),
+  write: (path, bytes) => writeFile(path, bytes),
+};
+
+/**
+ * @param {{checkoutRoot?:string,environment?:Record<string,string|undefined>,syntheticFixture?:boolean,evidenceDirectory?:string,testFile?:string}} options
+ * @param {Partial<RlsIo>} dependencies Explicit IO doubles in tests; default executes the actual runner.
+ */
+export async function runMeasuredRlsExecution(options = {}, dependencies = {}) {
+  if (options.testFile !== undefined && options.testFile !== RLS_SUITE)
+    throw new Error("RLS evidence requires the exact full matrix suite");
+  const io = { ...measuredIo, ...dependencies };
+  const checkoutRoot = options.checkoutRoot ?? root;
+  const environment = options.environment ?? process.env;
+  const runStartedAt = io.clock();
+  const evidenceKind = environment.GITHUB_ACTIONS === "true" ? "ci" : "local";
+  const ci = evidenceKind === "ci" ? executionIdentity(environment) : undefined;
+  const sha = await io.head(checkoutRoot);
+  if (ci && ci.executing_head !== sha)
+    throw new Error("RLS producing CI SHA differs from measured checkout");
+  const before = await io.fresh(checkoutRoot, sha);
+  if (!before.fresh)
+    throw new Error(`RLS checkout before execution invalid: ${before.detail}`);
+  const beforeCheckedAt = io.clock();
+  const evidenceDir =
+    options.evidenceDirectory ?? join(checkoutRoot, "staging-evidence");
+  const reportDir = await io.temp();
+  try {
+    await io.mkdir(evidenceDir);
+    // A failed run must not leave an earlier PASS available for publication.
+    await io.remove(join(evidenceDir, "rls-live-summary.json"));
+    const selectionStartedAt = io.clock();
+    const assertions = await io.collect(checkoutRoot, environment);
+    const collectedAt = io.clock();
+    const selection = {
+      files: [RLS_SUITE],
+      assertions,
+      sha,
+      checkoutRoot,
+      startedAt: selectionStartedAt,
+      collectedAt,
+      ...(ci ? { ci } : {}),
+    };
+    // Preserve the independent collection even if execution or validation fails.
+    await io.write(
+      join(evidenceDir, "rls-inventory.json"),
+      Buffer.from(
+        `${JSON.stringify({ files: selection.files, assertions, collection: { sha, checkoutRoot, startedAt: selectionStartedAt, collectedAt, ...(ci ? { ci } : {}) } }, null, 2)}\n`,
+      ),
+    );
+    const reportFile = join(reportDir, "results.json");
+    const startedAt = io.clock();
+    let exitCode = 0;
+    try {
+      await io.run(reportFile, checkoutRoot, environment);
+    } catch (error) {
+      exitCode =
+        Number.isSafeInteger(error.code) && error.code > 0 ? error.code : 1;
+    }
+    const completedAt = io.clock();
+    const raw = await io.read(reportFile);
+    await io.write(join(evidenceDir, "rls-results.raw.json"), raw);
+    const after = await io.fresh(checkoutRoot, sha);
+    const afterSha = await io.head(checkoutRoot);
+    const afterCheckedAt = io.clock();
+    const result = composeRlsExecutionEvidence({
+      evidenceKind,
+      syntheticFixture: options.syntheticFixture === true,
+      rawReportBytes: raw,
+      selection,
+      execution: {
+        status: "EXECUTED",
+        exitCode,
+        startedAt,
+        completedAt,
+        checkoutRoot,
+        ...(ci ? { ci } : {}),
+      },
+      checkout: {
+        before: { sha, checkedAt: beforeCheckedAt, clean: before.fresh },
+        after: { sha: afterSha, checkedAt: afterCheckedAt, clean: after.fresh },
+      },
+      runWindow: { startedAt: runStartedAt, observedAt: io.clock() },
+      environment,
+    });
+    for (const [name, bytes] of Object.entries(result.files))
+      await io.write(join(evidenceDir, name), bytes);
+    return result.summary;
+  } finally {
+    await io.remove(reportDir);
+  }
 }
 
 async function main() {
@@ -90,119 +233,27 @@ async function main() {
     }
   }
 
-  const testFile =
-    process.argv[2] ?? "tests/integration/rls-full-matrix.test.ts";
-  log(`running ${testFile}`);
-  const { mkdtemp } = await import("node:fs/promises");
-  const { tmpdir } = await import("node:os");
-  const reportDir = await mkdtemp(join(tmpdir(), "cvg-rls-"));
-  const reportFile = join(reportDir, "results.json");
   try {
-    const child = await execFileAsync(
-      "pnpm",
-      [
-        "exec",
-        "vitest",
-        "run",
-        "--project",
-        "integration",
-        "--reporter=json",
-        `--outputFile=${reportFile}`,
-        testFile,
-      ],
-      {
-        cwd: root,
-        env: {
-          ...process.env,
-          CVG_TEST_DATABASE_URL: appUrl,
-          CVG_TEST_ADMIN_DATABASE_URL: adminUrl,
-          CVG_RUN_LIVE_DB_TESTS: "true",
-        },
-        timeout: 600000,
-        maxBuffer: 64 * 1024 * 1024,
+    const summary = await runMeasuredRlsExecution({
+      testFile: process.argv[2] ?? RLS_SUITE,
+      environment: {
+        ...process.env,
+        CVG_TEST_DATABASE_URL: appUrl,
+        CVG_TEST_ADMIN_DATABASE_URL: adminUrl,
+        CVG_RUN_LIVE_DB_TESTS: "true",
       },
+    });
+    log(
+      `measured ${summary.executedTests} passed assertions (${summary.status}); raw evidence retained`,
     );
-    process.stdout.write(child.stdout ?? "");
-  } catch (error) {
-    process.stdout.write(error.stdout ?? "");
-    process.stderr.write(error.stderr ?? "");
+  } finally {
     await stop();
-    process.exit(typeof error.code === "number" ? error.code : 1);
+    log("disposable database stopped and removed");
   }
-  try {
-    const { mkdir, readFile, writeFile } = await import("node:fs/promises");
-    const evidenceDir = join(root, "staging-evidence");
-    await mkdir(evidenceDir, { recursive: true });
-    const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
-      cwd: root,
-    }).catch(() => ({ stdout: "unknown" }));
-    // §125.9: derive every invariant from named test outcomes in the JSON
-    // report — never hand-typed. A missing/failed test yields false.
-    let failed = 1;
-    let results = [];
-    try {
-      const report = JSON.parse(await readFile(reportFile, "utf8"));
-      failed = report.numFailedTests ?? 1;
-      for (const suite of report.testResults ?? []) {
-        for (const assertion of suite.assertionResults ?? []) {
-          results.push({
-            text: JSON.stringify(assertion),
-            passed: assertion.status === "passed",
-          });
-        }
-      }
-    } catch {
-      failed = 1;
-      results = [];
-    }
-    const has = (fragment) =>
-      results.some((entry) => entry.passed && entry.text.includes(fragment));
-    const invariant = {
-      cross_scope_read_denied: has(
-        "denies participant A any read of participant B rows",
-      ),
-      cross_scope_write_denied: has(
-        "denies participant writes outside their own identity",
-      ),
-      anonymous_denied: has("denies anonymous access to protected rows"),
-      service_identity_constrained: has(
-        "confines the content-indexer service identity to its contract",
-      ),
-      pool_context_isolated: has(
-        "never leaks pooled RLS context across ten alternating checkouts",
-      ),
-      force_rls_verified: has(
-        "audits owner, grants, RLS enforcement and least privilege live",
-      ),
-      bypassrls_absent: has(
-        "audits owner, grants, RLS enforcement and least privilege live",
-      ),
-      superuser_absent: has(
-        "audits owner, grants, RLS enforcement and least privilege live",
-      ),
-    };
-    const allTrue = Object.values(invariant).every(Boolean) && failed === 0;
-    await writeFile(
-      join(evidenceDir, "rls-live-summary.json"),
-      `${JSON.stringify(
-        {
-          format: "cvg-rls-live-summary/v1",
-          status: allTrue ? "PASS" : "FAIL",
-          sha: stdout.trim(),
-          suite: testFile,
-          failed,
-          generatedAt: new Date().toISOString(),
-          ...invariant,
-        },
-        null,
-        2,
-      )}\n`,
-    );
-  } catch {
-    // evidence is best effort; the vitest result above is authoritative
-  }
-  await stop();
-  log("disposable database stopped and removed");
 }
 
-await main();
+if (process.argv[1] === fileURLToPath(import.meta.url))
+  await main().catch((error) => {
+    console.error(`RLS run failed: ${error.message}`);
+    process.exitCode = 1;
+  });

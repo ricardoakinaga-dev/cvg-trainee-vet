@@ -1,100 +1,25 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 
-type InternalAuthoringRecord = Readonly<{
-  readonly contentId: string;
-  readonly version: number;
-  readonly scopeId: string;
-  readonly moduleId: string;
-  readonly sessionId: string;
-  readonly objectiveId: string;
-  readonly authorId: string;
-  readonly contentStatus: string;
-  readonly item: Readonly<{
-    readonly title: string;
-    readonly prompt: string;
-    readonly responseMode: string;
-    readonly choices?: readonly Readonly<{
-      readonly id: string;
-      readonly label: string;
-      readonly text: string;
-    }>[];
-    readonly correctChoiceIds?: readonly string[];
-    readonly rubric?: Readonly<{
-      readonly dimensions: readonly Readonly<{
-        readonly id: string;
-        readonly label: string;
-        readonly description: string;
-        readonly maxPoints: number;
-      }>[];
-      readonly passScore: number;
-      readonly criticalErrors: readonly string[];
-    }>;
-    readonly feedback: string;
-    readonly critical: boolean;
-    readonly remediationTargetObjectiveId: string;
-    readonly sourceRefs: readonly Readonly<{
-      readonly code: string;
-      readonly locator: string;
-      readonly updateRequired: boolean;
-    }>[];
-  }>;
-  readonly preflight: Readonly<{
-    readonly technicalChecksPassed: boolean;
-    readonly readyForClinicalReview?: boolean;
-    readonly readyForPublication?: boolean;
-  }>;
-  readonly latestReview?: Readonly<{
-    readonly decision: string;
-    readonly rationale: string;
-    readonly reviewerId: string;
-    readonly reviewedAt: string;
-  }>;
-  readonly availableActions: Readonly<{
-    readonly requestAdjustments: boolean;
-    readonly approveClinically: boolean;
-  }>;
-}>;
-
-type ContentReviewQueueItem = Readonly<{
-  readonly contentId: string;
-  readonly version: number;
-  readonly scopeId: string;
-  readonly moduleId: string;
-  readonly sessionId: string;
-  readonly title: string;
-  readonly authorId: string;
-  readonly status: "EM_REVISAO_CLINICA" | "AJUSTES_SOLICITADOS";
-  readonly preflight: Readonly<{
-    readonly technicalChecksPassed: boolean;
-    readonly checkedAt: string;
-  }>;
-  readonly latestReview?: Readonly<{
-    readonly decision: "APROVAR_CLINICAMENTE" | "SOLICITAR_AJUSTES";
-    readonly reviewedAt: string;
-  }>;
-  readonly canOpenAuthoring: boolean;
-  readonly updatedAt: string;
-  readonly nextAction: "REVISAR_CLINICAMENTE" | "AGUARDAR_REENVIO_AUTOR";
-}>;
-
-type ContentReviewQueue = Readonly<{
-  readonly kind: "content_review_queue";
-  readonly scopeId: string;
-  readonly generatedAt: string;
-  readonly filters: Readonly<{
-    readonly scopeId: string;
-    readonly status?: "EM_REVISAO_CLINICA" | "AJUSTES_SOLICITADOS";
-    readonly limit: number;
-  }>;
-  readonly items: readonly ContentReviewQueueItem[];
-}>;
-
-type InternalSessionScopes = Readonly<{
-  readonly kind: "internal_session_scopes";
-  readonly scopes: readonly string[];
-}>;
+import {
+  type AdjustmentReceipt,
+  type InternalAuthoringRecord,
+  type ContentReviewQueue,
+  type InternalSessionScopes,
+  isRecord,
+  isReviewRationale,
+  isAdjustmentReceipt,
+  isInternalAuthoringRecord,
+  isContentReviewQueue,
+  isInternalSessionScopes,
+} from "./authoring-contracts";
+import {
+  readDraftRecovery,
+  writeDraftRecovery,
+  clearDraftRecovery,
+  newDraftIdempotencyKey,
+} from "./draft-recovery";
 
 const authoringModuleOptions = Array.from(
   { length: 24 },
@@ -110,259 +35,6 @@ const authoringSourceOptions = [
   "WSAVA-2022",
   "AVHTM-TRACS-2021",
 ] as const;
-
-type ApiRecord = Readonly<Record<string, unknown>>;
-const draftRecoveryStorageKey = "cvg-authoring-draft-recovery-v1";
-
-type DraftRecovery = Readonly<{
-  readonly idempotencyKey: string;
-  readonly scopeId: string;
-  readonly moduleId: string;
-  readonly draftSessionSuffix: string;
-  readonly draftObjectiveId: string;
-  readonly draftTitle: string;
-  readonly draftPrompt: string;
-  readonly draftChoiceA: string;
-  readonly draftChoiceB: string;
-  readonly draftCorrectChoiceId: string;
-  readonly draftFeedback: string;
-  readonly draftSourceCode: string;
-  readonly draftSourceLocator: string;
-  readonly draftCritical: boolean;
-}>;
-
-function isRecord(value: unknown): value is ApiRecord {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isString(value: unknown): value is string {
-  return typeof value === "string";
-}
-
-function readDraftRecovery(): DraftRecovery | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const parsed: unknown = JSON.parse(
-      window.sessionStorage.getItem(draftRecoveryStorageKey) ?? "null",
-    );
-    if (!isRecord(parsed) || parsed.draftCritical === undefined) return null;
-    const stringFields = [
-      "idempotencyKey",
-      "scopeId",
-      "moduleId",
-      "draftSessionSuffix",
-      "draftObjectiveId",
-      "draftTitle",
-      "draftPrompt",
-      "draftChoiceA",
-      "draftChoiceB",
-      "draftCorrectChoiceId",
-      "draftFeedback",
-      "draftSourceCode",
-      "draftSourceLocator",
-    ] as const;
-    if (
-      !stringFields.every((field) => isString(parsed[field])) ||
-      typeof parsed.draftCritical !== "boolean"
-    ) {
-      return null;
-    }
-    const stringValue = (field: (typeof stringFields)[number]): string =>
-      parsed[field] as string;
-    return Object.freeze({
-      idempotencyKey: stringValue("idempotencyKey"),
-      scopeId: stringValue("scopeId"),
-      moduleId: stringValue("moduleId"),
-      draftSessionSuffix: stringValue("draftSessionSuffix"),
-      draftObjectiveId: stringValue("draftObjectiveId"),
-      draftTitle: stringValue("draftTitle"),
-      draftPrompt: stringValue("draftPrompt"),
-      draftChoiceA: stringValue("draftChoiceA"),
-      draftChoiceB: stringValue("draftChoiceB"),
-      draftCorrectChoiceId: stringValue("draftCorrectChoiceId"),
-      draftFeedback: stringValue("draftFeedback"),
-      draftSourceCode: stringValue("draftSourceCode"),
-      draftSourceLocator: stringValue("draftSourceLocator"),
-      draftCritical: parsed.draftCritical,
-    });
-  } catch {
-    return null;
-  }
-}
-
-function writeDraftRecovery(recovery: DraftRecovery): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(
-      draftRecoveryStorageKey,
-      JSON.stringify(recovery),
-    );
-  } catch {
-    // Session storage is an optional recovery aid; the server remains the authority.
-  }
-}
-
-function clearDraftRecovery(): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.removeItem(draftRecoveryStorageKey);
-  } catch {
-    // Ignore storage restrictions; the in-memory retry remains available.
-  }
-}
-
-function isUuid(value: unknown): value is string {
-  return (
-    isString(value) &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
-      value,
-    )
-  );
-}
-
-function isInternalAuthoringRecord(
-  value: unknown,
-): value is InternalAuthoringRecord {
-  if (
-    !isRecord(value) ||
-    !isString(value.contentId) ||
-    !isRecord(value.availableActions) ||
-    !hasOnlyKeys(value, [
-      "contentId",
-      "version",
-      "scopeId",
-      "moduleId",
-      "sessionId",
-      "objectiveId",
-      "authorId",
-      "contentStatus",
-      "item",
-      "preflight",
-      "latestReview",
-      "availableActions",
-    ]) ||
-    !hasOnlyKeys(value.availableActions, [
-      "requestAdjustments",
-      "approveClinically",
-    ])
-  )
-    return false;
-  if (!isRecord(value.item) || !isRecord(value.preflight)) return false;
-  return (
-    isUuid(value.contentId) &&
-    isUuid(value.scopeId) &&
-    typeof value.version === "number" &&
-    isString(value.moduleId) &&
-    isString(value.sessionId) &&
-    isString(value.objectiveId) &&
-    isUuid(value.authorId) &&
-    isString(value.contentStatus) &&
-    isString(value.item.title) &&
-    isString(value.item.prompt) &&
-    isString(value.item.feedback) &&
-    typeof value.item.critical === "boolean" &&
-    typeof value.preflight.technicalChecksPassed === "boolean" &&
-    typeof value.availableActions.requestAdjustments === "boolean" &&
-    typeof value.availableActions.approveClinically === "boolean"
-  );
-}
-
-function hasOnlyKeys(value: ApiRecord, keys: readonly string[]): boolean {
-  const allowed = new Set(keys);
-  return Object.keys(value).every((key) => allowed.has(key));
-}
-
-function isContentReviewQueueItem(
-  value: unknown,
-): value is ContentReviewQueueItem {
-  if (!isRecord(value) || !isRecord(value.preflight)) return false;
-  if (
-    !hasOnlyKeys(value, [
-      "contentId",
-      "version",
-      "scopeId",
-      "moduleId",
-      "sessionId",
-      "title",
-      "authorId",
-      "status",
-      "preflight",
-      "latestReview",
-      "canOpenAuthoring",
-      "updatedAt",
-      "nextAction",
-    ]) ||
-    !isString(value.contentId) ||
-    !isString(value.scopeId) ||
-    !isString(value.moduleId) ||
-    !isString(value.sessionId) ||
-    !isString(value.title) ||
-    !isString(value.authorId) ||
-    !isString(value.updatedAt) ||
-    typeof value.version !== "number" ||
-    !Number.isInteger(value.version) ||
-    value.version < 1 ||
-    (value.status !== "EM_REVISAO_CLINICA" &&
-      value.status !== "AJUSTES_SOLICITADOS") ||
-    (value.nextAction !== "REVISAR_CLINICAMENTE" &&
-      value.nextAction !== "AGUARDAR_REENVIO_AUTOR") ||
-    typeof value.preflight.technicalChecksPassed !== "boolean" ||
-    !isString(value.preflight.checkedAt) ||
-    typeof value.canOpenAuthoring !== "boolean"
-  ) {
-    return false;
-  }
-  if (value.latestReview !== undefined) {
-    if (
-      !isRecord(value.latestReview) ||
-      !hasOnlyKeys(value.latestReview, ["decision", "reviewedAt"]) ||
-      !isString(value.latestReview.reviewedAt) ||
-      (value.latestReview.decision !== "APROVAR_CLINICAMENTE" &&
-        value.latestReview.decision !== "SOLICITAR_AJUSTES")
-    ) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function isContentReviewQueue(value: unknown): value is ContentReviewQueue {
-  if (!isRecord(value) || !Array.isArray(value.items)) return false;
-  if (
-    !hasOnlyKeys(value, [
-      "kind",
-      "scopeId",
-      "generatedAt",
-      "filters",
-      "items",
-    ]) ||
-    value.kind !== "content_review_queue" ||
-    !isString(value.scopeId) ||
-    !isString(value.generatedAt) ||
-    !isRecord(value.filters) ||
-    !hasOnlyKeys(value.filters, ["scopeId", "status", "limit"]) ||
-    value.filters.scopeId !== value.scopeId ||
-    typeof value.filters.limit !== "number" ||
-    !Number.isInteger(value.filters.limit) ||
-    value.filters.limit < 1 ||
-    value.filters.limit > 100 ||
-    !value.items.every(isContentReviewQueueItem)
-  ) {
-    return false;
-  }
-  return true;
-}
-
-function isInternalSessionScopes(
-  value: unknown,
-): value is InternalSessionScopes {
-  if (!isRecord(value) || !Array.isArray(value.scopes)) return false;
-  return (
-    hasOnlyKeys(value, ["kind", "scopes"]) &&
-    value.kind === "internal_session_scopes" &&
-    value.scopes.every(isUuid)
-  );
-}
 
 async function requestJson(
   path: string,
@@ -390,7 +62,7 @@ async function requestJson(
     clearTimeout(timeout);
   }
   const payload: unknown = await response.json().catch(() => null);
-  if (!isRecord(payload) || payload.success !== true) {
+  if (!response.ok || !isRecord(payload) || payload.success !== true) {
     if (response.status === 409) {
       throw new Error(
         "A chave de idempotência já foi usada com outro conteúdo.",
@@ -402,14 +74,6 @@ async function requestJson(
     throw new Error("A operação editorial não foi concluída.");
   }
   return payload.data;
-}
-
-function newDraftIdempotencyKey(): string {
-  const randomId =
-    typeof globalThis.crypto?.randomUUID === "function"
-      ? globalThis.crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  return `authoring-ui-${randomId}`;
 }
 
 function queryInput(): Readonly<{
@@ -432,18 +96,150 @@ function scopeOptionLabel(scopeId: string, index: number): string {
 }
 
 export default function AuthoringPage() {
+  const [session, setSession] = useState<InternalSessionScopes | null>(null);
+  const [selectedScopeId, setSelectedScopeId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [revision, setRevision] = useState(0);
+  const generation = useRef(0);
+  const suspended = useRef(false);
+
+  useEffect(() => {
+    const current = ++generation.current;
+    setLoading(true);
+    setFailed(false);
+    setSession(null);
+    void requestJson("/api/v1/internal/session/scopes", { method: "GET" })
+      .then((data) => {
+        if (generation.current !== current) return;
+        if (!isInternalSessionScopes(data))
+          throw new Error("Projeção inválida.");
+        const recovery = readDraftRecovery();
+        const context = data.recoveryContext;
+        const ownsRecovery =
+          context !== undefined &&
+          recovery !== null &&
+          recovery.principalId === context.principalId &&
+          recovery.sessionBinding === context.sessionBinding;
+        const preferred =
+          queryInput().scopeId || (ownsRecovery ? recovery.scopeId : "");
+        const scope = data.scopes.includes(preferred)
+          ? preferred
+          : (data.scopes[0] ?? "");
+        if (!ownsRecovery || recovery.scopeId !== scope) clearDraftRecovery();
+        setSelectedScopeId(scope);
+        setSession(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (generation.current !== current) return;
+        clearDraftRecovery();
+        setSession(null);
+        setFailed(true);
+        setLoading(false);
+      });
+    const invalidate = () => {
+      suspended.current = true;
+      ++generation.current;
+      setSession(null);
+      setLoading(true);
+    };
+    const refresh = () => {
+      if (!suspended.current) return;
+      invalidate();
+      suspended.current = false;
+      setRevision((value) => value + 1);
+    };
+    const visibility = () => {
+      if (document.visibilityState === "hidden") invalidate();
+      else refresh();
+    };
+    window.addEventListener("focus", refresh);
+    window.addEventListener("blur", invalidate);
+    window.addEventListener("pageshow", refresh);
+    window.addEventListener("pagehide", invalidate);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      ++generation.current;
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("blur", invalidate);
+      window.removeEventListener("pageshow", refresh);
+      window.removeEventListener("pagehide", invalidate);
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [revision]);
+
+  if (loading || failed || session === null || session.scopes.length === 0) {
+    return (
+      <main className="shell" id="main-content" tabIndex={-1}>
+        <section
+          className="experience-panel dashboard-message internal-access-gate"
+          data-testid="internal-access-gate"
+          role={loading ? "status" : "alert"}
+          aria-live="polite"
+        >
+          <h1 className="access-gate-title">
+            {loading
+              ? "Validando acesso restrito"
+              : failed
+                ? "Sessão interna necessária"
+                : "Nenhum escopo autorizado"}
+          </h1>
+          <span>
+            {loading
+              ? "Consultando a autorização server-side da sessão…"
+              : failed
+                ? "Não foi possível carregar os escopos da sessão interna."
+                : "Esta conta não possui escopo para a superfície de autoria."}
+          </span>
+          {failed ? (
+            <button
+              type="button"
+              onClick={() => setRevision((value) => value + 1)}
+            >
+              Tentar carregar novamente
+            </button>
+          ) : null}
+        </section>
+      </main>
+    );
+  }
+  return (
+    <AuthoringWorkspace
+      key={`${revision}:${session.recoveryContext?.principalId ?? "unbound"}:${session.recoveryContext?.sessionBinding ?? "unbound"}:${selectedScopeId}`}
+      session={session}
+      scopeId={selectedScopeId}
+      onScopeChange={(scope) => {
+        clearDraftRecovery();
+        setSelectedScopeId(session.scopes.includes(scope) ? scope : "");
+      }}
+    />
+  );
+}
+
+function AuthoringWorkspace({
+  session,
+  scopeId,
+  onScopeChange,
+}: Readonly<{
+  session: InternalSessionScopes;
+  scopeId: string;
+  onScopeChange: (scope: string) => void;
+}>) {
+  const sessionScopes = session.scopes;
+  const active = useRef(true);
   const [record, setRecord] = useState<InternalAuthoringRecord | null>(null);
+  const [adjustmentReceipt, setAdjustmentReceipt] =
+    useState<AdjustmentReceipt | null>(null);
   const [queue, setQueue] = useState<ContentReviewQueue | null>(null);
-  const [sessionScopes, setSessionScopes] = useState<readonly string[]>([]);
   const [contentId, setContentId] = useState("");
   const [version, setVersion] = useState("1");
-  const [scopeId, setScopeId] = useState("");
   const [authoringToolsOpen, setAuthoringToolsOpen] = useState(false);
-  const [scopeLoading, setScopeLoading] = useState(true);
-  const [scopeLoadError, setScopeLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [reviewRationale, setReviewRationale] = useState("");
+  const [rationaleError, setRationaleError] = useState<string | null>(null);
   const [draftConflict, setDraftConflict] = useState(false);
   const [draftIdempotencyKey, setDraftIdempotencyKey] = useState("");
   const [draftModuleId, setDraftModuleId] = useState("M02");
@@ -466,10 +262,16 @@ export default function AuthoringPage() {
   const [draftCritical, setDraftCritical] = useState(false);
 
   useEffect(() => {
+    active.current = true;
     const recovery = readDraftRecovery();
-    if (recovery !== null) {
+    if (
+      recovery !== null &&
+      session.recoveryContext !== undefined &&
+      recovery.principalId === session.recoveryContext.principalId &&
+      recovery.sessionBinding === session.recoveryContext.sessionBinding &&
+      recovery.scopeId === scopeId
+    ) {
       setDraftIdempotencyKey(recovery.idempotencyKey);
-      setScopeId(recovery.scopeId);
       setDraftModuleId(recovery.moduleId);
       setDraftSessionSuffix(recovery.draftSessionSuffix);
       setDraftObjectiveId(recovery.draftObjectiveId);
@@ -486,15 +288,20 @@ export default function AuthoringPage() {
     const input = queryInput();
     setContentId(input.contentId);
     setVersion(input.version);
-    const initialScopeId =
-      input.scopeId.length > 0 ? input.scopeId : (recovery?.scopeId ?? "");
-    setScopeId(initialScopeId);
-    void initialize({ ...input, scopeId: initialScopeId });
+    void initialize(input);
+    return () => {
+      active.current = false;
+    };
   }, []);
 
   useEffect(() => {
-    if (draftIdempotencyKey.length === 0) return;
+    if (
+      draftIdempotencyKey.length === 0 ||
+      session.recoveryContext === undefined
+    )
+      return;
     writeDraftRecovery({
+      ...session.recoveryContext,
       idempotencyKey: draftIdempotencyKey,
       scopeId,
       moduleId: draftModuleId,
@@ -524,6 +331,7 @@ export default function AuthoringPage() {
     draftSourceLocator,
     draftTitle,
     scopeId,
+    session.recoveryContext,
   ]);
 
   async function initialize(
@@ -533,50 +341,16 @@ export default function AuthoringPage() {
       readonly scopeId: string;
     }>,
   ): Promise<void> {
-    const scopes = await loadSessionScopes();
-    const selectedScopeId = scopes.includes(input.scopeId)
-      ? input.scopeId
-      : (scopes[0] ?? "");
-    setScopeId(selectedScopeId);
-    if (selectedScopeId.length > 0) {
-      await loadQueue(selectedScopeId);
+    if (scopeId.length > 0) {
+      await loadQueue(scopeId);
     }
-    if (input.contentId.trim().length > 0 && selectedScopeId.length > 0) {
-      await loadRecord(input.contentId, input.version, selectedScopeId);
+    if (
+      active.current &&
+      input.contentId.trim().length > 0 &&
+      scopeId.length > 0
+    ) {
+      await loadRecord(input.contentId, input.version, scopeId);
     }
-  }
-
-  async function loadSessionScopes(): Promise<readonly string[]> {
-    setScopeLoading(true);
-    setScopeLoadError(null);
-    setError(null);
-    try {
-      const data = await requestJson("/api/v1/internal/session/scopes", {
-        method: "GET",
-      });
-      if (!isInternalSessionScopes(data)) throw new Error("Projeção inválida.");
-      setSessionScopes(data.scopes);
-      return data.scopes;
-    } catch {
-      setSessionScopes([]);
-      setQueue(null);
-      const message = "Não foi possível carregar os escopos da sessão interna.";
-      setScopeLoadError(message);
-      return [];
-    } finally {
-      setScopeLoading(false);
-    }
-  }
-
-  async function retrySessionScopes(): Promise<void> {
-    const input = queryInput();
-    const preferredScopeId = input.scopeId.length > 0 ? input.scopeId : scopeId;
-    const scopes = await loadSessionScopes();
-    const selectedScopeId = scopes.includes(preferredScopeId)
-      ? preferredScopeId
-      : (scopes[0] ?? "");
-    setScopeId(selectedScopeId);
-    if (selectedScopeId.length > 0) await loadQueue(selectedScopeId);
   }
 
   async function loadQueue(selectedScopeId: string): Promise<void> {
@@ -592,6 +366,9 @@ export default function AuthoringPage() {
         { method: "GET" },
       );
       if (!isContentReviewQueue(data)) throw new Error("Projeção inválida.");
+      if (!active.current) return;
+      if (data.scopeId !== selectedScopeId)
+        throw new Error("Projeção inválida.");
       setQueue(data);
     } catch {
       setQueue(null);
@@ -615,7 +392,16 @@ export default function AuthoringPage() {
       );
       if (!isInternalAuthoringRecord(data))
         throw new Error("Projeção inválida.");
+      if (!active.current) return;
+      if (
+        data.scopeId !== selectedScopeId ||
+        data.contentId !== id ||
+        data.version !== Number(selectedVersion)
+      )
+        throw new Error("Projeção inválida.");
       setRecord(data);
+      setAdjustmentReceipt(null);
+      setNotice(null);
     } catch {
       setError("Não foi possível carregar o registro de autoria.");
     } finally {
@@ -626,7 +412,15 @@ export default function AuthoringPage() {
   async function review(
     decision: "APROVAR_CLINICAMENTE" | "SOLICITAR_AJUSTES",
   ) {
-    if (record === null) return;
+    if (record === null || busy) return;
+    const rationale = reviewRationale.trim();
+    if (!isReviewRationale(rationale)) {
+      setRationaleError(
+        "Informe uma justificativa em texto simples, entre 1 e 10.000 caracteres.",
+      );
+      return;
+    }
+    setRationaleError(null);
     setBusy(true);
     setError(null);
     setNotice(null);
@@ -639,16 +433,34 @@ export default function AuthoringPage() {
             version: record.version,
             scopeId: record.scopeId,
             decision,
-            rationale:
-              decision === "APROVAR_CLINICAMENTE"
-                ? "Revisão clínica concluída na superfície interna."
-                : "Ajustes clínicos solicitados na superfície interna.",
+            rationale,
           },
         },
       );
-      if (!isInternalAuthoringRecord(data))
-        throw new Error("Projeção inválida.");
-      setRecord(data);
+      if (decision === "SOLICITAR_AJUSTES") {
+        if (
+          !isAdjustmentReceipt(data) ||
+          data.scopeId !== record.scopeId ||
+          data.contentId !== record.contentId ||
+          data.version !== record.version
+        )
+          throw new Error("Projeção inválida.");
+        if (!active.current) return;
+        setAdjustmentReceipt(data);
+        setRecord(null);
+      } else {
+        if (
+          !isInternalAuthoringRecord(data) ||
+          data.scopeId !== record.scopeId ||
+          data.contentId !== record.contentId ||
+          data.version !== record.version
+        )
+          throw new Error("Projeção inválida.");
+        if (!active.current) return;
+        setRecord(data);
+        setAdjustmentReceipt(null);
+      }
+      setReviewRationale("");
       setNotice(
         decision === "APROVAR_CLINICAMENTE"
           ? "Revisão clínica registrada."
@@ -672,22 +484,24 @@ export default function AuthoringPage() {
         ? draftIdempotencyKey
         : newDraftIdempotencyKey();
     setDraftIdempotencyKey(requestIdempotencyKey);
-    writeDraftRecovery({
-      idempotencyKey: requestIdempotencyKey,
-      scopeId,
-      moduleId: draftModuleId,
-      draftSessionSuffix,
-      draftObjectiveId,
-      draftTitle,
-      draftPrompt,
-      draftChoiceA,
-      draftChoiceB,
-      draftCorrectChoiceId,
-      draftFeedback,
-      draftSourceCode,
-      draftSourceLocator,
-      draftCritical,
-    });
+    if (session.recoveryContext !== undefined)
+      writeDraftRecovery({
+        ...session.recoveryContext,
+        idempotencyKey: requestIdempotencyKey,
+        scopeId,
+        moduleId: draftModuleId,
+        draftSessionSuffix,
+        draftObjectiveId,
+        draftTitle,
+        draftPrompt,
+        draftChoiceA,
+        draftChoiceB,
+        draftCorrectChoiceId,
+        draftFeedback,
+        draftSourceCode,
+        draftSourceLocator,
+        draftCritical,
+      });
     setBusy(true);
     setError(null);
     setNotice(null);
@@ -724,6 +538,8 @@ export default function AuthoringPage() {
       });
       if (!isInternalAuthoringRecord(data))
         throw new Error("Projeção inválida.");
+      if (!active.current) return;
+      if (data.scopeId !== scopeId) throw new Error("Projeção inválida.");
       setRecord(data);
       setNotice(
         "Rascunho criado. O pré-voo técnico não publica nem aprova o conteúdo.",
@@ -731,6 +547,7 @@ export default function AuthoringPage() {
       clearDraftRecovery();
       setDraftIdempotencyKey("");
     } catch (caught) {
+      if (!active.current) return;
       if (
         caught instanceof Error &&
         caught.message.includes("chave de idempotência")
@@ -745,42 +562,6 @@ export default function AuthoringPage() {
     } finally {
       setBusy(false);
     }
-  }
-
-  if (scopeLoading || scopeLoadError !== null || sessionScopes.length === 0) {
-    return (
-      <main className="shell" id="main-content" tabIndex={-1}>
-        <section
-          className="experience-panel dashboard-message internal-access-gate"
-          data-testid="internal-access-gate"
-          role={scopeLoading ? "status" : "alert"}
-          aria-live="polite"
-        >
-          <h1 className="access-gate-title">
-            {scopeLoading
-              ? "Validando acesso restrito"
-              : scopeLoadError !== null
-                ? "Sessão interna necessária"
-                : "Nenhum escopo autorizado"}
-          </h1>
-          <span>
-            {scopeLoading
-              ? "Consultando a autorização server-side da sessão…"
-              : (scopeLoadError ??
-                "Esta conta não possui escopo para a superfície de autoria.")}
-          </span>
-          {scopeLoadError !== null ? (
-            <button
-              type="button"
-              onClick={() => void retrySessionScopes()}
-              disabled={scopeLoading}
-            >
-              Tentar carregar novamente
-            </button>
-          ) : null}
-        </section>
-      </main>
-    );
   }
 
   return (
@@ -812,37 +593,13 @@ export default function AuthoringPage() {
           Consulte somente metadados do escopo autorizado. O item completo abre
           em uma rota interna separada e a decisão continua humana.
         </p>
-        {scopeLoading ? (
-          <p className="dashboard-empty" role="status">
-            Carregando escopos autorizados…
-          </p>
-        ) : null}
-        {scopeLoadError !== null ? (
-          <div className="feedback error" role="alert">
-            <p>{scopeLoadError}</p>
-            <button
-              type="button"
-              onClick={() => void retrySessionScopes()}
-              disabled={scopeLoading}
-            >
-              Tentar carregar novamente
-            </button>
-          </div>
-        ) : null}
-        {!scopeLoading &&
-        scopeLoadError === null &&
-        sessionScopes.length === 0 ? (
-          <p className="dashboard-empty" role="status">
-            Nenhum escopo autorizado foi disponibilizado para esta sessão.
-          </p>
-        ) : null}
         <div className="queue-filter-row">
           <label htmlFor="queue-scope-id">Escopo autorizado</label>
           <select
             id="queue-scope-id"
             name="scopeId"
             value={scopeId}
-            onChange={(event) => setScopeId(event.target.value)}
+            onChange={(event) => onScopeChange(event.target.value)}
             disabled={busy || sessionScopes.length === 0}
           >
             <option value="">Selecione um escopo</option>
@@ -971,7 +728,7 @@ export default function AuthoringPage() {
                     <select
                       id="draft-scope-id"
                       value={scopeId}
-                      onChange={(event) => setScopeId(event.target.value)}
+                      onChange={(event) => onScopeChange(event.target.value)}
                       required
                       disabled={busy || sessionScopes.length === 0}
                     >
@@ -1192,9 +949,10 @@ export default function AuthoringPage() {
                 <div className="draft-form-footer">
                   <p className="field-help">
                     A chave de idempotência fica no cliente apenas para repetir
-                    com segurança uma tentativa interrompida. Em caso de timeout
-                    ou recarga, os dados da tentativa permanecem nesta aba para
-                    o reenvio seguro da mesma operação.
+                    com segurança uma tentativa interrompida.{" "}
+                    {session.recoveryContext === undefined
+                      ? "A recuperação após recarga está indisponível nesta sessão. Se o envio falhar, tente novamente antes de fechar esta tela."
+                      : "Se o envio falhar, a tentativa pode ser recuperada nesta aba pela mesma conta, sessão e escopo."}
                   </p>
                   {draftConflict ? (
                     <button
@@ -1301,25 +1059,57 @@ export default function AuthoringPage() {
             ) : null}
             {record.availableActions.requestAdjustments ||
             record.availableActions.approveClinically ? (
-              <div className="review-actions">
-                {record.availableActions.requestAdjustments ? (
-                  <button
-                    type="button"
-                    onClick={() => void review("SOLICITAR_AJUSTES")}
-                    disabled={busy}
+              <div>
+                <label htmlFor="review-rationale">
+                  Justificativa da decisão
+                </label>
+                <p className="field-help" id="review-rationale-help">
+                  Descreva a fundamentação da sua decisão e, ao solicitar
+                  ajustes, indique o que precisa ser corrigido.
+                </p>
+                <textarea
+                  id="review-rationale"
+                  value={reviewRationale}
+                  onChange={(event) => {
+                    setReviewRationale(event.target.value);
+                    setRationaleError(null);
+                  }}
+                  required
+                  maxLength={10000}
+                  rows={4}
+                  disabled={busy}
+                  aria-invalid={rationaleError !== null}
+                  aria-describedby={`review-rationale-help${rationaleError === null ? "" : " review-rationale-error"}`}
+                />
+                {rationaleError !== null ? (
+                  <p
+                    className="feedback error"
+                    id="review-rationale-error"
+                    role="alert"
                   >
-                    Solicitar ajustes
-                  </button>
+                    {rationaleError}
+                  </p>
                 ) : null}
-                {record.availableActions.approveClinically ? (
-                  <button
-                    type="button"
-                    onClick={() => void review("APROVAR_CLINICAMENTE")}
-                    disabled={busy || !record.preflight.technicalChecksPassed}
-                  >
-                    Aprovar clinicamente
-                  </button>
-                ) : null}
+                <div className="review-actions">
+                  {record.availableActions.requestAdjustments ? (
+                    <button
+                      type="button"
+                      onClick={() => void review("SOLICITAR_AJUSTES")}
+                      disabled={busy}
+                    >
+                      Solicitar ajustes
+                    </button>
+                  ) : null}
+                  {record.availableActions.approveClinically ? (
+                    <button
+                      type="button"
+                      onClick={() => void review("APROVAR_CLINICAMENTE")}
+                      disabled={busy || !record.preflight.technicalChecksPassed}
+                    >
+                      Aprovar clinicamente
+                    </button>
+                  ) : null}
+                </div>
               </div>
             ) : (
               <p className="field-help">
@@ -1346,6 +1136,7 @@ export default function AuthoringPage() {
                   {record.latestReview.decision} ·{" "}
                   {record.latestReview.reviewedAt}
                 </p>
+                <p>{record.latestReview.rationale}</p>
               </>
             ) : null}
             <h3>Fontes internas</h3>
@@ -1360,6 +1151,27 @@ export default function AuthoringPage() {
           </aside>
         </section>
       )}
+
+      {adjustmentReceipt !== null ? (
+        <section
+          className="privacy-card"
+          aria-label="Decisão editorial registrada"
+        >
+          <h2>Decisão registrada</h2>
+          <p>
+            Conteúdo: {adjustmentReceipt.contentId} · versão{" "}
+            {adjustmentReceipt.version}
+          </p>
+          <p>{adjustmentReceipt.contentStatus}</p>
+          <p>
+            {adjustmentReceipt.review.decision} ·{" "}
+            {adjustmentReceipt.review.reviewedAt}
+          </p>
+          {adjustmentReceipt.review.rationale !== undefined ? (
+            <p>{adjustmentReceipt.review.rationale}</p>
+          ) : null}
+        </section>
+      ) : null}
 
       {error !== null ? (
         <p className="feedback error" role="alert">

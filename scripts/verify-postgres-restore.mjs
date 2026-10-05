@@ -217,7 +217,7 @@ async function main() {
         status: "PASS",
         markerVerified: true,
         targetIsolated: true,
-        rtoMs: Math.max(0, Date.now() - startedAt),
+        verificationDurationMs: Math.max(0, Date.now() - startedAt),
       }),
     );
   } finally {

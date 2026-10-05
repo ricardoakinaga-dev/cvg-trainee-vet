@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFile } from "node:fs/promises";
 import {
   createCycloneDxSbom,
   createSha256Manifest,
@@ -10,6 +11,65 @@ import {
 } from "../../scripts/verify-ci-contract.mjs";
 
 describe("CI reproducibility contract", () => {
+  it.each([
+    "testSummaryScript",
+    "securitySummaryScript",
+    "releaseEvidenceScript",
+  ])("R7 rejects disconnected proof producer/consumer %s", async (field) => {
+    const contract = await readCiContract();
+    expect(() => validateCiContract({ ...contract, [field]: "" })).toThrow(
+      /CI proof contract/,
+    );
+  });
+  it("R5 candidate produces authenticated raw runs before emitting and supplies native/browser prerequisites", async () => {
+    const candidate = await readFile(".github/workflows/candidate.yml", "utf8");
+    const collector = candidate.slice(
+      candidate.indexOf("- name: Record authenticated remote CI summary"),
+      candidate.indexOf("- name: Record durable Redis candidate summary"),
+    );
+    expect(collector).toContain("--out staging-evidence/ci-runs.json");
+    expect(candidate).toContain("pnpm staging:verify --browser");
+    expect(candidate).toContain(
+      "CVG_STAGING_QDRANT_URL: http://127.0.0.1:6333",
+    );
+    expect(candidate).toContain("CVG_OTEL_COLLECTOR_BIN:");
+    expect(candidate).toContain("CVG_K6_BIN:");
+    expect(candidate).toContain("--load-raw staging-evidence/k6-summary.json");
+    expect(candidate).toContain("--otel-raw staging-evidence/otel-spans.json");
+    expect(candidate).toContain(
+      "--multi-instance-report staging-evidence/ratelimit-live-results.json",
+    );
+    expect(candidate).toContain("--load-raw release-evidence/k6-summary.json");
+    expect(candidate).toContain("--otel-raw release-evidence/otel-spans.json");
+    expect(candidate).toContain(
+      "--multi-instance-report release-evidence/ratelimit-live-results.json",
+    );
+    expect(
+      candidate.indexOf("- name: Install pinned staging measurement tools"),
+    ).toBeGreaterThan(0);
+    expect(
+      candidate.indexOf("- name: Install pinned staging measurement tools"),
+    ).toBeLessThan(candidate.indexOf("- name: Verify staging-like stack"));
+    expect(candidate).toContain("sha256sum --check");
+  });
+  it("requires strict root test typechecking reachable from the official verify command", async () => {
+    const contract = await readCiContract();
+    const scripts = contract.packageJson.scripts;
+    const invalidScripts = [
+      { ...scripts, typecheck: "tsc -b" },
+      { ...scripts, "typecheck:test": "tsc -p tsconfig.json" },
+      { ...scripts, verify: scripts.verify.replace("pnpm typecheck && ", "") },
+    ];
+    for (const invalid of invalidScripts) {
+      expect(() =>
+        validateCiContract({
+          ...contract,
+          packageJson: { ...contract.packageJson, scripts: invalid },
+        }),
+      ).toThrow(/strict root test typechecking/i);
+    }
+  });
+
   it("accepts the repository's pinned environment and quality workflow", async () => {
     const contract = await readCiContract();
 

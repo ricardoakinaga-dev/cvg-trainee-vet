@@ -1,0 +1,15 @@
+{
+  "name": "freshness-dirty-reproduction",
+  "command": [
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {isEvidenceFresh} from './scripts/evidence-freshness.mjs';import {execFileSync} from 'node:child_process';const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();const changed=execFileSync('git',['diff','--name-only','--','apps','packages','tests','scripts','.github','package.json','vitest.config.ts','playwright.config.ts','traceability.yml'],{encoding:'utf8'}).trim().split('\\n').filter(Boolean);console.log(JSON.stringify({head,trackedRuntimeChanges:changed.length,freshness:await isEvidenceFresh(process.cwd(),head,head)}));"
+  ],
+  "startedAt": "2026-10-03T05:00:34.489335+00:00",
+  "durationSeconds": 0.17,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/freshness-dirty-reproduction.log",
+  "sha256": "d77cfc7aa8b9c609385bb7fd0a890920d391277ce555e3c2a92ff9d24ddf3a3e"
+}

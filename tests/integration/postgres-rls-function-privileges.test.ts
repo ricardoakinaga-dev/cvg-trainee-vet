@@ -178,6 +178,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       const roleName = `cvg_rls_fn_${randomUUID().replaceAll("-", "")}`;
       const rolePassword = randomUUID().replaceAll("-", "");
       const role = quoteRoleIdentifier(roleName);
+      if (liveDatabaseUrl === undefined)
+        throw new Error("live database URL required");
       const source = new URL(liveDatabaseUrl);
       const database = quoteDatabaseIdentifier(
         decodeURIComponent(source.pathname.slice(1)),

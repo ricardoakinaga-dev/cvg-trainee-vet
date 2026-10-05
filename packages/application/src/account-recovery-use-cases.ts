@@ -8,6 +8,7 @@ import {
 } from "./session.js";
 import { canAccess, type AccountStatus, type Role } from "./authorization.js";
 import { ApplicationError, toApplicationError } from "./errors.js";
+import { SESSION_ABSOLUTE_LIFETIME_SECONDS } from "./session-expiry-policy.js";
 
 export type AccountRecoveryManagedAccount = Readonly<{
   readonly accountId: string;
@@ -162,7 +163,11 @@ function assertRecoveryLifetime(seconds: number): void {
 }
 
 function assertSessionLifetime(seconds: number): void {
-  if (!Number.isInteger(seconds) || seconds < 60 || seconds > 604_800) {
+  if (
+    !Number.isInteger(seconds) ||
+    seconds < 60 ||
+    seconds > SESSION_ABSOLUTE_LIFETIME_SECONDS
+  ) {
     throw new ApplicationError(
       "validation_error",
       "sessionExpiresInSeconds is outside the allowed range",

@@ -1,17 +1,24 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const runRealE2E = process.env.CVG_RUN_REAL_E2E === "true";
+const stagingBrowser = process.env.CVG_STAGING_BROWSER === "1";
 // Staging-like runs boot the full stack externally (scripts/run-staging.mjs)
 // and only need Playwright to reuse it instead of spawning CI-shaped servers.
 const externalServers = process.env.CVG_STAGING_EXTERNAL === "1";
 const mockedProxyCookie = "__Host-cvg_session=synthetic-e2e-session";
+const ignoredSpecs = [
+  ...(!runRealE2E ? ["**/real-runtime.spec.ts"] : []),
+  ...(stagingBrowser ? [] : ["**/staging-journey.spec.ts"]),
+];
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testIgnore:
-    process.env.CVG_STAGING_BROWSER === "1"
-      ? ["**/real-runtime.spec.ts"]
-      : ["**/real-runtime.spec.ts", "**/staging-journey.spec.ts"],
+  testMatch: stagingBrowser
+    ? "**/staging-journey.spec.ts"
+    : runRealE2E
+      ? "**/real-runtime.spec.ts"
+      : "**/*.spec.ts",
+  testIgnore: ignoredSpecs,
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -24,7 +31,9 @@ export default defineConfig({
   ],
   use: {
     baseURL: process.env.BASE_URL ?? "http://127.0.0.1:3100",
-    ...(runRealE2E ? {} : { extraHTTPHeaders: { cookie: mockedProxyCookie } }),
+    ...(runRealE2E || stagingBrowser
+      ? {}
+      : { extraHTTPHeaders: { cookie: mockedProxyCookie } }),
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",

@@ -140,7 +140,7 @@ Se qualquer arquivo obrigatório estiver ausente: `VERDICT = REVISE`, `EXIT CODE
 ```text
 candidate_sha == remote.quality.sha == remote.security.sha
 == remote.candidate.sha == coverage_summary.sha == mutation_summary.sha
-== rls_summary.sha == redis_summary.sha == staging_summary.sha
+== restore_summary.sha == rls_summary.sha == redis_summary.sha == staging_summary.sha
 == sbom/provenance source SHA
 ```
 
@@ -214,8 +214,12 @@ budget; sem baseline válido, não inventar comparação.
 
 # 125.13 — RESTORE INVARIANT
 
-`restore.status == PASS`, `restore.integrity_verified == true`; RTO
-numérico sem threshold inventado.
+`restore.format == cvg-restore-summary/v2`, `restore.status == PASS`,
+`restore.sha` válido e same-SHA/fresh, `restore.markerVerified == true`,
+`restore.targetIsolated == true`, `restore.integrity_verified == true` e
+`verificationDurationMs` inteiro seguro não negativo, sem o alias legado
+`rtoMs`. Essa duração cobre somente a verificação técnica descrita no runbook
+e não representa RTO operacional.
 
 ---
 

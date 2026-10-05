@@ -1,9 +1,17 @@
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, isAbsolute, join, relative } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+
+import { validateCurrentMutationSummary } from "./mutation-summary-contract.mjs";
+import { isRestoreSummaryV2 } from "./restore-summary-contract.mjs";
+import { isEvidenceFresh, latestAuditPath } from "./evidence-freshness.mjs";
+import { validateArtifactDigests } from "./release-evidence.mjs";
+import {
+  findingsCounterFailures,
+  riskRegisterFailures,
+} from "./ci-proof-contract.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = join(fileURLToPath(import.meta.url), "..", "..");
@@ -31,27 +39,6 @@ const FORBIDDEN_MARKERS = Object.freeze([
   "self-test",
 ]);
 
-const RUNTIME_TOP_LEVELS = Object.freeze([
-  "apps",
-  "packages",
-  "tests",
-  "scripts",
-  ".github",
-]);
-const RUNTIME_ROOT_FILES = Object.freeze([
-  "package.json",
-  "pnpm-lock.yaml",
-  "pnpm-workspace.yaml",
-  "vitest.config.ts",
-  "tsconfig.json",
-  "tsconfig.base.json",
-  "eslint.config.mjs",
-  "drizzle.config.ts",
-  "playwright.config.ts",
-  "architecture-boundaries.json",
-  "traceability.yml",
-]);
-
 function flagValue(name) {
   const equals = process.argv.find((arg) => arg.startsWith(`${name}=`));
   if (equals !== undefined) return equals.slice(name.length + 1);
@@ -62,66 +49,27 @@ function flagValue(name) {
   return next;
 }
 
-function sha256Hex(content) {
-  return createHash("sha256").update(content).digest("hex");
-}
-
 async function readJson(path) {
   return JSON.parse(await readFile(path, "utf8"));
 }
 
-async function isAncestor(sha, head) {
-  try {
-    await execFileAsync("git", ["merge-base", "--is-ancestor", sha, head], {
-      cwd: root,
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function runtimeDiffEmpty(sha, head) {
-  try {
-    const { stdout } = await execFileAsync(
-      "git",
-      ["diff", "--name-only", sha, head, "--"],
-      { cwd: root },
-    );
-    return (
-      stdout
-        .split("\n")
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0)
-        .filter(
-          (line) =>
-            RUNTIME_TOP_LEVELS.some(
-              (top) => line === top || line.startsWith(`${top}/`),
-            ) || RUNTIME_ROOT_FILES.includes(line),
-        ).length === 0
-    );
-  } catch {
-    return false;
-  }
-}
-
 async function checkFresh(sha, head) {
-  if (typeof sha !== "string" || !SHA_RE.test(sha)) {
-    return { fresh: false, detail: `not a full SHA: ${String(sha)}` };
-  }
-  if (sha === head) return { fresh: true, detail: sha };
-  if (!(await isAncestor(sha, head))) {
-    return { fresh: false, detail: `${sha} is not an ancestor of ${head}` };
-  }
-  if (!(await runtimeDiffEmpty(sha, head))) {
-    return { fresh: false, detail: `runtime diff since ${sha}` };
-  }
-  return { fresh: true, detail: `${sha} (docs-only since)` };
+  return isEvidenceFresh(process.cwd(), sha, head);
 }
 
 function scoreDomains(domains, names) {
   const values = names.map((name) => domains[name]);
-  if (values.some((value) => typeof value !== "number")) return null;
+  if (
+    values.length === 0 ||
+    values.some(
+      (value) =>
+        typeof value !== "number" ||
+        !Number.isFinite(value) ||
+        value < 0 ||
+        value > 100,
+    )
+  )
+    return null;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
@@ -182,19 +130,24 @@ async function main() {
     flagValue("--evidence-dir") ?? join(root, "release-evidence");
   const auditPath =
     flagValue("--audit") ??
-    join(root, "docs/audits/state-of-art-final-audit-v6.json");
+    (await latestAuditPath(root).catch(() =>
+      join(root, "docs/audits/missing-final-audit.json"),
+    ));
   const registerPath =
     flagValue("--register") ??
     join(root, "docs/quality/residual-risk-register.json");
   const reviewPath =
-    flagValue("--review") ?? join(root, "docs/audits/independent-review.json");
+    flagValue("--review") ??
+    join(root, "docs/audits/independent-review-v2.json");
   const outPath =
     flagValue("--out") ?? join(evidenceDir, "triple-aaa-verdict.json");
   const fixtureMode = process.argv.includes("--fixture-mode");
+  const preflight = process.argv.includes("--preflight");
+  const selfRunId = Number(flagValue("--self-candidate-run-id"));
   let candidateSha = flagValue("--sha");
   if (candidateSha === null) {
     const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
-      cwd: root,
+      cwd: process.cwd(),
     }).catch(() => ({ stdout: "" }));
     candidateSha = stdout.trim();
   }
@@ -208,8 +161,24 @@ async function main() {
     fatals.push(`FAIL: ${invariant}${detail === "" ? "" : ` — ${detail}`}`);
   };
 
+  // Single source of truth: config/triple-aaa-gates.json (matrix G01–G73).
+  // Missing/invalid config is fatal — thresholds are never defaulted.
+  let gates = null;
+  try {
+    const { loadGateConfig } = await import("./gate-config.mjs");
+    gates = await loadGateConfig();
+  } catch (error) {
+    fatal("gate config", error.message);
+  }
+  const covMin = gates?.coverage ?? null;
+  const mutMin = gates?.mutation?.adjusted_critical_min ?? null;
+  const mutSurvMax = gates?.mutation?.real_critical_survivors_max ?? null;
+  const scoreMin = gates?.scores ?? null;
+  const findingsMax = gates?.findings ?? null;
+
   // ---- load required artifacts (§125.2) ----
   const required = [
+    "multi-instance-summary.json",
     "coverage-summary.json",
     "mutation-summary.json",
     "test-summary.json",
@@ -240,7 +209,7 @@ async function main() {
   try {
     audit = await readJson(auditPath);
   } catch {
-    fail("audit v6 present", `${auditPath} missing`);
+    fail("current audit present", `${auditPath} missing`);
   }
   try {
     register = await readJson(registerPath);
@@ -266,7 +235,28 @@ async function main() {
           name !== "artifact-digests.json" &&
           name !== "manifest.json",
       )
-      .map(([, content]) => content);
+      .map(([name, content]) => {
+        if (name !== "coverage-summary.json" || !content) return content;
+        // json-summary keys inventory runtime filenames, which can legitimately
+        // contain "fixtures". Scan their values and all envelope claims. The
+        // raw bytes are validated against this report by the strict digest
+        // contract below, so they do not form a second textual claim channel.
+        const { raw_report: rawReport, report, ...claims } = content;
+        const inventory = Object.fromEntries(
+          Object.entries(report ?? {}).map(([file, metrics], index) => {
+            const runtimePath = relative(process.cwd(), file);
+            const runtimeFilename =
+              isAbsolute(file) &&
+              /^(apps|packages)\/.+\.(ts|tsx|mts|cts)$/u.test(runtimePath);
+            return [runtimeFilename ? `runtime_file_${index}` : file, metrics];
+          }),
+        );
+        return {
+          ...claims,
+          report: inventory,
+          raw_report_present: typeof rawReport === "string",
+        };
+      });
     const haystack = JSON.stringify(claimFiles);
     const hit = FORBIDDEN_MARKERS.find((marker) =>
       haystack.toLowerCase().includes(marker),
@@ -279,18 +269,45 @@ async function main() {
   // ---- candidate SHA (§125.3) ----
   const shaValid = SHA_RE.test(candidateSha);
   if (!shaValid) fail("candidate SHA valid", String(candidateSha));
+  const candidateFresh = await checkFresh(candidateSha, candidateSha);
+  if (!candidateFresh.fresh)
+    fail("candidate checkout fresh", candidateFresh.detail);
+  const auditFresh = await checkFresh(
+    audit?.evidence_sha ?? audit?.sha,
+    candidateSha,
+  );
+  const auditIdentity =
+    audit?.candidate_sha === candidateSha && auditFresh.fresh;
+  if (!auditIdentity)
+    fail(
+      "audit identity/freshness",
+      `candidate=${audit?.candidate_sha}; ${auditFresh.detail}`,
+    );
+  const auditDecision =
+    audit?.triple_aaa === "PASS" && audit?.readiness === "STAGING_VERIFIED";
+  if (!auditDecision)
+    fail(
+      "audit decision/readiness",
+      `decision=${audit?.triple_aaa}; readiness=${audit?.readiness}`,
+    );
 
   // ---- same-SHA invariant (§125.4) ----
   const remote = evidence["remote-ci-summary.json"];
   const sameShaEvidence = [
+    ["test", evidence["test-summary.json"]?.sha],
+    ["security", evidence["security-summary.json"]?.sha],
     ["coverage", evidence["coverage-summary.json"]?.sha],
     ["mutation", evidence["mutation-summary.json"]?.sha],
+    ["restore", evidence["restore-summary.json"]?.sha],
     ["rls", evidence["rls-live-summary.json"]?.sha],
     ["redis", evidence["redis-candidate-summary.json"]?.sha],
     ["staging", evidence["staging-summary.json"]?.sha],
+    ["otel", evidence["otel-summary.json"]?.sha],
+    ["load", evidence["load-summary.json"]?.sha],
+    ["multi-instance", evidence["multi-instance-summary.json"]?.sha],
     ["sbom/provenance", evidence["provenance.json"]?.commit],
   ];
-  let sameSha = shaValid;
+  let sameSha = shaValid && candidateFresh.fresh && auditIdentity;
   const shaNotes = [];
   if (remote) {
     for (const [name, run] of [
@@ -316,7 +333,6 @@ async function main() {
       shaNotes.push(`${name}.sha missing`);
       continue;
     }
-    if (sha === candidateSha) continue;
     const fresh = await checkFresh(sha, candidateSha);
     if (!fresh.fresh) {
       sameSha = false;
@@ -326,11 +342,28 @@ async function main() {
   if (!sameSha) fail("same-SHA invariant", shaNotes.join("; ").slice(0, 300));
 
   // ---- remote CI invariant (§125.5) ----
+  const preflightCandidate =
+    preflight &&
+    Number.isSafeInteger(selfRunId) &&
+    selfRunId > 0 &&
+    remote?.phase === "preflight" &&
+    remote?.candidate?.run_id === selfRunId &&
+    remote?.candidate?.execution_status === "in_progress" &&
+    remote?.candidate?.conclusion === null &&
+    remote?.candidate?.status === "pending";
+  const completedSuccess = (run) =>
+    run?.status === "PASS" &&
+    run.execution_status === "completed" &&
+    run.conclusion === "success" &&
+    Number.isSafeInteger(run.run_id) &&
+    run.run_id > 0;
   const remotePass =
     remote !== null &&
-    remote.quality?.status === "PASS" &&
-    remote.security?.status === "PASS" &&
-    remote.candidate?.status === "PASS" &&
+    remote.status === "PASS" &&
+    remote.authenticated === true &&
+    completedSuccess(remote.quality) &&
+    completedSuccess(remote.security) &&
+    (preflightCandidate || completedSuccess(remote.candidate)) &&
     remote.all_same_sha === true &&
     (remote.quality?.run_id ?? 0) > 0 &&
     (remote.security?.run_id ?? 0) > 0 &&
@@ -356,24 +389,56 @@ async function main() {
   };
   const coveragePass =
     coverage !== null &&
-    (cov.statements ?? 0) >= 90 &&
-    (cov.branches ?? 0) >= 85 &&
-    (cov.functions ?? 0) >= 90 &&
-    (cov.lines ?? 0) >= 90 &&
+    covMin !== null &&
+    (cov.statements ?? 0) >= covMin.statements_min &&
+    (cov.branches ?? 0) >= covMin.branches_min &&
+    (cov.functions ?? 0) >= covMin.functions_min &&
+    (cov.lines ?? 0) >= covMin.lines_min &&
     (coverage.status ?? "FAIL") === "PASS";
   if (!coveragePass) fail("coverage invariant", JSON.stringify(cov));
 
   // ---- mutation invariant (§125.7) ----
   const mutation = evidence["mutation-summary.json"];
+  const mutationRunId = process.env.CVG_MUTATION_CANDIDATE_ID?.trim();
+  let mutationProvenancePass = fixtureMode;
+  if (!fixtureMode) {
+    try {
+      const proof = await validateCurrentMutationSummary(mutation, {
+        repositoryRoot: root,
+        expectedRunId: mutationRunId,
+        expectedSha: candidateSha,
+        requireExpectedRunId: true,
+      });
+      mutationProvenancePass =
+        proof.candidateRunId === mutationRunId &&
+        proof.candidateSha === candidateSha;
+    } catch (error) {
+      mutationProvenancePass = false;
+      fail("current mutation provenance", error.message);
+    }
+  }
+  const mutationIdentityPass =
+    fixtureMode ||
+    (mutation?.candidate_sha === candidateSha &&
+      /^[a-f0-9]{64}$/u.test(mutation?.manifest_sha256 ?? "") &&
+      /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/u.test(
+        mutation?.candidate_run_id ?? "",
+      ) &&
+      mutationRunId !== undefined &&
+      mutation.candidate_run_id === mutationRunId);
   const mutationPass =
     mutation !== null &&
-    (mutation.adjusted_score ?? 0) >= 0.9 &&
-    mutation.critical_real_survivors === 0 &&
-    mutation.status === "PASS";
+    mutMin !== null &&
+    mutSurvMax !== null &&
+    (mutation.adjusted_score ?? 0) >= mutMin &&
+    (mutation.critical_real_survivors ?? 1) <= mutSurvMax &&
+    mutation.status === "PASS" &&
+    mutationIdentityPass &&
+    mutationProvenancePass;
   if (!mutationPass) {
     fail(
       "mutation invariant",
-      `adjusted=${mutation?.adjusted_score} survivors=${mutation?.critical_real_survivors}`,
+      `adjusted=${mutation?.adjusted_score} survivors=${mutation?.critical_real_survivors} candidate=${mutation?.candidate_sha}`,
     );
   }
 
@@ -382,6 +447,12 @@ async function main() {
   const secResidual = security?.residual ?? {};
   const securityPass =
     security !== null &&
+    security.audit === "pnpm audit --audit-level=high PASS" &&
+    security.audit_result?.status === "PASS" &&
+    security.audit_result.parsed === true &&
+    security.audit_result.command === "pnpm audit --audit-level=high" &&
+    security.audit_result.high === secResidual.high &&
+    security.audit_result.critical === secResidual.critical &&
     (secResidual.high ?? 1) === 0 &&
     (secResidual.critical ?? 1) === 0 &&
     security.secret_scan === "PASS" &&
@@ -488,7 +559,7 @@ async function main() {
   // ---- restore invariant (§125.13) ----
   const restore = evidence["restore-summary.json"];
   const restorePass =
-    restore !== null &&
+    isRestoreSummaryV2(restore) &&
     restore.status === "PASS" &&
     restore.integrity_verified === true;
   if (!restorePass) fail("restore invariant", `status=${restore?.status}`);
@@ -523,29 +594,15 @@ async function main() {
   try {
     const digests = await readJson(join(evidenceDir, "artifact-digests.json"));
     const manifest = await readJson(join(evidenceDir, "manifest.json"));
-    const listed = new Set(
-      (manifest.artifacts ?? []).map((entry) => entry.path),
-    );
-    digestsOk = true;
-    for (const [file, expected] of Object.entries(digests)) {
-      if (!listed.has(file)) {
-        digestsOk = false;
-        break;
-      }
-      try {
-        const content = await readFile(join(evidenceDir, file), "utf8");
-        if (sha256Hex(content) !== expected) {
-          digestsOk = false;
-          break;
-        }
-      } catch {
-        digestsOk = false;
-        break;
-      }
-    }
-    if (!listed.has("artifact-digests.json") && digestsOk) {
-      // Self-digest optional; bundle validity already covers presence.
-    }
+    digestsOk =
+      (
+        await validateArtifactDigests(evidenceDir, manifest, digests, [
+          auditPath,
+          registerPath,
+          reviewPath,
+          outPath,
+        ])
+      ).length === 0;
   } catch {
     digestsOk = false;
   }
@@ -593,18 +650,24 @@ async function main() {
   }
 
   // ---- findings (§125.16) ----
+  const counterFailures = findingsCounterFailures(audit);
+  for (const detail of counterFailures) fatal("findings counters", detail);
+  for (const detail of riskRegisterFailures(audit, register, candidateSha))
+    fail("risk register semantics", detail);
   const p2Entries = Array.isArray(register?.entries)
-    ? register.entries.filter((entry) => entry.severity === "P2")
+    ? register.entries.filter((entry) => entry?.severity === "P2")
     : [];
   const p3Entries = Array.isArray(register?.entries)
-    ? register.entries.filter((entry) => entry.severity === "P3")
+    ? register.entries.filter((entry) => entry?.severity === "P3")
     : [];
   const p0 = audit?.p0 ?? 1;
   const p1 = audit?.p1 ?? 1;
-  if (typeof p0 !== "number" || typeof p1 !== "number") {
-    fail("findings readable", "audit P0/P1 missing");
-  }
-  if (p0 > 0 || p1 > 0) {
+  // G69/G70 via gate config (p0_max/p1_max).
+  if (
+    findingsMax === null ||
+    p0 > findingsMax.p0_max ||
+    p1 > findingsMax.p1_max
+  ) {
     fatal("findings P0/P1", `p0=${p0} p1=${p1}`);
   }
   const requiredRiskFields = [
@@ -673,7 +736,14 @@ async function main() {
       ["security", audit?.aaa_security],
       ["operations", audit?.aaa_operations],
     ]) {
-      if (stated !== undefined && Math.abs(stated - scores[key]) > 0.06) {
+      if (
+        stated !== undefined &&
+        (typeof stated !== "number" ||
+          !Number.isFinite(stated) ||
+          stated < 0 ||
+          stated > 100 ||
+          Math.abs(stated - scores[key]) > 0.06)
+      ) {
         fail(
           "scores consistent with audit",
           `${key}: stated ${stated} vs computed ${scores[key]}`,
@@ -681,10 +751,16 @@ async function main() {
       }
     }
   }
+  // §48/§82: thresholds apply to the RAW means — never to rounded values
+  // (round1(96.99) === 97 must NOT pass). Rounded scores are display-only.
   const scoresPass =
-    (scores.engineering ?? 0) >= 97 &&
-    (scores.security ?? 0) >= 95 &&
-    (scores.operations ?? 0) >= 95;
+    scoreMin !== null &&
+    engineering !== null &&
+    securityScore !== null &&
+    operations !== null &&
+    engineering >= scoreMin.engineering_min &&
+    securityScore >= scoreMin.security_min &&
+    operations >= scoreMin.operations_min;
   if (!scoresPass) {
     fail(
       "score invariant",
@@ -699,6 +775,20 @@ async function main() {
     const bundleFailures = await validateBundle(evidenceDir, {
       strict: true,
       head: candidateSha,
+      phase: preflight ? "preflight" : "promotion",
+      derivedArtifacts: [auditPath, registerPath, reviewPath, outPath],
+      syntheticFixtureMode: fixtureMode,
+      expectedMutationRunId: fixtureMode ? mutation?.candidate_run_id : null,
+      testInventory: fixtureMode
+        ? [
+            "packages/application/src/fixture.test.ts",
+            "tests/integration/fixture.test.ts",
+          ]
+        : null,
+      trustedClaims: [auditPath, registerPath, reviewPath].map((path) => ({
+        path,
+        archivePath: `release-evidence/${basename(path)}`,
+      })),
     });
     releasePass = bundleFailures.length === 0;
     if (!releasePass) {
@@ -728,24 +818,44 @@ async function main() {
           releasePass &&
           reviewPass &&
           scoresPass &&
-          p0 === 0 &&
-          p1 === 0
-        ? "PASS"
+          findingsMax !== null &&
+          counterFailures.length === 0 &&
+          p0 <= findingsMax.p0_max &&
+          p1 <= findingsMax.p1_max
+        ? preflight
+          ? "PREFLIGHT_PASS"
+          : "PASS"
         : "REVISE";
 
   // ---- readiness derivation (§125.21) ----
   // Production evidence is out of scope for this program: without real
   // deployment telemetry the ceiling is STAGING_VERIFIED.
-  const finalReadiness = stagingPass
-    ? "STAGING_VERIFIED"
-    : "TECHNICALLY_VERIFIED";
+  // Readiness cannot contradict any gate of the complete promotion verdict.
+  const finalReadiness =
+    verdict === "PASS" &&
+    !preflight &&
+    candidateFresh.fresh &&
+    auditIdentity &&
+    sameSha &&
+    releasePass &&
+    remotePass &&
+    fatals.length === 0 &&
+    stagingPass
+      ? "STAGING_VERIFIED"
+      : "NOT_VERIFIED";
 
   const generatedAt = new Date().toISOString();
   const verdictDoc = {
     schema_version: 1,
     candidate_sha: candidateSha,
+    evidence_sha: audit?.evidence_sha ?? audit?.sha ?? null,
+    audit_path: auditPath,
+    phase: preflight ? "preflight" : "promotion",
     generated_at: generatedAt,
     ...(fixtureMode ? { synthetic_verifier_test: true } : {}),
+    proof_scope: fixtureMode
+      ? "SYNTHETIC_LOCAL_INTEGRITY"
+      : "AUTHENTICATED_REMOTE_ARTIFACT_REQUIRED",
     remote: {
       quality: {
         status: remote?.quality?.status ?? "missing",
@@ -840,7 +950,7 @@ async function main() {
   }
   if (verdict === "PASS") console.log("\nverify:triple-aaa: PASS");
 
-  process.exitCode = verdict === "PASS" ? 0 : 1;
+  process.exitCode = verdict === "PASS" || verdict === "PREFLIGHT_PASS" ? 0 : 1;
 }
 
 await main().catch((error) => {

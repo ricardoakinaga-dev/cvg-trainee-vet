@@ -36,41 +36,18 @@ export type PublicChoiceMetadata = Readonly<{
   readonly text: string;
 }>;
 
-export type PersistedAttemptSnapshot = Readonly<{
-  attemptId: string;
-  participantId: string;
-  activityId: string;
-  status: string;
-  version: number;
-  submittedAt?: string;
-}>;
-
-export type PersistedAnswerSnapshot = Readonly<{
-  readonly attempt: PersistedAttemptSnapshot;
-  readonly answer: Readonly<{
-    readonly answerId: string;
-    readonly attemptId: string;
-    readonly itemId: string;
-    readonly response: string;
-    readonly savedAt: string;
-  }>;
-}>;
-
-export type PersistedCorrectionSnapshot = Readonly<{
-  readonly attempt: PersistedAttemptSnapshot;
-  readonly result: Readonly<{
-    readonly resultId: string;
-    readonly attemptId: string;
-    readonly version: number;
-    readonly kind: string;
-    readonly score: number;
-    readonly outcome: string;
-    readonly feedback: string;
-    readonly ruleVersion: string;
-    readonly correctedBy: string;
-    readonly correctedAt: string;
-  }>;
-}>;
+import type {
+  PersistedAttemptSnapshot,
+  PersistedAnswerSnapshot,
+  PersistedCorrectionSnapshot,
+} from "./persistence-snapshots.js";
+export type {
+  PersistedAttemptSnapshot,
+  PersistedAnswerSnapshot,
+  PersistedCorrectionSnapshot,
+} from "./persistence-snapshots.js";
+import { createCurriculumAttemptSchema } from "./curriculum-attempt-schema.js";
+import * as moduleStorage from "./module-obligation-schema.js";
 
 export type PersistedCurriculumRuntimeState = ModuleEvaluationResult;
 
@@ -1215,6 +1192,7 @@ export const learningAssignments = pgTable(
       .defaultNow(),
   },
   (table) => [
+    moduleStorage.assignmentIdentity(table),
     uniqueIndex("learning_assignments_participant_scope_module_idx").on(
       table.participantId,
       table.scopeId,
@@ -1527,5 +1505,26 @@ export const appealReviewHistory = pgTable(
   ],
 );
 
+export const {
+  curriculumBlueprintVersions,
+  curriculumFormVersions,
+  curriculumFormItems,
+  curriculumActivityForms,
+  curriculumAttemptForms,
+  curriculumAttemptItems,
+} = createCurriculumAttemptSchema({
+  accounts,
+  auditEntries,
+  contentVersions,
+  learningActivities,
+  attempts,
+});
+
 export type KnowledgeDocument = typeof knowledgeDocuments.$inferSelect;
+export const {
+  curriculumModuleBlueprintVersions,
+  curriculumModuleObligationManifests,
+  curriculumAssignmentObligations,
+  curriculumModuleCompletionReceipts,
+} = moduleStorage.createSchema(accounts, auditEntries, learningAssignments);
 export type NewKnowledgeDocument = typeof knowledgeDocuments.$inferInsert;

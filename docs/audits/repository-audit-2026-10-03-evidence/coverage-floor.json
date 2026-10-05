@@ -1,0 +1,13 @@
+{
+  "name": "coverage-floor",
+  "command": [
+    "pnpm",
+    "verify:coverage-floor"
+  ],
+  "startedAt": "2026-10-03T04:56:04.632138+00:00",
+  "durationSeconds": 0.47,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/coverage-floor.log",
+  "sha256": "39f53ad50bfb4811528c51c548456a00290b45a46690f5acecce34e0f5839ea3"
+}

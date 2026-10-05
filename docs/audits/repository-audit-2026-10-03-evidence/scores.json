@@ -1,0 +1,312 @@
+{
+  "scale": "0-100 consultative, not clinical or release certification",
+  "verdict": "REVISE",
+  "scores": [
+    {
+      "id": "N01",
+      "item": "Gates Discovery → PRD → SPEC → BUILD",
+      "score": 92,
+      "basis": "Cadeia documental verificada; gates aprovados não comprovam produto integralmente implementado."
+    },
+    {
+      "id": "N02",
+      "item": "Aderência funcional ao PRD",
+      "score": 61,
+      "basis": "Jornada e gestão amplas; somativa sem integração, calendário de retenção divergente e progressão baseada em domínio parcial."
+    },
+    {
+      "id": "N03",
+      "item": "Aderência técnica à SPEC",
+      "score": 81,
+      "basis": "Separação, contratos, dados e testes concretos; drift nos contratos dos testes live e de certificação."
+    },
+    {
+      "id": "N04",
+      "item": "Planejamento de phases, sprints e tasks",
+      "score": 82,
+      "basis": "Masters/roadmaps/backlogs existem; múltiplos overlays e próximos passos históricos aumentam custo de retomada."
+    },
+    {
+      "id": "N05",
+      "item": "Documentação e decisões de arquitetura",
+      "score": 78,
+      "basis": "Os 85 arquivos foram cobertos pelo inventário/leitura; decisões e runbooks úteis, com snapshots e métricas supersedidos."
+    },
+    {
+      "id": "N06",
+      "item": "Estado, log e continuidade",
+      "score": 72,
+      "basis": "Evidências e limites são explícitos; estado corrente de 319 linhas acumula checkpoints e o log tem ordem histórica irregular."
+    },
+    {
+      "id": "N07",
+      "item": "Backlog e gestão de dívida",
+      "score": 72,
+      "basis": "Remediações e autoridade humana são registradas; sobreposição de backlogs e instruções antigas exigem precedência."
+    },
+    {
+      "id": "N08",
+      "item": "Rastreabilidade requisito → evidência",
+      "score": 67,
+      "basis": "Gate estrutural passa; release falha em worktree dirty e textos antigos aparecem como “Current”."
+    },
+    {
+      "id": "N09",
+      "item": "Governança e integridade dos gates",
+      "score": 68,
+      "basis": "Fail-closed global preservado; subchecks de freshness/readiness e fluxo candidate têm inconsistências."
+    },
+    {
+      "id": "N10",
+      "item": "Arquitetura e fronteiras entre módulos",
+      "score": 91,
+      "basis": "Monorepo, domínio/aplicação/adaptadores, teste de arquitetura e ausência de ciclos atuais."
+    },
+    {
+      "id": "N11",
+      "item": "Modularidade e tamanho dos módulos",
+      "score": 69,
+      "basis": "Features separadas; funções grandes, páginas concentradas e três violações de budget atuais."
+    },
+    {
+      "id": "N12",
+      "item": "Domínio e políticas educacionais",
+      "score": 78,
+      "basis": "Políticas puras, estados e testes; somativa fora do fluxo e retenção/progressão com divergências atuais."
+    },
+    {
+      "id": "N13",
+      "item": "Camada de aplicação e composição",
+      "score": 84,
+      "basis": "Casos de uso e dependências explícitas; contrato editorial mudou sem migração de todos os consumidores de teste."
+    },
+    {
+      "id": "N14",
+      "item": "API, rotas e contratos",
+      "score": 92,
+      "basis": "57 entradas e 57 rotas em paridade; validação e envelopes cobertos, sem certificação externa de todas as rotas."
+    },
+    {
+      "id": "N15",
+      "item": "Validação de entrada e exposição pública",
+      "score": 91,
+      "basis": "Schemas e projeções restritas, testes negativos e gate de exposição passam; amostragem de código não equivale a pentest."
+    },
+    {
+      "id": "N16",
+      "item": "Identidade, sessão, convite e recuperação",
+      "score": 92,
+      "basis": "Testes e jornada real exercitam ativação, cookie, persistência e isolamento; não houve auditoria de provedor produtivo."
+    },
+    {
+      "id": "N17",
+      "item": "Autorização server-side e escopos",
+      "score": 88,
+      "basis": "Guards/proxy e RLS live positivos; recuperação de rascunho local não vincula principal/escopo e trusted proxy produtivo permanece gap."
+    },
+    {
+      "id": "N18",
+      "item": "CSRF, proxies e proteção HTTP",
+      "score": 90,
+      "basis": "Controles e testes atuais; configuração de proxy e topologia produtiva não observadas."
+    },
+    {
+      "id": "N19",
+      "item": "PostgreSQL, transações e integridade",
+      "score": 91,
+      "basis": "Migrations aplicadas, idempotência e constraints exercitadas por 245 testes live aprovados; dois testes de workflow falham."
+    },
+    {
+      "id": "N20",
+      "item": "RLS, grants e isolamento do pool",
+      "score": 93,
+      "basis": "Matriz live PASS, oito invariantes verdadeiras; role sem superuser/BYPASSRLS e contexto isolado, em ambiente sintético."
+    },
+    {
+      "id": "N21",
+      "item": "Migrations e compatibilidade de restore",
+      "score": 89,
+      "basis": "55 migrations; drill 0053 → restore → 0054 PASS em PG16. Outros backups/cadeias/roles operacionais não certificados."
+    },
+    {
+      "id": "N22",
+      "item": "Tentativa, resposta, correção e jornada",
+      "score": 65,
+      "basis": "Happy path real passa; replay com horário novo conflita e frontend não garante submissão da última edição/retomada comum."
+    },
+    {
+      "id": "N23",
+      "item": "Avaliação somativa e elegibilidade",
+      "score": 45,
+      "basis": "Política e testes no domínio; falta boundary/consumidor persistido aprovado, explicitado em REM-06."
+    },
+    {
+      "id": "N24",
+      "item": "Currículo e prontidão editorial",
+      "score": 52,
+      "basis": "Quiz pode produzir DOMINIO_DIGITAL com respostas abertas ausentes; retenção usa 7/30/90 contra RF-049 30/60/90."
+    },
+    {
+      "id": "N25",
+      "item": "Conteúdo clínico pronto para uso",
+      "score": 35,
+      "basis": "Autoria e bloqueios existem; H-CONTENT e revisão humana/publicação permanecem abertos."
+    },
+    {
+      "id": "N26",
+      "item": "Autoria, revisão e publicação",
+      "score": 70,
+      "basis": "Guardrails/MVP alinhados; dois workflows live falham, justificativa UI é constante e rascunho local não vincula identidade."
+    },
+    {
+      "id": "N27",
+      "item": "Worker, outbox, lease e retries",
+      "score": 72,
+      "basis": "Testes positivos; leases simultâneas/lote sequencial, ordenação publish/withdraw e drain mantêm riscos concretos."
+    },
+    {
+      "id": "N28",
+      "item": "Qdrant como índice derivado",
+      "score": 68,
+      "basis": "Índice reconstruível; corrida de handlers reproduz delete seguido de upsert atrasado; serviço Qdrant não iniciado."
+    },
+    {
+      "id": "N29",
+      "item": "IA assistiva e desligável",
+      "score": 68,
+      "basis": "Controles assistivos presentes; wrapper de erro perde classificação timeout e provider real não foi avaliado."
+    },
+    {
+      "id": "N30",
+      "item": "Frontend e experiência de uso",
+      "score": 72,
+      "basis": "Suítes comuns passam; última edição, reidratação, retry e consultas fora de ordem têm cenários sem cobertura discriminante."
+    },
+    {
+      "id": "N31",
+      "item": "Arquitetura e manutenção do frontend",
+      "score": 58,
+      "basis": "Páginas muito extensas e estado concentrado; comportamento coberto, custo de evolução alto."
+    },
+    {
+      "id": "N32",
+      "item": "Acessibilidade e responsividade",
+      "score": 76,
+      "basis": "Axe/reflow/foco positivos; erro por campo e nome de progress incompletos, sem tecnologia assistiva real/zoom nativo manual."
+    },
+    {
+      "id": "N33",
+      "item": "Testes unitários, contratos e browser",
+      "score": 93,
+      "basis": "Execução integrada: 1.571 PASS em 217 arquivos; 69 skips explicitamente limitam o que esse verde prova."
+    },
+    {
+      "id": "N34",
+      "item": "Testes de integração real",
+      "score": 75,
+      "basis": "245 PASS / 2 FAIL / 16 skips; falhas editoriais atuais bloqueiam fechamento da integração."
+    },
+    {
+      "id": "N35",
+      "item": "E2E e separação de ambientes",
+      "score": 68,
+      "basis": "Comum 45/45; real 30/46, incluindo jornada real PASS; cenários staff mockados selecionados em modo real falham."
+    },
+    {
+      "id": "N36",
+      "item": "Cobertura de produção TS/TSX",
+      "score": 90,
+      "basis": "90,03/85,31/94,71/91,24; inventário 174 incluídos/212 excluídos validado. Statements têm só 0,03 ponto acima do piso."
+    },
+    {
+      "id": "N37",
+      "item": "TDD e verificação de regressões",
+      "score": 80,
+      "basis": "Histórico RED/GREEN e suíte forte; ordem histórica de TDD não foi reconstruída para cada commit, e testes live ficaram stale."
+    },
+    {
+      "id": "N38",
+      "item": "Assurance por mutação",
+      "score": 45,
+      "basis": "Harness/proveniência existem; sem run ID atual e execução Stryker válida do candidato final. Same-UID segue decisão aberta."
+    },
+    {
+      "id": "N39",
+      "item": "Gates de qualidade e manutenibilidade geral",
+      "score": 65,
+      "basis": "Lint/typecheck/formato/ciclos passam; complexidade falha e typecheck principal não cobre testes raiz."
+    },
+    {
+      "id": "N40",
+      "item": "Dependências e supply chain",
+      "score": 68,
+      "basis": "Audit de produção 0; ferramentas dev com 4 alertas high e 3 moderate, barrando audit global."
+    },
+    {
+      "id": "N41",
+      "item": "Segredos e minimização de dados",
+      "score": 91,
+      "basis": "Scan limpo e fixtures sintéticos; scanner não prova ausência universal de segredo ou PII."
+    },
+    {
+      "id": "N42",
+      "item": "Logs, trilha e redaction",
+      "score": 75,
+      "basis": "Append-only/redaction positivos; rejeições autenticadas sem escopo explícito/permitido são descartadas."
+    },
+    {
+      "id": "N43",
+      "item": "Observabilidade, OTel e métricas",
+      "score": 78,
+      "basis": "Instrumentação e testes atuais; sem collector/drill OTel ponta a ponta ou janela de SLO real nesta rodada."
+    },
+    {
+      "id": "N44",
+      "item": "Health, readiness e shutdown",
+      "score": 78,
+      "basis": "Readiness/API positivas; entrypoint API sem signal handlers e worker sem espera do lote ativo no close."
+    },
+    {
+      "id": "N45",
+      "item": "Redis e rate limit distribuído",
+      "score": 80,
+      "basis": "Redis 5+2 PASS; orçamento HTTP geral 120/min não aplica limits menores das classes auth/recovery."
+    },
+    {
+      "id": "N46",
+      "item": "Resiliência, timeouts e degradação",
+      "score": 70,
+      "basis": "Mecanismos presentes; replay HTTP, leases, wrapper de timeout IA e shutdown têm gaps."
+    },
+    {
+      "id": "N47",
+      "item": "Backup, restore, DR e runbooks",
+      "score": 82,
+      "basis": "Restore sintético PG16 PASS, grants/constraints e abortos verificados; sem medição operacional de RPO/RTO."
+    },
+    {
+      "id": "N48",
+      "item": "Desempenho, carga e capacidade",
+      "score": 52,
+      "basis": "Políticas/histogramas e baseline histórico; k6 atual e saturação/capacidade não executados."
+    },
+    {
+      "id": "N49",
+      "item": "CI/CD e workflow candidate",
+      "score": 48,
+      "basis": "Pipelines e pins existem; dois problemas estáticos de encadeamento, E2E real e gates locais vermelhos."
+    },
+    {
+      "id": "N50",
+      "item": "Proveniência de release e same-SHA",
+      "score": 35,
+      "basis": "Artefatos históricos, freshness local incorreta, run de mutação atual ausente e remoto sem prova atual."
+    },
+    {
+      "id": "N51",
+      "item": "Prontidão de release/produção",
+      "score": 20,
+      "basis": "Gates técnicos e humanos abertos; o relatório não libera piloto, produção nem publicação clínica."
+    }
+  ]
+}

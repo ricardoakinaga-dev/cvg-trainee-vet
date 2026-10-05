@@ -401,6 +401,11 @@ describe("learning state persistence mappings", () => {
     const fakeDatabase = createFakeDatabase(
       [
         [assignmentRow(assignmentId, "NAO_ATRIBUIDO", 0)],
+        // Step A at creation: manifest presence, blueprint presence and the
+        // fail-closed F02 approval identity read (no approvals queued).
+        [],
+        [],
+        [],
         [assignmentRow(assignmentId, "ATRIBUIDO", 1)],
         [],
         [workflowRow(resultId, "RESULTADO_EM_PROCESSAMENTO", 0)],
@@ -579,6 +584,11 @@ describe("learning state persistence mappings", () => {
       createFakeDatabase(
         [
           [assignmentRow(assignmentId, "NAO_ATRIBUIDO", 0)],
+          // Step A at creation: manifest presence, blueprint presence and the
+          // fail-closed F02 approval identity read (no approvals queued).
+          [],
+          [],
+          [],
           [assignmentRow(assignmentId, "ATRIBUIDO", 1)],
           [],
         ],

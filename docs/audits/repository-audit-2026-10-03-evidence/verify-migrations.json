@@ -1,0 +1,13 @@
+{
+  "name": "verify-migrations",
+  "command": [
+    "pnpm",
+    "verify:migrations"
+  ],
+  "startedAt": "2026-10-03T04:54:30.829657+00:00",
+  "durationSeconds": 0.82,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-migrations.log",
+  "sha256": "edda1aabd5eb103265802172dca9f34ff6605c550e766058397d12944cab092c"
+}

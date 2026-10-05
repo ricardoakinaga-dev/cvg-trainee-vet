@@ -765,6 +765,12 @@ describe("migration governance", () => {
       ai_suggestions: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       activity_assignments: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       curriculum_runtime_states: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      curriculum_blueprint_versions: ["SELECT"],
+      curriculum_form_versions: ["SELECT"],
+      curriculum_form_items: ["SELECT"],
+      curriculum_activity_forms: ["SELECT"],
+      curriculum_attempt_forms: ["SELECT", "INSERT"],
+      curriculum_attempt_items: ["SELECT", "INSERT"],
       diagnostic_results: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       diagnostic_sessions: ["SELECT", "INSERT", "UPDATE"],
       diagnostic_session_answers: ["SELECT", "INSERT", "UPDATE", "DELETE"],
@@ -843,8 +849,17 @@ describe("migration governance", () => {
     expect(applicationTablePrivileges).not.toHaveProperty(
       "knowledge_documents",
     );
+    const captureSchema = await readFile(
+      fileURLToPath(
+        new URL(
+          "../../packages/persistence/src/curriculum-attempt-schema.ts",
+          import.meta.url,
+        ),
+      ),
+      "utf8",
+    );
     const schemaTableNames = [
-      ...schema.matchAll(/pgTable\(\s*["']([^"']+)["']/gu),
+      ...(schema + captureSchema).matchAll(/pgTable\(\s*["']([^"']+)["']/gu),
     ]
       .map((match) => match[1])
       .filter((table): table is string => table !== undefined)
@@ -990,10 +1005,13 @@ describe("migration governance", () => {
       DATABASE_URL: "postgresql://runtime:run@db.example:6543/cvg",
     };
 
-    const returnedChild = await provisionCiPostgres(environment, (...args) => {
-      calls.push(args);
-      return child;
-    });
+    const returnedChild = await provisionCiPostgres(
+      environment,
+      (command, args, options) => {
+        calls.push([command, args, options]);
+        return child;
+      },
+    );
     expect(returnedChild).toBe(child);
     expect(calls).toHaveLength(1);
     const [command, rawArgs, rawOptions] = calls[0] ?? [];
@@ -1021,6 +1039,8 @@ describe("migration governance", () => {
     const fileIndex = args.indexOf("--file");
     const sqlFile = args[fileIndex + 1];
     expect(sqlFile).toBeDefined();
+    if (pgpassFile === undefined || sqlFile === undefined)
+      throw new Error("private provision files required");
     expect((await stat(pgpassFile)).mode & 0o777).toBe(0o600);
     expect((await stat(sqlFile!)).mode & 0o777).toBe(0o600);
     expect(await readFile(pgpassFile, "utf8")).toContain(

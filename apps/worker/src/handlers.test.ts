@@ -57,24 +57,30 @@ function integrations(): {
     warnings: ["Revisar antes de publicar."],
   });
   const saveDraftSuggestionMock = vi.fn(async () => undefined);
+  const source: ContentIndexSourcePort = {
+    findPublishedIndexable: vi.fn(
+      async (_contentId: string, _version: number) => ({
+        contentId: baseEvent.aggregateId,
+        version: 1,
+        scopeId: "44444444-4444-4444-8444-444444444444",
+        text: "Texto interno autoral sintético.",
+      }),
+    ),
+    listPublishedIndexable: vi.fn(async () => [
+      {
+        contentId: baseEvent.aggregateId,
+        version: 1,
+        scopeId: "44444444-4444-4444-8444-444444444444",
+        text: "Texto interno autoral sintético.",
+      },
+    ]),
+  };
   return {
     source: {
-      findPublishedIndexable: vi.fn(
-        async (_contentId: string, _version: number) => ({
-          contentId: baseEvent.aggregateId,
-          version: 1,
-          scopeId: "44444444-4444-4444-8444-444444444444",
-          text: "Texto interno autoral sintético.",
-        }),
-      ),
-      listPublishedIndexable: vi.fn(async () => [
-        {
-          contentId: baseEvent.aggregateId,
-          version: 1,
-          scopeId: "44444444-4444-4444-8444-444444444444",
-          text: "Texto interno autoral sintético.",
-        },
-      ]),
+      ...source,
+      withContentVersionFence: async (id, version, work) => {
+        await work(await source.findPublishedIndexable(id, version));
+      },
     },
     embedding: {
       model: "embedding-test",
@@ -103,6 +109,44 @@ function integrations(): {
 }
 
 describe("worker integration handlers", () => {
+  it("does not resurrect withdrawal when embedding finishes after delete", async () => {
+    const dependencies = integrations();
+    let release: (vectors: readonly (readonly number[])[]) => void = () => {};
+    const blocked = new Promise<readonly (readonly number[])[]>((resolve) => {
+      release = resolve;
+    });
+    vi.mocked(dependencies.embedding.embed).mockImplementationOnce(
+      async () => blocked,
+    );
+    const points = new Set<string>();
+    vi.mocked(dependencies.vectorStore.upsert).mockImplementation(
+      async (values) => {
+        for (const point of values) points.add(point.id);
+      },
+    );
+    vi.mocked(dependencies.vectorStore.delete).mockImplementation(
+      async (ids) => {
+        for (const id of ids) points.delete(id);
+      },
+    );
+    const handlers = createIntegrationHandlers(dependencies);
+    const publishing = handlers["content.published.v1"](baseEvent);
+    await vi.waitFor(() =>
+      expect(dependencies.embedding.embed).toHaveBeenCalledTimes(1),
+    );
+    vi.mocked(dependencies.source.findPublishedIndexable).mockResolvedValue(
+      null,
+    );
+    await handlers["content.withdrawn.v1"]({
+      ...baseEvent,
+      eventType: "content.withdrawn.v1",
+    });
+    release([[0.1, 0.2]]);
+    await publishing;
+    expect(dependencies.vectorStore.delete).toHaveBeenCalledTimes(1);
+    expect(dependencies.vectorStore.upsert).not.toHaveBeenCalled();
+    expect(points.size).toBe(0);
+  });
   it("recognizes every event emitted by the domain and the internal AI request", () => {
     const handlers = createIntegrationHandlers(integrations());
 
@@ -196,10 +240,15 @@ describe("worker integration handlers", () => {
       payload: { content_id: baseEvent.aggregateId, version: "1" },
     } satisfies OutboxEventRecord;
 
+    vi.mocked(dependencies.source.findPublishedIndexable).mockResolvedValue(
+      null,
+    );
     await handlers["content.withdrawn.v1"](withdrawn);
     expect(dependencies.vectorStore.delete).toHaveBeenCalledWith([
       expect.any(String),
     ]);
+    expect(dependencies.source.findPublishedIndexable).toHaveBeenCalledTimes(1);
+    vi.mocked(dependencies.source.findPublishedIndexable).mockClear();
 
     const disabled = createIntegrationHandlers({
       source: dependencies.source,

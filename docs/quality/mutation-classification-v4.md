@@ -1,5 +1,9 @@
 # Mutation Classification v4 — authorization.ts (AAA-CERT-001 §§6–7)
 
+> Registro histórico. O adendo de 2026-10-04 ao final corrige seis classificações
+> de equivalência e invalida a justificativa de score baseada nelas. O texto
+> original permanece preservado; ele não aprova o candidato atual.
+
 - **Escopo:** `packages/application/src/authorization.ts` (218 linhas, policy `canAccess` + conjunto `CAPABILITIES`)
 - **Baseline Stryker 9** (`stryker.authorization.mjs`, `coverageAnalysis: perTest`, `vitest.related: true`): total 219 · killed 155 · survived 64 → raw **70,78%** (`reports/mutation/mutation.json`)
 - **Killer tests desta rodada:** `packages/application/src/authorization-mutation-closure.test.ts` (21 its comportamentais, todos `canAccess` allow/deny) + `authorization.test.ts` (25 its + 5 killers AAA-FINAL-002) + `authorization.property.test.ts` (3 properties fast-check)
@@ -94,3 +98,62 @@ Os 34 mutantes de enumeração (IDs 0–33 do baseline 70,78%) foram mortos pelo
 testes de integridade ainda dentro do run Stryker (197 vs 155 kills).
 
 Meta §10 (`adjusted ≥ 90%`, `real critical survivors = 0`): **PASS** — condicionado à re-medição Stryker que confirma os kills (ver `reports/mutation-summary.json`; `verify:aaa-candidate` lê o JSON, nunca este Markdown — §38).
+
+## Adendo corretivo — 2026-10-04 / AUDIT-20261003-T34
+
+A justificativa P-D1/P-E1/P-E2 é inválida para a substituição de um label por
+`""`. O `switch` procura um label igual à capability; ele não entra no corpo
+seguinte quando nenhum label corresponde. Sem o label original, essas seis
+capabilities chegam ao `default: return false`. Já remover um corpo mantendo
+o label pode causar fallthrough; é um operador diferente, que precisa ser
+analisado individualmente.
+
+A comparação executada usa os dez operadores e seus intervalos exatos de
+`reports/mutation/mutation.json`, SHA-256
+`ef1d0fb2373bf31ca236a8853d59d4b94a241c9055ffd028f10e2c81a8bf337e`.
+O texto original de 218 linhas é byte-idêntico ao blob Git de
+`14b97a8b7e257b49ffc6fbf97ea3e46a9b842e39:packages/application/src/authorization.ts`,
+SHA-256 `1b502dd4d6e56b2c17d75966f7eb03b287dc23f8f555d7299287e6462c1f3e92`.
+Cada mutação foi aplicada apenas a uma cópia isolada desse texto. A fonte
+atual não foi substituída, e os relatórios históricos não foram reescritos.
+
+| IDs históricos | Operador aplicado | Resultado desta comparação |
+| --- | --- | --- |
+| 80–83 | Label START/SAVE/SUBMIT/VIEW_OWN_FEEDBACK → `""` | REAL: cada capability tem controle permitido que passa a negado |
+| 94 | Label CREATE_APPEAL → `""` | REAL: criação autorizada passa a negada |
+| 102 | Label MANAGE_ASSESSMENT_WORKFLOWS → `""` | REAL: moderador autorizado passa a negado |
+| 84 | Remove corpo de VIEW_OWN_APPEALS, mantém label | Equivalente no domínio válido dessa fonte: fallthrough para criação com o mesmo predicado |
+| 175 | Remove corpo de VIEW_STAFF_DASHBOARD, mantém label | Equivalente no domínio válido dessa fonte: fallthrough para métricas com o mesmo predicado |
+| 214–215 | Remove corpo ou altera label GRANT_CLINICAL_APPROVER | Equivalente no domínio válido dessa fonte: ambos os caminhos negam |
+
+Foram executadas 1.216.512 entradas por variante: as 33 capabilities declaradas
+na fonte histórica, os 64 subconjuntos dos seis papéis, os quatro estados de
+conta e as partições de identidade vazia, ownership, membership e identidade
+clínica aprovada. Essas são as condições lidas pela função. Os seis operadores
+REAL produziram 96 diferenças cada nos IDs 80–83/94 e 608 no ID 102; os quatro
+restantes produziram zero. A equivalência é restrita à fonte e ao domínio
+válido de `AuthorizationRequest`, sem certificar entradas malformadas ou
+versões posteriores. O conjunto histórico tem 33 capabilities, não as 34
+alegadas acima; o comparador verifica a igualdade com o union TypeScript.
+
+A primeira execução parou na suposição incorreta de 34 capabilities; o log
+foi preservado como falha do comparador. A execução corrigida derivou a lista
+do AST e terminou com exit 0. Comando reproduzível sob Node 22.23.2:
+
+```text
+node .agent/artifacts/remediation-20261003/r41-historical-mutation-review/compare-verified.mjs
+```
+
+O script grava com exclusividade; uma reprodução deve usar outro diretório
+de saída, preservando os arquivos já existentes. As entradas, operadores,
+primeiros controles discriminantes e contagens estão em
+[comparison.json](../../.agent/artifacts/remediation-20261003/r41-historical-mutation-review/verified/comparison.json),
+com o [log executado](../../.agent/artifacts/remediation-20261003/r41-historical-mutation-review/verified/comparison.log).
+
+`Survived` permanece o status histórico do relatório Stryker. Os seis REAL
+são mortos pelo discriminador desta revisão, sem fabricar kills na execução
+antiga. As dez equivalências e o score ajustado 100% alegados acima não são
+suportados por aquela justificativa. Não há novo score Stryker, closure ou
+assurance do candidato atual: esses resultados exigem execução genuína,
+identidade congelada e revisão própria em G03/G05. Revisão independente deste
+adendo permanece pendente.

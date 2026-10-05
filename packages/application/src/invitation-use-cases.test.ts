@@ -164,6 +164,17 @@ describe("invitation identity use cases", () => {
     ).rejects.toMatchObject({ code: "forbidden" });
   });
 
+  it("does not grant the clinical approver role through ordinary invitations", async () => {
+    const deps = dependencies();
+
+    await expect(
+      createInvitation({ ...admin, invitedRoles: ["CLINICAL_APPROVER"] }, deps),
+    ).rejects.toMatchObject({ code: "forbidden" });
+
+    expect(deps.accounts).toHaveLength(0);
+    expect(deps.invitations).toHaveLength(0);
+  });
+
   it("rejects malformed invitation inputs before any persistence call", async () => {
     const cases: readonly Partial<typeof admin>[] = [
       { professionalEmail: "not-an-email" },

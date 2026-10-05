@@ -74,12 +74,35 @@ export interface CorrectionEventPublisherPort {
   readonly publish: (event: AssessmentCorrectedEvent) => Promise<void>;
 }
 
+export type CorrectionCompletionInput = Readonly<{
+  readonly attemptId: string;
+  readonly participantId: string;
+  readonly scopeId: string;
+  readonly actor: Readonly<{
+    readonly actorId: string;
+    readonly requestId: string;
+    readonly correlationId: string;
+  }>;
+}>;
+
+/**
+ * Server-side only completion trigger. The receipt it may write is derived
+ * from stored rows inside the correction transaction, so it is never reachable
+ * from a request body and never accepts client-supplied proof.
+ */
+export interface CorrectionModuleCompletionPort {
+  readonly recordAfterCorrection: (
+    input: CorrectionCompletionInput,
+  ) => Promise<void>;
+}
+
 export interface CorrectionTransactionalOperations {
   readonly attempts: CorrectionAttemptsPort;
   readonly results: CorrectionResultsPort;
   readonly idempotency: CorrectionIdempotencyPort;
   readonly eventPublisher: CorrectionEventPublisherPort;
   readonly audit: AuditPort;
+  readonly moduleCompletion?: CorrectionModuleCompletionPort;
 }
 
 export interface CorrectionTransactionPort {
@@ -247,6 +270,17 @@ export async function correctOpenResponse(
             occurredAt: correctedAt,
           }),
         );
+
+        await operations.moduleCompletion?.recordAfterCorrection({
+          attemptId: corrected.attemptId,
+          participantId: corrected.participantId,
+          scopeId: command.scopeId,
+          actor: {
+            actorId: command.principalId,
+            requestId: command.correlationId,
+            correlationId: command.correlationId,
+          },
+        });
 
         const response = Object.freeze({ attempt: corrected, result });
         await operations.idempotency.store(command.idempotencyKey, {

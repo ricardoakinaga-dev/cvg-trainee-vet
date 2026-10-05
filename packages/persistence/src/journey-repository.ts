@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   deriveProgressNextAction,
+  type ModuleCompletionReceiptFact,
   type ParticipantJourneyActivity,
   type ParticipantJourneyReadPort,
   type ParticipantLearningJourneyState,
@@ -17,6 +18,8 @@ import {
   type CurriculumRuntimeRowShape,
 } from "./curriculum-runtime-repository.js";
 import { diagnosticResultRowToState } from "./diagnostic-result-repository.js";
+import { readBoundAssignmentIds } from "./module-obligation-binding-reader.js";
+import { readModuleCompletionReceipts } from "./module-obligation-receipt-reader.js";
 import { PersistenceMappingError } from "./attempt-repository.js";
 import {
   activityAssignments,
@@ -198,6 +201,74 @@ function runtimeRowToState(
   return curriculumRuntimeRowToState(row as CurriculumRuntimeRowShape);
 }
 
+async function readJourneyActivityRows(
+  executor: DatabaseExecutor,
+  participantId: string,
+  scopeIds: readonly string[],
+): Promise<readonly JourneyActivityRow[]> {
+  const activityRows: JourneyActivityRow[] = [];
+  for (const scopeId of scopeIds) {
+    // learning_assignments is protected by participant+scope RLS. Keep
+    // the scope context aligned with each activity query instead of
+    // widening that policy for a multi-scope dashboard read.
+    await setDatabaseSecurityContext(executor, {
+      participantId,
+      scopeId,
+    });
+    const rows: readonly JourneyActivityRow[] = await executor
+      .select({
+        activityId: activityAssignments.activityId,
+        scopeId: learningActivities.scopeId,
+        moduleId: learningActivities.moduleId,
+        learningAssignmentId: activityAssignments.learningAssignmentId,
+        slug: learningActivities.slug,
+        title: learningActivities.title,
+        status: activityAssignments.status,
+        contentStatus: sql<string>`'PUBLICADO'`,
+        attemptId: attempts.id,
+        attemptStatus: attempts.status,
+        attemptVersion: attempts.version,
+        attemptUpdatedAt: attempts.updatedAt,
+      })
+      .from(activityAssignments)
+      .innerJoin(
+        learningActivities,
+        eq(activityAssignments.activityId, learningActivities.id),
+      )
+      .innerJoin(
+        learningAssignments,
+        and(
+          eq(learningAssignments.id, activityAssignments.learningAssignmentId),
+          eq(learningAssignments.participantId, participantId),
+          eq(learningAssignments.scopeId, learningActivities.scopeId),
+          eq(learningAssignments.moduleId, learningActivities.moduleId),
+        ),
+      )
+      .leftJoin(
+        attempts,
+        and(
+          eq(attempts.participantId, participantId),
+          eq(attempts.activityId, activityAssignments.activityId),
+        ),
+      )
+      .where(
+        and(
+          eq(activityAssignments.participantId, participantId),
+          eq(learningActivities.scopeId, scopeId),
+          eq(learningActivities.status, "PUBLISHED"),
+          inArray(activityAssignments.status, assignmentStatuses),
+          sql`cvg_learning_activity_journey_visible(
+          ${activityAssignments.activityId},
+          ${participantId}
+        )`,
+        ),
+      )
+      .orderBy(asc(learningActivities.slug), desc(attempts.updatedAt));
+    activityRows.push(...rows);
+  }
+  return activityRows;
+}
+
 export function createParticipantJourneyRepository(
   db: DatabaseExecutor,
 ): ParticipantJourneyReadPort {
@@ -224,73 +295,18 @@ export function createParticipantJourneyRepository(
             activities: Object.freeze([]),
             results: Object.freeze([]),
             runtimes: Object.freeze([]),
+            completionReceipts: Object.freeze([]),
+            boundAssignmentIds: Object.freeze([]),
           });
         }
 
-        const activityRows: JourneyActivityRow[] = [];
-        for (const scopeId of normalizedScopeIds) {
-          // learning_assignments is protected by participant+scope RLS. Keep
-          // the scope context aligned with each activity query instead of
-          // widening that policy for a multi-scope dashboard read.
-          await setDatabaseSecurityContext(executor, {
+        const activities = activityRowsToJourney(
+          await readJourneyActivityRows(
+            executor,
             participantId,
-            scopeId,
-          });
-          const rows: readonly JourneyActivityRow[] = await executor
-            .select({
-              activityId: activityAssignments.activityId,
-              scopeId: learningActivities.scopeId,
-              moduleId: learningActivities.moduleId,
-              learningAssignmentId: activityAssignments.learningAssignmentId,
-              slug: learningActivities.slug,
-              title: learningActivities.title,
-              status: activityAssignments.status,
-              contentStatus: sql<string>`'PUBLICADO'`,
-              attemptId: attempts.id,
-              attemptStatus: attempts.status,
-              attemptVersion: attempts.version,
-              attemptUpdatedAt: attempts.updatedAt,
-            })
-            .from(activityAssignments)
-            .innerJoin(
-              learningActivities,
-              eq(activityAssignments.activityId, learningActivities.id),
-            )
-            .innerJoin(
-              learningAssignments,
-              and(
-                eq(
-                  learningAssignments.id,
-                  activityAssignments.learningAssignmentId,
-                ),
-                eq(learningAssignments.participantId, participantId),
-                eq(learningAssignments.scopeId, learningActivities.scopeId),
-                eq(learningAssignments.moduleId, learningActivities.moduleId),
-              ),
-            )
-            .leftJoin(
-              attempts,
-              and(
-                eq(attempts.participantId, participantId),
-                eq(attempts.activityId, activityAssignments.activityId),
-              ),
-            )
-            .where(
-              and(
-                eq(activityAssignments.participantId, participantId),
-                eq(learningActivities.scopeId, scopeId),
-                eq(learningActivities.status, "PUBLISHED"),
-                inArray(activityAssignments.status, assignmentStatuses),
-                sql`cvg_learning_activity_journey_visible(
-                  ${activityAssignments.activityId},
-                  ${participantId}
-                )`,
-              ),
-            )
-            .orderBy(asc(learningActivities.slug), desc(attempts.updatedAt));
-          activityRows.push(...rows);
-        }
-        const activities = activityRowsToJourney(activityRows);
+            normalizedScopeIds,
+          ),
+        );
 
         const runtimeRows = await executor
           .select()
@@ -333,6 +349,8 @@ export function createParticipantJourneyRepository(
           [] as ParticipantLearningJourneyState["results"] extends readonly (infer T)[]
             ? T[]
             : never[];
+        const completionReceipts: ModuleCompletionReceiptFact[] = [];
+        const boundAssignmentIds: string[] = [];
 
         for (const scopeId of normalizedScopeIds) {
           await setDatabaseSecurityContext(executor, {
@@ -362,6 +380,18 @@ export function createParticipantJourneyRepository(
             )
             .orderBy(asc(assessmentWorkflows.resultId));
           results.push(...workflowRows.map(assessmentWorkflowRowToState));
+
+          const receipts = await readModuleCompletionReceipts(executor, {
+            participantId,
+            scopeId,
+          });
+          completionReceipts.push(...receipts);
+
+          const bound = await readBoundAssignmentIds(executor, {
+            participantId,
+            scopeId,
+          });
+          boundAssignmentIds.push(...bound);
         }
 
         await setDatabaseSecurityContext(executor, { participantId });
@@ -372,6 +402,8 @@ export function createParticipantJourneyRepository(
           results: Object.freeze([...results]),
           runtimes,
           diagnosticResults: diagnosticResultsState,
+          completionReceipts: Object.freeze([...completionReceipts]),
+          boundAssignmentIds: Object.freeze([...boundAssignmentIds]),
         });
       });
     },

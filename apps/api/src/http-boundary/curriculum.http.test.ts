@@ -8,6 +8,7 @@ import type {
 } from "@cvg/domain";
 import {
   ApplicationError,
+  getParticipantLearningJourney as readJourney,
   type ParticipantActivityState,
   type ParticipantLearningJourneyState,
 } from "@cvg/application";
@@ -24,6 +25,232 @@ import {
 } from "./fixtures.js";
 
 describe("API HTTP boundary — curriculum boundary", () => {
+  it.each([
+    ["/api/v1/learning-path", false],
+    ["/api/v1/learning-path", true],
+    ["/api/v1/dashboard", false],
+    ["/api/v1/dashboard", true],
+  ] as const)(
+    "keeps unevaluated mandatory work ahead of retention through %s; reversed=%s",
+    async (path, reversed) => {
+      const doneAssignmentId = "33333333-3333-4333-8333-333333333332";
+      const pendingAssignmentId = "33333333-3333-4333-8333-333333333333";
+      const pendingActivityId = "44444444-4444-4444-8444-444444444443";
+      const participantId = attempt.participantId;
+      const scopeId = "scope-1";
+      const value: ParticipantLearningJourneyState = {
+        participantId,
+        assignments: [
+          {
+            scopeId,
+            state: {
+              assignmentId: doneAssignmentId,
+              participantId,
+              moduleId: "M02",
+              status: "CONCLUIDO",
+              availableAt: "2026-09-01T00:00:00.000Z",
+              version: 1,
+            },
+          },
+          {
+            scopeId,
+            state: {
+              assignmentId: pendingAssignmentId,
+              participantId,
+              moduleId: "M03",
+              status: "DISPONIVEL",
+              availableAt: "2026-09-01T00:00:00.000Z",
+              version: 1,
+            },
+          },
+        ],
+        activities: [
+          {
+            scopeId,
+            moduleId: "M02",
+            learningAssignmentId: doneAssignmentId,
+            activityId: activity.activityId,
+            title: "Concluída",
+            slug: "synthetic-completed",
+            status: "CONCLUIDO",
+            nextAction: "CONSULTAR_PROXIMO_PASSO",
+          },
+          {
+            scopeId,
+            moduleId: "M03",
+            learningAssignmentId: pendingAssignmentId,
+            activityId: pendingActivityId,
+            title: "Pendente",
+            slug: "synthetic-pending",
+            status: "DISPONIVEL",
+            nextAction: "INICIAR_ATIVIDADE",
+          },
+        ],
+        results: [],
+        runtimes: [
+          {
+            ...curriculumRuntime,
+            participantId,
+            scopeId,
+            evaluation: {
+              ...curriculumRuntime.evaluation,
+              moduleId: "M02",
+              status: "DOMINIO_DIGITAL",
+              nextAction: "REVISAR_RETENCAO",
+              retentionReviews: [
+                {
+                  day: 30,
+                  dueAt: "2026-10-01T00:00:00.000Z",
+                  status: "PENDENTE",
+                },
+              ],
+            },
+          },
+        ],
+        completionReceipts: [
+          {
+            participantId,
+            scopeId,
+            moduleId: "M02",
+            assignmentId: doneAssignmentId,
+            completedAt: "2026-09-15T12:00:00.000Z",
+            completedAssignmentVersion: 1,
+          },
+        ],
+      };
+      const findParticipantLearningJourney = vi.fn(async () => ({
+        ...value,
+        activities: reversed
+          ? [...value.activities].reverse()
+          : value.activities,
+      }));
+      const response = await handleApiRequest(
+        { method: "GET", path, body: undefined },
+        dependencies({
+          getParticipantLearningJourney: async (
+            currentParticipantId,
+            scopeIds,
+          ) =>
+            readJourney(
+              { participantId: currentParticipantId, scopeIds },
+              { findParticipantLearningJourney },
+            ),
+        }),
+      );
+      expect(response.status).toBe(200);
+      expect(findParticipantLearningJourney).toHaveBeenCalledWith(
+        participantId,
+        [scopeId],
+      );
+      expect(response.body).toMatchObject({
+        data: { nextAction: "INICIAR_ATIVIDADE" },
+      });
+      if (path.endsWith("learning-path"))
+        expect(response.body).toMatchObject({
+          data: {
+            nextActionTarget: {
+              kind: "ACTIVITY",
+              activityId: pendingActivityId,
+            },
+          },
+        });
+      expect(JSON.stringify(response.body)).not.toMatch(
+        /learningAssignmentId|scopeId|participantId|evaluationAnchor|correctChoiceIds|sourceRefs/u,
+      );
+    },
+  );
+
+  it("rejects loose answers, timestamps and draft keys at the evaluation boundary without invoking the evaluator", async () => {
+    const scopeId = "22222222-2222-4222-8222-222222222222";
+    const evaluateCurriculumRuntime = vi.fn(async () => curriculumRuntime);
+    for (const extra of [
+      { answers: [{ itemId: "external-item", selectedChoiceIds: ["a"] }] },
+      { completedAt: "2026-08-10T01:00:00.000Z" },
+      { mode: "FORMATIVE_CHOICE" },
+      { correctChoiceIds: ["a"] },
+    ]) {
+      const response = await handleApiRequest(
+        {
+          method: "POST",
+          path: "/api/v1/internal/curriculum/modules/M03/evaluate",
+          body: {
+            participantId: attempt.participantId,
+            scopeId,
+            attemptId: attempt.attemptId,
+            attemptVersion: 3,
+            formVersion: 1,
+            ...extra,
+          },
+        },
+        dependencies({
+          authenticate: async () => ({
+            principalId: attempt.participantId,
+            accountStatus: "ACTIVE",
+            roles: ["MODERATOR"],
+            scopes: [scopeId],
+          }),
+          isParticipantInScope: async () => true,
+          evaluateCurriculumRuntime,
+        }),
+      );
+      expect(response.status).toBe(422);
+    }
+    expect(evaluateCurriculumRuntime).not.toHaveBeenCalled();
+  });
+  it("never exposes persisted attempt bindings or authorized source references in the public projection", async () => {
+    const state = {
+      ...curriculumRuntime,
+      evaluation: {
+        ...curriculumRuntime.evaluation,
+        activityProgress: "ATIVIDADES_PENDENTES" as const,
+        unansweredMandatoryItemIds: ["synthetic-case-a", "synthetic-case-b"],
+        evaluationAnchor: {
+          attemptId: attempt.attemptId,
+          attemptVersion: 3,
+          formId: "synthetic-form",
+          formVersion: 1,
+          blueprintId: "synthetic-blueprint",
+          blueprintVersion: 1,
+          publicationDecisionId: "synthetic-publication",
+          blueprintApprovalDecisionId: "synthetic-approval",
+          publishedAt: "2026-08-09T00:00:00.000Z",
+          contentVersions: [
+            {
+              itemId: "synthetic-case-a",
+              contentVersionId: "synthetic-version",
+              version: 1,
+              sourceRefs: [
+                {
+                  code: "F-01" as const,
+                  locator: "synthetic-authorized-source",
+                  updateRequired: false,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+    const response = await handleApiRequest(
+      {
+        method: "GET",
+        path: "/api/v1/curriculum/modules/M03/runtime",
+        body: undefined,
+      },
+      dependencies({ getParticipantCurriculumRuntime: async () => state }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      data: {
+        status: "DOMINIO_DIGITAL",
+        activityProgress: "ATIVIDADES_PENDENTES",
+        unansweredMandatoryCount: 2,
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toMatch(
+      /attemptId|formId|formVersion|blueprintId|blueprintVersion|publicationDecision|blueprintApproval|publishedAt|contentVersion|sourceRefs|synthetic-authorized-source|correctChoice|rubric|unansweredMandatoryItemIds/u,
+    );
+  });
   it("publishes the participant reflection state without internal or scoring fields", async () => {
     const baseItem = activity.items[0];
     if (baseItem === undefined)
@@ -71,13 +298,25 @@ describe("API HTTP boundary — curriculum boundary", () => {
     const getParticipantLearningJourney = vi.fn(
       async (): Promise<ParticipantLearningJourneyState> => ({
         participantId: attempt.participantId,
-        assignments: [],
+        assignments: [
+          {
+            scopeId: "scope-1",
+            state: {
+              assignmentId: "00000000-0000-4000-8000-000000000042",
+              participantId: attempt.participantId,
+              moduleId: "M02",
+              availableAt: "2026-08-24T12:00:00.000Z",
+              status: "EM_ANDAMENTO",
+              version: 1,
+            },
+          },
+        ],
         activities: [
           {
             scopeId: "scope-1",
             activityId: activity.activityId,
             moduleId: "M02",
-            learningAssignmentId: "assignment-1",
+            learningAssignmentId: "00000000-0000-4000-8000-000000000042",
             slug: activity.slug,
             title: activity.title,
             status: "EM_ANDAMENTO",
@@ -154,6 +393,80 @@ describe("API HTTP boundary — curriculum boundary", () => {
         .data?.activities?.[0],
     ).not.toHaveProperty("learningAssignmentId");
   });
+  it.each(["SALVA", "AGUARDA_CORRECAO_HUMANA"] as const)(
+    "preserves the real %s activity despite completed assignment metadata in the public path",
+    async (attemptStatus) => {
+      const state: ParticipantLearningJourneyState = {
+        participantId: attempt.participantId,
+        assignments: [
+          {
+            scopeId: "scope-1",
+            state: {
+              assignmentId: "00000000-0000-4000-8000-000000000042",
+              participantId: attempt.participantId,
+              moduleId: "M02",
+              availableAt: "2026-08-24T12:00:00.000Z",
+              status: "CONCLUIDO_COM_RETENCAO_PENDENTE",
+              version: 2,
+            },
+          },
+        ],
+        activities: [
+          {
+            scopeId: "scope-1",
+            activityId: activity.activityId,
+            moduleId: "M02",
+            learningAssignmentId: "00000000-0000-4000-8000-000000000042",
+            slug: activity.slug,
+            title: activity.title,
+            status: "EM_ANDAMENTO",
+            attemptId: attempt.attemptId,
+            attemptStatus,
+            attemptVersion: 2,
+            nextAction:
+              attemptStatus === "SALVA"
+                ? "RETOMAR_ATIVIDADE"
+                : "AGUARDAR_CORRECAO",
+          },
+        ],
+        results: [],
+        runtimes: [
+          {
+            ...curriculumRuntime,
+            scopeId: "scope-1",
+            evaluation: {
+              ...curriculumRuntime.evaluation,
+              moduleId: "M02",
+              status: "DOMINIO_DIGITAL",
+              nextAction: "REVISAR_RETENCAO",
+              activityProgress:
+                attemptStatus === "SALVA"
+                  ? "ATIVIDADES_PENDENTES"
+                  : "AGUARDA_CORRECAO_HUMANA",
+            },
+          },
+        ],
+      };
+      const response = await handleApiRequest(
+        { method: "GET", path: "/api/v1/learning-path", body: undefined },
+        dependencies({ getParticipantLearningJourney: async () => state }),
+      );
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        success: true,
+        data: {
+          nextAction:
+            attemptStatus === "SALVA"
+              ? "RETOMAR_ATIVIDADE"
+              : "AGUARDAR_CORRECAO_HUMANA",
+        },
+      });
+      expect(JSON.stringify(response.body)).not.toMatch(
+        /learningAssignmentId|participantId|scopeId|sourceRefs|correctChoiceIds|rubric|evaluationAnchor/u,
+      );
+    },
+  );
+
   it("re-derives remediation targets before exposing the public journey", async () => {
     const getParticipantLearningJourney = vi.fn(
       async (): Promise<ParticipantLearningJourneyState> => ({
@@ -365,9 +678,9 @@ describe("API HTTP boundary — curriculum boundary", () => {
         body: {
           participantId: attempt.participantId,
           scopeId: runtimeScope,
-          answers: [{ itemId: "M03-S1-Q01", selectedChoiceIds: ["a"] }],
-          completedAt: "2026-08-10T01:00:00.000Z",
-          mode: "FORMATIVE_CHOICE",
+          attemptId: attempt.attemptId,
+          attemptVersion: 3,
+          formVersion: 1,
         },
       },
       dependencies({
@@ -390,9 +703,9 @@ describe("API HTTP boundary — curriculum boundary", () => {
     expect(evaluateCurriculumRuntime).toHaveBeenCalledWith({
       participantId: attempt.participantId,
       scopeId: runtimeScope,
-      answers: [{ itemId: "M03-S1-Q01", selectedChoiceIds: ["a"] }],
-      completedAt: "2026-08-10T01:00:00.000Z",
-      mode: "FORMATIVE_CHOICE",
+      attemptId: attempt.attemptId,
+      attemptVersion: 3,
+      formVersion: 1,
       moduleId: "M03",
     });
     expect(JSON.stringify(response.body)).not.toContain("objectiveResults");
@@ -404,8 +717,9 @@ describe("API HTTP boundary — curriculum boundary", () => {
         body: {
           participantId: attempt.participantId,
           scopeId: runtimeScope,
-          answers: [{ itemId: "M03-S1-Q01", selectedChoiceIds: ["a"] }],
-          completedAt: "2026-08-10T01:00:00.000Z",
+          attemptId: attempt.attemptId,
+          attemptVersion: 3,
+          formVersion: 1,
         },
       },
       dependencies({
@@ -430,8 +744,9 @@ describe("API HTTP boundary — curriculum boundary", () => {
         body: {
           participantId: attempt.participantId,
           scopeId: runtimeScope,
-          answers: [{ itemId: "M03-S1-Q01", selectedChoiceIds: ["a"] }],
-          completedAt: "2026-08-10T01:00:00.000Z",
+          attemptId: attempt.attemptId,
+          attemptVersion: 3,
+          formVersion: 1,
         },
       },
       dependencies({

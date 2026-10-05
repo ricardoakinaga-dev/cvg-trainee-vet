@@ -1,4 +1,9 @@
 import { randomUUID } from "node:crypto";
+import {
+  createApiRuntimeLifecycle,
+  startApiRuntime,
+  apiRuntimeFailureDiagnostic,
+} from "./composition/api-runtime-lifecycle.js";
 
 import {
   authenticateSessionCookie,
@@ -16,8 +21,8 @@ import {
   createInvitation,
   correctOpenResponse,
   evaluateAndPersistDiagnosticDraft,
-  evaluateAndPersistCurriculumModule,
   getParticipantActivity,
+  getParticipantAttempt,
   getParticipantCurriculumRuntime,
   getAttemptFeedback,
   getParticipantLearningJourney,
@@ -61,6 +66,7 @@ import {
   createActivityScopeResolver,
   createAdaptiveAssignmentRepository,
   createActivityReadRepository,
+  createParticipantAttemptReadRepository,
   createAuthoringRepository,
   createAnswerUseCaseDependencies,
   createAttemptUseCaseDependencies,
@@ -68,10 +74,10 @@ import {
   createCorrectionUseCaseDependencies,
   createCorrectionReadRepository,
   createCurriculumRuntimeRepository,
+  createCurriculumModuleEvaluationUseCase,
   createInvitationUseCaseDependencies,
   createLearningStateRepository,
   createFeedbackTicketReadRepository,
-  createPostgresRateLimiter,
   createProgressReadRepository,
   createParticipantJourneyRepository,
   createParticipantScopeResolver,
@@ -97,59 +103,13 @@ import {
   createSessionRepository,
 } from "@cvg/persistence";
 
-import type { ApiHttpDependencies, ApiPrincipal } from "./http.js";
+import type { ApiHttpDependencies } from "./http.js";
+import { sessionPrincipalToApiPrincipal } from "./composition/session-principal.js";
 import type { ApiServer } from "./server.js";
 import { createApiServer as createNodeApiServer } from "./server.js";
-import type { RequestRateLimiter } from "./request-security.js";
-import {
-  createBackendRequestLimiter,
-  createRedisRateLimitStore,
-  describeRateLimitBackend,
-} from "./security/rate-limit-store.js";
-import { createRespScriptClient } from "./security/redis-client.js";
+import { createHttpRateLimiter } from "./composition/http-rate-limiter.js";
 
-/**
- * AAA-FINAL-005 §17 — explicit edge rate-limit backend selection.
- *
- * - unset/blank → `postgres-shared` (current behavior, shared budget).
- * - `redis` → Redis/Valkey via the production RESP client; requires
- *   CVG_RATE_LIMIT_REDIS_URL, fail-closed otherwise.
- * - anything else → startup throw. Silent memory fallback is prohibited:
- *   single-node memory limiters exist only as explicit test defaults
- *   inside server.ts, never as an implicit production path.
- */
-export function createHttpRateLimiter(
-  environment: Record<string, string | undefined>,
-  database: Parameters<typeof createPostgresRateLimiter>[0],
-  log: (message: string) => void,
-): RequestRateLimiter {
-  const backend = (
-    environment.CVG_RATE_LIMIT_BACKEND ?? "postgres-shared"
-  ).trim();
-  if (backend === "redis") {
-    const url = environment.CVG_RATE_LIMIT_REDIS_URL?.trim();
-    if (url === undefined || url.length === 0) {
-      throw new RangeError(
-        "CVG_RATE_LIMIT_REDIS_URL is required with CVG_RATE_LIMIT_BACKEND=redis",
-      );
-    }
-    const store = createRedisRateLimitStore(createRespScriptClient(url), {
-      keyPrefix: "rl:v1",
-    });
-    log(`rate-limit backend: ${describeRateLimitBackend("redis").backend}`);
-    return createBackendRequestLimiter(store, {
-      maxRequests: 120,
-      windowMs: 60_000,
-    });
-  }
-  if (backend === "postgres-shared") {
-    log(
-      `rate-limit backend: ${describeRateLimitBackend("postgres-shared").backend}`,
-    );
-    return createPostgresRateLimiter(database);
-  }
-  throw new RangeError(`unknown CVG_RATE_LIMIT_BACKEND: ${backend}`);
-}
+export { createHttpRateLimiter } from "./composition/http-rate-limiter.js";
 
 function configuredOrigins(
   environment: Record<string, string | undefined>,
@@ -213,6 +173,9 @@ export function createApiRuntime(
     integrations.database.db,
   );
   const curriculumRuntimeRepository = createCurriculumRuntimeRepository(
+    integrations.database.db,
+  );
+  const evaluateCurriculumRuntime = createCurriculumModuleEvaluationUseCase(
     integrations.database.db,
   );
   const participantJourneyRepository = createParticipantJourneyRepository(
@@ -303,14 +266,7 @@ export function createApiRuntime(
           request.headers?.cookie,
           sessionRepository,
         );
-        return principal === null
-          ? null
-          : ({
-              principalId: principal.accountId,
-              accountStatus: principal.accountStatus,
-              roles: principal.roles,
-              scopes: principal.scopes,
-            } satisfies ApiPrincipal);
+        return sessionPrincipalToApiPrincipal(principal);
       }),
     resolveActivityScope: createActivityScopeResolver(integrations.database.db),
     hasParticipantActivityItem: createParticipantActivityItemResolver(
@@ -396,19 +352,24 @@ export function createApiRuntime(
         { participantId, activityId },
         activityReadRepository,
       ),
+    getParticipantAttempt: (participantId, attemptId) =>
+      getParticipantAttempt(
+        participantId,
+        attemptId,
+        createParticipantAttemptReadRepository(integrations.database.db),
+      ),
     advanceContent: (command) => advanceContent(command, contentDependencies),
     createAuthoringDraft: (command) =>
       createAuthoringDraft(command, {
         repository: authoringRepository,
         idFactory: randomUUID,
       }),
-    getInternalAuthoringRecord: (contentId, version, scopeId) =>
-      authoringRepository.find(contentId, version, scopeId),
+    getInternalAuthoringRecord: (contentId, version, scopeId, ownerId) =>
+      authoringRepository.find(contentId, version, scopeId, ownerId),
     reviewAuthoringContent: (command) =>
       reviewAuthoringContent(command, {
         repository: authoringRepository,
-        transition: (transitionCommand) =>
-          advanceContent(transitionCommand, contentDependencies),
+        idFactory: randomUUID,
       }),
     getParticipantProgress: (participantId, activityId) =>
       getParticipantProgress(
@@ -454,8 +415,7 @@ export function createApiRuntime(
         { participantId, moduleId },
         curriculumRuntimeRepository,
       ),
-    evaluateCurriculumRuntime: (command) =>
-      evaluateAndPersistCurriculumModule(command, curriculumRuntimeRepository),
+    evaluateCurriculumRuntime,
     getAttemptFeedback: (participantId, attemptId) =>
       getAttemptFeedback(
         { participantId, attemptId },
@@ -508,8 +468,7 @@ export function createApiRuntime(
     if (closed || initializationInFlight !== undefined) return;
     const attempt = integrations.initialize();
     initializationAttempts += 1;
-    initializationInFlight = attempt;
-    void attempt
+    const completion = attempt
       .then(() => {
         const completedAttempts = initializationAttempts;
         initializationAttempts = 0;
@@ -578,38 +537,40 @@ export function createApiRuntime(
         }
       })
       .finally(() => {
-        if (initializationInFlight === attempt) {
+        if (initializationInFlight === completion) {
           initializationInFlight = undefined;
         }
       });
+    initializationInFlight = completion;
   };
 
+  const lifecycle = createApiRuntimeLifecycle({
+    listen: server.listen,
+    beginInitialization: startAssistiveIntegrationInitialization,
+    cancelInitialization: () => {
+      closed = true;
+      cancelIntegrationInitializationRetry();
+    },
+    awaitInitialization: async () => {
+      await initializationInFlight?.catch(() => undefined);
+    },
+    closeServer: server.close,
+    closeIntegrations: () => integrations.close(),
+  });
   return Object.freeze({
     service: "api" as const,
     config,
     integrations,
     server,
-    listen: async () => {
-      await server.listen();
-      startAssistiveIntegrationInitialization();
-    },
-    close: async () => {
-      closed = true;
-      if (initializationRetryTimer !== undefined) {
-        cancelIntegrationInitializationRetry();
-      }
-      await server.close();
-      if (initializationInFlight !== undefined) {
-        await initializationInFlight.catch(() => undefined);
-      }
-      await integrations.close();
-    },
+    listen: lifecycle.listen,
+    close: lifecycle.close,
   });
 }
 
 if (process.env.NODE_ENV !== "test") {
   const runtime = createApiRuntime(process.env);
-  void runtime.listen().catch(() => {
+  void startApiRuntime(runtime, process, (error) => {
     process.exitCode = 1;
+    console.error(JSON.stringify(apiRuntimeFailureDiagnostic(error)));
   });
 }

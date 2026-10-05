@@ -98,7 +98,9 @@ function apiDependencies(): ApiHttpDependencies {
     advanceContent: async () => {
       throw new Error("not used");
     },
-    getParticipantProgress: async () => null,
+    getParticipantProgress: async () => {
+      throw new Error("not used");
+    },
     getAttemptFeedback: async () => null,
     correctOpenResponse: async () => {
       throw new Error("not used");

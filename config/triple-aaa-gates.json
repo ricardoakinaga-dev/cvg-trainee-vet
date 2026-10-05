@@ -1,0 +1,23 @@
+{
+  "format": "cvg-triple-aaa-gates/v1",
+  "source": "docs/54_codex_master_prompt_certification_matrix_gates.md §4 (G01–G73)",
+  "coverage": {
+    "statements_min": 90,
+    "branches_min": 85,
+    "functions_min": 90,
+    "lines_min": 90
+  },
+  "mutation": {
+    "adjusted_critical_min": 0.95,
+    "real_critical_survivors_max": 0
+  },
+  "scores": {
+    "engineering_min": 97,
+    "security_min": 95,
+    "operations_min": 95
+  },
+  "findings": {
+    "p0_max": 0,
+    "p1_max": 0
+  }
+}

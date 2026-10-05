@@ -1,0 +1,13 @@
+{
+  "name": "live-ratelimit-provisioned",
+  "command": [
+    "pnpm",
+    "test:ratelimit:live"
+  ],
+  "startedAt": "2026-10-03T05:01:54.368507+00:00",
+  "durationSeconds": 2.52,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/live-ratelimit-provisioned.log",
+  "sha256": "247739602df05fddd1fca0bf6dfeea518889da5f94d3eaa7c5fa05a907ebdb63"
+}

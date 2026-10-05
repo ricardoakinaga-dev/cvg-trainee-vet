@@ -1,641 +1,73 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, type ReactNode, useEffect, useState } from "react";
-
-type ActivityItem = Readonly<{
-  readonly itemId: string;
-  readonly ordinal: number;
-  readonly kind: string;
-  readonly title: string;
-  readonly text: string;
-  readonly responseMode: "TEXT" | "CHOICE" | "NONE";
-  readonly choices?: readonly Readonly<{
-    readonly id: string;
-    readonly label: string;
-    readonly text: string;
-  }>[];
-  readonly selectionMode?: "SINGLE" | "MULTIPLE";
-}>;
-
-type ReflectionProjection = Readonly<{
-  readonly status: "NAO_INICIADA" | "EM_ANDAMENTO" | "CONCLUIDA";
-  readonly nextAction:
-    | "INICIAR_REFLEXAO"
-    | "RETOMAR_REFLEXAO"
-    | "ENVIAR_REFLEXAO"
-    | "PROXIMA_ACAO";
-  readonly itemCount: number;
-  readonly answeredItemCount: number;
-  readonly answers: readonly Readonly<{
-    readonly itemId: string;
-    readonly response: string;
-    readonly savedAt: string;
-  }>[];
-  readonly evidence: "REFLEXAO_DIGITAL";
-  readonly practicalCompetenceClaim: "PROIBIDO_MVP";
-}>;
-
-type ActivityProjection = Readonly<{
-  readonly activityId: string;
-  readonly slug: string;
-  readonly title: string;
-  readonly items: readonly ActivityItem[];
-  readonly reflection?: ReflectionProjection;
-}>;
-
-type AttemptProjection = Readonly<{
-  readonly attemptId: string;
-  readonly activityId: string;
-  readonly status: string;
-  readonly version: number;
-  readonly answers: readonly Readonly<{
-    readonly itemId: string;
-    readonly response: string;
-  }>[];
-}>;
-
-type ParticipantAppealProjection = Readonly<{
-  readonly appealId: string;
-  readonly attemptId: string;
-  readonly itemId: string;
-  readonly createdAt: string;
-  readonly dueAt: string;
-  readonly status:
-    "ABERTA" | "EM_REVISAO" | "DECIDIDA" | "RECALCULO_PENDENTE" | "ENCERRADA";
-  readonly version: number;
-  readonly decision?: "MANTER_RESULTADO" | "ANULAR_ITEM" | "ALTERAR_RESULTADO";
-}>;
-
-type ParticipantAppealsProjection = Readonly<{
-  readonly appeals: readonly ParticipantAppealProjection[];
-}>;
-
-type FeedbackTicketType =
-  "BUG_TECNICO" | "USABILIDADE" | "ERRO_CONTEUDO" | "MELHORIA" | "CONTESTACAO";
-
-type ParticipantFeedbackTicketProjection = Readonly<{
-  readonly ticketId: string;
-  readonly type: FeedbackTicketType;
-  readonly description: string;
-  readonly createdAt: string;
-  readonly status: string;
-  readonly version: number;
-}>;
-
-type ParticipantFeedbackTicketsProjection = Readonly<{
-  readonly tickets: readonly ParticipantFeedbackTicketProjection[];
-}>;
-
-type CurriculumRuntimeProjection = Readonly<{
-  readonly moduleId: string;
-  readonly version: number;
-  readonly status:
-    "DOMINIO_DIGITAL" | "EM_REMEDIACAO" | "AGUARDA_CORRECAO_HUMANA";
-  readonly nextAction:
-    "REVISAR_RETENCAO" | "EXECUTAR_REMEDIACAO" | "AGUARDAR_CORRECAO_HUMANA";
-  readonly scorePercent?: number;
-  readonly remediationCount: number;
-  readonly retentionReviews: readonly Readonly<{
-    readonly day: 7 | 30 | 90;
-    readonly dueAt: string;
-    readonly status: "PENDENTE";
-  }>[];
-  readonly practicalCompetenceClaim: "PROIBIDO_MVP";
-}>;
-
-type JourneyActivityProjection = Readonly<{
-  readonly activityId: string;
-  readonly slug: string;
-  readonly title: string;
-  readonly status: string;
-  readonly attemptId?: string;
-  readonly attemptStatus?: string;
-  readonly attemptVersion?: number;
-  readonly nextAction: string;
-}>;
-
-type LearningJourneyProjection = Readonly<{
-  readonly assignments: readonly ApiRecord[];
-  readonly activities: readonly JourneyActivityProjection[];
-  readonly results: readonly ApiRecord[];
-  readonly runtimes: readonly CurriculumRuntimeProjection[];
-  readonly nextAction: string;
-  readonly nextActionTarget?: Readonly<{
-    readonly kind: "ACTIVITY";
-    readonly activityId: string;
-  }>;
-}>;
-
-type CorrectionProjection = Readonly<{
-  readonly attemptStatus: "CORRIGIDA_AUTOMATICAMENTE" | "CORRIGIDA_HUMANAMENTE";
-  readonly attemptVersion: number;
-  readonly resultVersion: number;
-  readonly score: number;
-  readonly outcome: "APROVADO" | "REFORCO";
-  readonly feedback: string;
-}>;
-
-type ParticipantDashboardProjection = Readonly<{
-  readonly kind: "participant";
-  readonly nextAction: string;
-  readonly path: readonly Readonly<{
-    readonly moduleId: string;
-    readonly month: number;
-    readonly status: string;
-    readonly nextAction: string;
-  }>[];
-  readonly profile: readonly Readonly<{
-    readonly moduleId: string;
-    readonly month: number;
-    readonly competence: string;
-    readonly status: string;
-    readonly scorePercent: number | null;
-    readonly lastEvaluatedAt?: string;
-    readonly evidence: "AVALIACAO_MODULAR_DIGITAL";
-    readonly practicalCompetenceClaim: "PROIBIDO_MVP";
-  }>[];
-  readonly diagnosticProfile?: readonly Readonly<{
-    readonly themeId: "B07-S1" | "B07-S2" | "B07-S3";
-    readonly themeLabel: string;
-    readonly status: "SEM_EVIDENCIA_DIGITAL" | "BASELINE_REGISTRADA";
-    readonly scorePercent: number | null;
-    readonly answeredItemCount: number;
-    readonly itemCount: number;
-    readonly recommendedModuleIds: readonly string[];
-    readonly lastEvaluatedAt?: string;
-    readonly evidence: "DIAGNOSTICO_FORMATIVO_DIGITAL";
-    readonly notPunitive: true;
-    readonly noGlobalPassFail: true;
-    readonly practicalCompetenceClaim: "PROIBIDO_MVP";
-  }>[];
-  readonly progress: Readonly<{
-    readonly assignedActivities: number;
-    readonly completedActivities: number;
-    readonly progressPercent: number | null;
-    readonly remediationObjectives: number;
-    readonly retentionReviewsPending: number;
-    readonly pendingCorrections: number;
-  }>;
-}>;
-
-type ApiRecord = Readonly<Record<string, unknown>>;
-
-const apiBase = process.env.NEXT_PUBLIC_CVG_API_BASE_URL ?? "";
-
-type ExperienceState = "idle" | "loading" | "ready" | "empty" | "error";
-type RetryAction =
-  | "access"
-  | "journey"
-  | "activity"
-  | "appeals"
-  | "feedback"
-  | "correction"
-  | null;
-
-class PublicApiError extends Error {
-  public constructor(
-    public readonly code: string,
-    message: string,
-  ) {
-    super(message);
-    this.name = "PublicApiError";
-  }
-}
-
-function isRecord(value: unknown): value is ApiRecord {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function isString(value: unknown): value is string {
-  return typeof value === "string";
-}
-
-function isChoice(value: unknown): value is Readonly<{
-  readonly id: string;
-  readonly label: string;
-  readonly text: string;
-}> {
-  if (!isRecord(value)) return false;
-  return (
-    isString(value.id) &&
-    isString(value.label) &&
-    isString(value.text) &&
-    value.id.trim().length > 0 &&
-    value.label.trim().length > 0 &&
-    value.text.trim().length > 0
-  );
-}
-
-function isReflection(value: unknown): value is ReflectionProjection {
-  if (!isRecord(value)) return false;
-  const status =
-    value.status === "NAO_INICIADA" ||
-    value.status === "EM_ANDAMENTO" ||
-    value.status === "CONCLUIDA";
-  const nextAction =
-    value.nextAction === "INICIAR_REFLEXAO" ||
-    value.nextAction === "RETOMAR_REFLEXAO" ||
-    value.nextAction === "ENVIAR_REFLEXAO" ||
-    value.nextAction === "PROXIMA_ACAO";
-  return (
-    status &&
-    nextAction &&
-    typeof value.itemCount === "number" &&
-    Number.isInteger(value.itemCount) &&
-    value.itemCount >= 1 &&
-    value.itemCount <= 100 &&
-    typeof value.answeredItemCount === "number" &&
-    Number.isInteger(value.answeredItemCount) &&
-    value.answeredItemCount >= 0 &&
-    value.answeredItemCount <= value.itemCount &&
-    Array.isArray(value.answers) &&
-    value.answers.length === value.answeredItemCount &&
-    value.answers.every(
-      (answer) =>
-        isRecord(answer) &&
-        isString(answer.itemId) &&
-        isString(answer.response) &&
-        answer.response.trim().length > 0 &&
-        isString(answer.savedAt),
-    ) &&
-    value.evidence === "REFLEXAO_DIGITAL" &&
-    value.practicalCompetenceClaim === "PROIBIDO_MVP"
-  );
-}
-
-function isActivity(value: unknown): value is ActivityProjection {
-  if (!isRecord(value)) return false;
-  if (
-    !isString(value.activityId) ||
-    !isString(value.slug) ||
-    !isString(value.title) ||
-    !Array.isArray(value.items)
-  ) {
-    return false;
-  }
-  if (value.reflection !== undefined && !isReflection(value.reflection)) {
-    return false;
-  }
-
-  return value.items.every((item) => {
-    if (!isRecord(item)) return false;
-    const basicShape =
-      isString(item.itemId) &&
-      typeof item.ordinal === "number" &&
-      isString(item.kind) &&
-      isString(item.title) &&
-      isString(item.text) &&
-      (item.responseMode === "TEXT" ||
-        item.responseMode === "CHOICE" ||
-        item.responseMode === "NONE");
-    if (!basicShape) return false;
-    if (
-      item.selectionMode !== undefined &&
-      item.selectionMode !== "SINGLE" &&
-      item.selectionMode !== "MULTIPLE"
-    ) {
-      return false;
-    }
-    if (item.choices !== undefined) {
-      if (!Array.isArray(item.choices) || !item.choices.every(isChoice)) {
-        return false;
-      }
-    }
-    return (
-      item.responseMode !== "CHOICE" ||
-      (Array.isArray(item.choices) &&
-        item.choices.length >= 2 &&
-        item.selectionMode !== undefined)
-    );
-  });
-}
-
-function isAttempt(value: unknown): value is AttemptProjection {
-  if (!isRecord(value)) return false;
-  return (
-    isString(value.attemptId) &&
-    isString(value.activityId) &&
-    isString(value.status) &&
-    typeof value.version === "number" &&
-    Array.isArray(value.answers) &&
-    value.answers.every(
-      (answer) =>
-        isRecord(answer) &&
-        isString(answer.itemId) &&
-        isString(answer.response),
-    )
-  );
-}
-
-function isCorrection(value: unknown): value is CorrectionProjection {
-  if (!isRecord(value)) return false;
-  const allowedKeys = new Set([
-    "attemptStatus",
-    "attemptVersion",
-    "resultVersion",
-    "score",
-    "outcome",
-    "feedback",
-  ]);
-  return (
-    Object.keys(value).every((key) => allowedKeys.has(key)) &&
-    (value.attemptStatus === "CORRIGIDA_AUTOMATICAMENTE" ||
-      value.attemptStatus === "CORRIGIDA_HUMANAMENTE") &&
-    typeof value.attemptVersion === "number" &&
-    Number.isInteger(value.attemptVersion) &&
-    value.attemptVersion >= 0 &&
-    typeof value.resultVersion === "number" &&
-    Number.isInteger(value.resultVersion) &&
-    value.resultVersion > 0 &&
-    typeof value.score === "number" &&
-    Number.isInteger(value.score) &&
-    value.score >= 0 &&
-    value.score <= 100 &&
-    (value.outcome === "APROVADO" || value.outcome === "REFORCO") &&
-    isString(value.feedback) &&
-    value.feedback.trim().length > 0 &&
-    value.feedback.length <= 10_000 &&
-    !/<[^>]*>/u.test(value.feedback)
-  );
-}
-
-function isParticipantAppeal(
-  value: unknown,
-): value is ParticipantAppealProjection {
-  if (!isRecord(value)) return false;
-  const status =
-    value.status === "ABERTA" ||
-    value.status === "EM_REVISAO" ||
-    value.status === "DECIDIDA" ||
-    value.status === "RECALCULO_PENDENTE" ||
-    value.status === "ENCERRADA";
-  const decision =
-    value.decision === undefined ||
-    value.decision === "MANTER_RESULTADO" ||
-    value.decision === "ANULAR_ITEM" ||
-    value.decision === "ALTERAR_RESULTADO";
-  return (
-    isString(value.appealId) &&
-    isString(value.attemptId) &&
-    isString(value.itemId) &&
-    isString(value.createdAt) &&
-    isString(value.dueAt) &&
-    status &&
-    typeof value.version === "number" &&
-    Number.isInteger(value.version) &&
-    value.version >= 0 &&
-    decision
-  );
-}
-
-function isParticipantAppeals(
-  value: unknown,
-): value is ParticipantAppealsProjection {
-  return (
-    isRecord(value) &&
-    Array.isArray(value.appeals) &&
-    value.appeals.length <= 100 &&
-    value.appeals.every(isParticipantAppeal)
-  );
-}
-
-function isParticipantFeedbackTicket(
-  value: unknown,
-): value is ParticipantFeedbackTicketProjection {
-  if (!isRecord(value)) return false;
-  return (
-    isString(value.ticketId) &&
-    (value.type === "BUG_TECNICO" ||
-      value.type === "USABILIDADE" ||
-      value.type === "ERRO_CONTEUDO" ||
-      value.type === "MELHORIA" ||
-      value.type === "CONTESTACAO") &&
-    isString(value.description) &&
-    isString(value.createdAt) &&
-    isString(value.status) &&
-    typeof value.version === "number" &&
-    Number.isInteger(value.version) &&
-    value.version >= 0
-  );
-}
-
-function isParticipantFeedback(
-  value: unknown,
-): value is ParticipantFeedbackTicketsProjection {
-  return (
-    isRecord(value) &&
-    Array.isArray(value.tickets) &&
-    value.tickets.length <= 100 &&
-    value.tickets.every(isParticipantFeedbackTicket)
-  );
-}
-
-function isRuntime(value: unknown): value is CurriculumRuntimeProjection {
-  if (!isRecord(value)) return false;
-  const status =
-    value.status === "DOMINIO_DIGITAL" ||
-    value.status === "EM_REMEDIACAO" ||
-    value.status === "AGUARDA_CORRECAO_HUMANA";
-  const nextAction =
-    value.nextAction === "REVISAR_RETENCAO" ||
-    value.nextAction === "EXECUTAR_REMEDIACAO" ||
-    value.nextAction === "AGUARDAR_CORRECAO_HUMANA";
-  return (
-    isString(value.moduleId) &&
-    /^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(value.moduleId) &&
-    typeof value.version === "number" &&
-    Number.isInteger(value.version) &&
-    value.version >= 1 &&
-    status &&
-    nextAction &&
-    (value.scorePercent === undefined ||
-      (typeof value.scorePercent === "number" &&
-        Number.isInteger(value.scorePercent) &&
-        value.scorePercent >= 0 &&
-        value.scorePercent <= 100)) &&
-    typeof value.remediationCount === "number" &&
-    Number.isInteger(value.remediationCount) &&
-    value.remediationCount >= 0 &&
-    Array.isArray(value.retentionReviews) &&
-    value.retentionReviews.every(
-      (review) =>
-        isRecord(review) &&
-        (review.day === 7 || review.day === 30 || review.day === 90) &&
-        isString(review.dueAt) &&
-        review.status === "PENDENTE",
-    ) &&
-    value.practicalCompetenceClaim === "PROIBIDO_MVP"
-  );
-}
-
-function isTerminalAttemptStatus(value: string | undefined): boolean {
-  return (
-    value === "CORRIGIDA_AUTOMATICAMENTE" ||
-    value === "CORRIGIDA_HUMANAMENTE" ||
-    value === "ANULADA"
-  );
-}
-
-function isEditableAttemptStatus(value: string | undefined): boolean {
-  return value === "CRIADA" || value === "EM_ANDAMENTO" || value === "SALVA";
-}
-
-function isRemediationStartableActivityStatus(
-  value: string | undefined,
-): boolean {
-  return (
-    value === "DISPONIVEL" || value === "EM_ANDAMENTO" || value === "EM_REFORCO"
-  );
-}
-
-function isJourneyActivity(value: unknown): value is JourneyActivityProjection {
-  if (!isRecord(value)) return false;
-  return (
-    isString(value.activityId) &&
-    isString(value.slug) &&
-    isString(value.title) &&
-    isString(value.status) &&
-    isString(value.nextAction) &&
-    (value.attemptId === undefined || isString(value.attemptId)) &&
-    (value.attemptStatus === undefined || isString(value.attemptStatus)) &&
-    (value.attemptVersion === undefined ||
-      (typeof value.attemptVersion === "number" &&
-        Number.isInteger(value.attemptVersion) &&
-        value.attemptVersion >= 0))
-  );
-}
-
-function isJourney(value: unknown): value is LearningJourneyProjection {
-  if (!isRecord(value)) return false;
-  const target = value.nextActionTarget;
-  const validTarget =
-    target === undefined ||
-    (isRecord(target) &&
-      target.kind === "ACTIVITY" &&
-      isString(target.activityId) &&
-      Array.isArray(value.activities) &&
-      value.activities.some(
-        (activity) =>
-          isRecord(activity) && activity.activityId === target.activityId,
-      ));
-  return (
-    Array.isArray(value.assignments) &&
-    value.assignments.every(isRecord) &&
-    Array.isArray(value.activities) &&
-    value.activities.every(isJourneyActivity) &&
-    Array.isArray(value.results) &&
-    value.results.every(isRecord) &&
-    Array.isArray(value.runtimes) &&
-    value.runtimes.every(isRuntime) &&
-    isString(value.nextAction) &&
-    validTarget
-  );
-}
-
-function isParticipantDashboard(
-  value: unknown,
-): value is ParticipantDashboardProjection {
-  if (!isRecord(value) || value.kind !== "participant") return false;
-  const progress = value.progress;
-  if (!isRecord(progress) || !isString(value.nextAction)) return false;
-  const countKeys = [
-    "assignedActivities",
-    "completedActivities",
-    "remediationObjectives",
-    "retentionReviewsPending",
-    "pendingCorrections",
-  ] as const;
-  return (
-    Array.isArray(value.path) &&
-    value.path.length <= 24 &&
-    value.path.every(
-      (item) =>
-        isRecord(item) &&
-        isString(item.moduleId) &&
-        /^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(item.moduleId) &&
-        typeof item.month === "number" &&
-        Number.isInteger(item.month) &&
-        item.month >= 1 &&
-        item.month <= 24 &&
-        isString(item.status) &&
-        isString(item.nextAction),
-    ) &&
-    Array.isArray(value.profile) &&
-    value.profile.length <= 24 &&
-    value.profile.every(
-      (item) =>
-        isRecord(item) &&
-        isString(item.moduleId) &&
-        /^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(item.moduleId) &&
-        typeof item.month === "number" &&
-        Number.isInteger(item.month) &&
-        item.month >= 1 &&
-        item.month <= 24 &&
-        isString(item.competence) &&
-        item.competence.trim().length <= 500 &&
-        isString(item.status) &&
-        (item.scorePercent === null ||
-          (typeof item.scorePercent === "number" &&
-            Number.isInteger(item.scorePercent) &&
-            item.scorePercent >= 0 &&
-            item.scorePercent <= 100)) &&
-        (item.lastEvaluatedAt === undefined ||
-          isString(item.lastEvaluatedAt)) &&
-        item.evidence === "AVALIACAO_MODULAR_DIGITAL" &&
-        item.practicalCompetenceClaim === "PROIBIDO_MVP",
-    ) &&
-    (value.diagnosticProfile === undefined ||
-      (Array.isArray(value.diagnosticProfile) &&
-        value.diagnosticProfile.length === 3 &&
-        value.diagnosticProfile.every(
-          (item) =>
-            isRecord(item) &&
-            (item.themeId === "B07-S1" ||
-              item.themeId === "B07-S2" ||
-              item.themeId === "B07-S3") &&
-            isString(item.themeLabel) &&
-            (item.status === "SEM_EVIDENCIA_DIGITAL" ||
-              item.status === "BASELINE_REGISTRADA") &&
-            (item.scorePercent === null ||
-              (typeof item.scorePercent === "number" &&
-                Number.isInteger(item.scorePercent) &&
-                item.scorePercent >= 0 &&
-                item.scorePercent <= 100)) &&
-            typeof item.answeredItemCount === "number" &&
-            Number.isInteger(item.answeredItemCount) &&
-            item.answeredItemCount >= 0 &&
-            item.answeredItemCount <= 40 &&
-            typeof item.itemCount === "number" &&
-            Number.isInteger(item.itemCount) &&
-            item.itemCount >= 1 &&
-            item.itemCount <= 40 &&
-            Array.isArray(item.recommendedModuleIds) &&
-            item.recommendedModuleIds.every(
-              (moduleId) =>
-                isString(moduleId) &&
-                /^M(?:0[1-9]|1[0-9]|2[0-4])$/u.test(moduleId),
-            ) &&
-            (item.lastEvaluatedAt === undefined ||
-              isString(item.lastEvaluatedAt)) &&
-            item.evidence === "DIAGNOSTICO_FORMATIVO_DIGITAL" &&
-            item.notPunitive === true &&
-            item.noGlobalPassFail === true &&
-            item.practicalCompetenceClaim === "PROIBIDO_MVP",
-        ))) &&
-    countKeys.every(
-      (key) =>
-        typeof progress[key] === "number" &&
-        Number.isInteger(progress[key]) &&
-        progress[key] >= 0,
-    ) &&
-    (progress.progressPercent === null ||
-      (typeof progress.progressPercent === "number" &&
-        Number.isInteger(progress.progressPercent) &&
-        progress.progressPercent >= 0 &&
-        progress.progressPercent <= 100))
-  );
-}
+import {
+  type ReflectionProjection,
+  type ActivityProjection,
+  type AttemptProjection,
+  type ParticipantAppealProjection,
+  type FeedbackTicketType,
+  type ParticipantFeedbackTicketProjection,
+  type CurriculumRuntimeProjection,
+  type LearningJourneyProjection,
+  type CorrectionProjection,
+  type ParticipantDashboardProjection,
+  type ExperienceState,
+  type RetryAction,
+  PublicApiError,
+  isRecord,
+  canonicalParticipantResponse,
+  sameParticipantResponse,
+  isActivity,
+  isAttempt,
+  isCorrection,
+  isParticipantAppeal,
+  isParticipantAppeals,
+  isParticipantFeedbackTicket,
+  isParticipantFeedback,
+  isRuntime,
+  isTerminalAttemptStatus,
+  isEditableAttemptStatus,
+  isRemediationStartableActivityStatus,
+  isJourney,
+  isParticipantDashboard,
+} from "./participant-contracts";
+import { ParticipantJourneyActions as JourneyActivities } from "./participant-journey-actions";
+import {
+  ParticipantProjectionCoherence,
+  isContextualParticipantCorrection,
+  isContextualParticipantAppeal,
+} from "./participant-projection-coherence";
+import {
+  ParticipantMutationReceiptAnchors,
+  isParticipantMutationReceipt,
+} from "./participant-mutation-receipt";
+import {
+  ParticipantPendingMutations,
+  type PendingParticipantMutation,
+} from "./participant-pending-mutations";
+import {
+  ParticipantReadRequests,
+  ParticipantRequestCancelled,
+  requestParticipantJson,
+  type ParticipantReadResource,
+} from "./participant-resource-request";
+import {
+  participantPublicError as publicErrorMessage,
+  focusParticipantField,
+} from "./participant-field-validation";
+import {
+  ParticipantAnswerList,
+  selectedChoiceIds,
+  type ActivityItem,
+} from "./participant-answer-list";
+import {
+  type FormEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 function pathStatusLabel(value: string): string {
   const labels: Readonly<Record<string, string>> = {
@@ -645,6 +77,8 @@ function pathStatusLabel(value: string): string {
     RETENCAO_PENDENTE: "Retenção pendente",
     CONCLUIDO: "Concluído",
     EM_ANDAMENTO: "Em andamento",
+    PAUSADO: "Pausado",
+    BLOQUEADO: "Bloqueado",
     NAO_ATRIBUIDO: "Aguardando atribuição",
   };
   return labels[value] ?? value;
@@ -658,6 +92,7 @@ function pathActionLabel(value: string): string {
     EXECUTAR_RETENCAO: "Fazer retenção",
     REVISAR_PROXIMO_MODULO: "Revisar próximo módulo",
     RETOMAR_MODULO: "Retomar módulo",
+    CONSULTAR_PROXIMO_PASSO: "Consultar próximo passo",
     AGUARDAR_ATRIBUICAO: "Aguardando equipe",
   };
   return labels[value] ?? value;
@@ -802,51 +237,6 @@ function ParticipantPath({
         não libera procedimentos e não comprova competência clínica.
       </p>
     </section>
-  );
-}
-
-function JourneyActivities({
-  activities,
-  nextAction,
-  nextActionTarget,
-  busy,
-  onSelect,
-}: Readonly<{
-  readonly activities: readonly JourneyActivityProjection[];
-  readonly nextAction: LearningJourneyProjection["nextAction"];
-  readonly nextActionTarget: LearningJourneyProjection["nextActionTarget"];
-  readonly busy: boolean;
-  readonly onSelect: (activityId: string) => Promise<void>;
-}>): ReactNode {
-  if (activities.length === 0) {
-    return <p className="journey-item">Nenhuma atividade atribuída.</p>;
-  }
-
-  return (
-    <ul className="journey-activity-list" aria-label="Atividades da jornada">
-      {activities.slice(0, 3).map((item) => (
-        <li className="journey-activity-item" key={item.activityId}>
-          <div>
-            <strong>{item.title}</strong>
-            <span>{nextActionLabel(item.nextAction)}</span>
-          </div>
-          {(nextAction === "INICIAR_ATIVIDADE" ||
-            nextAction === "RETOMAR_ATIVIDADE" ||
-            nextAction === "EXECUTAR_REMEDIACAO") &&
-          nextActionTarget?.activityId === item.activityId ? (
-            <button
-              type="button"
-              className="button-link"
-              aria-label={`Abrir atividade: ${item.title}`}
-              onClick={() => void onSelect(item.activityId)}
-              disabled={busy}
-            >
-              Abrir atividade
-            </button>
-          ) : null}
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -1034,61 +424,8 @@ function moduleIdFromActivity(activity: ActivityProjection): string | null {
   return match?.[1] === undefined ? null : `M${match[1]}`;
 }
 
-function publicErrorMessage(error: unknown): string {
-  if (error instanceof PublicApiError && error.code === "not_found") {
-    return "O convite não está disponível. Verifique o link interno.";
-  }
-  if (error instanceof PublicApiError && error.code === "validation_error") {
-    return "Revise o token informado e tente novamente.";
-  }
-  return "Não foi possível concluir a operação. Tente novamente.";
-}
-
 function idempotencyKey(prefix: string): string {
   return `${prefix}-${crypto.randomUUID()}`;
-}
-
-function selectedChoiceIds(
-  item: ActivityItem,
-  value: string | undefined,
-): readonly string[] {
-  if (value === undefined || value.length === 0) return [];
-  if (item.selectionMode !== "MULTIPLE") return [value];
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter(isString) : [];
-  } catch {
-    return [];
-  }
-}
-
-async function requestJson(
-  path: string,
-  init: Readonly<{
-    readonly method: "GET" | "POST";
-    readonly body?: unknown;
-  }>,
-): Promise<unknown> {
-  const response = await fetch(`${apiBase}${path}`, {
-    method: init.method,
-    credentials: "include",
-    headers: { "content-type": "application/json" },
-    ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
-  });
-  const payload: unknown = await response.json().catch(() => null);
-  if (!isRecord(payload) || payload.success !== true) {
-    const error = isRecord(payload)
-      ? isRecord(payload.error)
-        ? payload.error
-        : ({} satisfies ApiRecord)
-      : ({} satisfies ApiRecord);
-    const code = isString(error.code) ? error.code : "internal_error";
-    const message = isString(error.message)
-      ? error.message
-      : "A operação não foi concluída.";
-    throw new PublicApiError(code, message);
-  }
-  return payload.data;
 }
 
 function initialActivityId(): string {
@@ -1108,6 +445,105 @@ function updateActivityDeepLink(nextActivityId: string): void {
 }
 
 export default function HomePage() {
+  const projectionCoherence = useRef(new ParticipantProjectionCoherence());
+  const activitySnapshot = useRef<ActivityProjection | null>(null);
+  const readRequests = useRef(new ParticipantReadRequests());
+  const [readErrors, setReadErrors] = useState<
+    Partial<Record<ParticipantReadResource, string>>
+  >({});
+  const [fieldErrors, setFieldErrors] = useState<
+    Readonly<Record<string, string>>
+  >({});
+  const [answerErrors, setAnswerErrors] = useState<
+    Readonly<Record<string, string>>
+  >({});
+  function clearFieldError(id: string): void {
+    setFieldErrors((previous) => {
+      const next = { ...previous };
+      delete next[id];
+      return next;
+    });
+  }
+  function fieldValidation(
+    error: unknown,
+    context: "access" | "feedback" | "appeal",
+    id: string,
+  ): void {
+    if (error instanceof ParticipantRequestCancelled) return;
+    const message = publicErrorMessage(error, context);
+    setError(message);
+    if (error instanceof PublicApiError && error.code === "validation_error") {
+      setFieldErrors((previous) => ({ ...previous, [id]: message }));
+      focusParticipantField(id);
+    }
+  }
+  function readError(resource: ParticipantReadResource, error?: unknown): void {
+    setReadErrors((previous) => ({
+      ...previous,
+      [resource]: error === undefined ? undefined : publicErrorMessage(error),
+    }));
+  }
+  function requestJson(
+    path: string,
+    init: Readonly<{
+      method: "GET" | "POST";
+      body?: unknown;
+      signal?: AbortSignal;
+    }>,
+  ): Promise<unknown> {
+    return requestParticipantJson(path, {
+      ...init,
+      signal: init.signal ?? readRequests.current.signal,
+    });
+  }
+  const pendingMutations = useRef(new ParticipantPendingMutations());
+  const mutationReceiptAnchors = useRef(
+    new ParticipantMutationReceiptAnchors(),
+  );
+  function isUnresolvedMutation(operation: string, key: string): boolean {
+    const pending = pendingMutations.current.get(operation);
+    return pending !== undefined && pending.key === key && pending.ambiguous;
+  }
+
+  async function requestMutation(
+    path: string,
+    snapshot: PendingParticipantMutation,
+  ): Promise<unknown> {
+    let status: number | undefined;
+    let rejection: unknown;
+    try {
+      return await requestParticipantJson(
+        path,
+        {
+          method: "POST",
+          body: JSON.parse(snapshot.body) as unknown,
+          signal: readRequests.current.signal,
+        },
+        {
+          fetcher: async (input, init) => {
+            const response = await fetch(input, init);
+            status = response.status;
+            // Only a real explicit 422 envelope can prove validation rejected the write.
+            // Reading its clone stays inside the same transport/body deadline.
+            if (status === 422)
+              rejection = await response
+                .clone()
+                .json()
+                .catch(() => null);
+            return response;
+          },
+        },
+      );
+    } catch (caught) {
+      const rejected =
+        caught instanceof PublicApiError &&
+        caught.code === "validation_error" &&
+        pendingMutations.current.rejectValidation(snapshot, status, rejection);
+      if (!rejected) pendingMutations.current.markAmbiguous(snapshot);
+      throw caught;
+    }
+  }
+
   const [activityId, setActivityId] = useState("");
   const [token, setToken] = useState("");
   const [activity, setActivity] = useState<ActivityProjection | null>(null);
@@ -1120,6 +556,8 @@ export default function HomePage() {
     null,
   );
   const [attempt, setAttempt] = useState<AttemptProjection | null>(null);
+  const [attemptReadState, setAttemptReadState] =
+    useState<ExperienceState>("idle");
   const [correction, setCorrection] = useState<CorrectionProjection | null>(
     null,
   );
@@ -1139,6 +577,9 @@ export default function HomePage() {
     useState<FeedbackTicketType>("MELHORIA");
   const [feedbackDescription, setFeedbackDescription] = useState("");
   const [answers, setAnswers] = useState<Readonly<Record<string, string>>>({});
+  const [confirmedAnswers, setConfirmedAnswers] = useState<
+    Readonly<Record<string, string>>
+  >({});
   const [authenticated, setAuthenticated] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1148,29 +589,65 @@ export default function HomePage() {
   const [retryAction, setRetryAction] = useState<RetryAction>(null);
 
   useEffect(() => {
+    readRequests.current = new ParticipantReadRequests();
     setActivityId(initialActivityId());
     void restoreAuthenticatedSession();
+    return () => readRequests.current.cancelAll();
   }, []);
 
   async function loadActivity(nextActivityId: string): Promise<void> {
+    readRequests.current.cancelDependents();
+    const read = readRequests.current.begin("activity");
+    readError("activity");
     setActivityState("loading");
     setRetryAction("activity");
     try {
       const data = await requestJson(
         `/api/v1/activities/${encodeURIComponent(nextActivityId)}`,
-        { method: "GET" },
+        { method: "GET", signal: read.signal },
       );
-      if (!isActivity(data))
+      if (!read.current()) throw new ParticipantRequestCancelled();
+      if (!isActivity(data) || data.activityId !== nextActivityId)
         throw new PublicApiError("internal_error", "invalid projection");
+      if (
+        mutationReceiptAnchors.current.blocksReplacement(
+          { activityId: data.activityId },
+          isUnresolvedMutation,
+        )
+      ) {
+        setActivityState("ready");
+        setRetryAction(null);
+        return;
+      }
       setActivity(data);
-      if (data.reflection !== undefined) {
+      activitySnapshot.current = data;
+      if (
+        data.reflection !== undefined &&
+        projectionCoherence.current.current?.activityId !== data.activityId
+      ) {
         const persistedAnswers = Object.fromEntries(
           data.reflection.answers.map((answer) => [
             answer.itemId,
             answer.response,
           ]),
         );
-        setAnswers((previous) => ({ ...previous, ...persistedAnswers }));
+        setAnswers((previous) => ({
+          ...previous,
+          ...Object.fromEntries(
+            Object.entries(persistedAnswers).filter(
+              ([itemId]) =>
+                previous[itemId] === undefined ||
+                sameParticipantResponse(
+                  previous[itemId] ?? "",
+                  confirmedAnswers[itemId] ?? "",
+                ),
+            ),
+          ),
+        }));
+        setConfirmedAnswers((previous) => ({
+          ...previous,
+          ...persistedAnswers,
+        }));
       }
       const moduleId = moduleIdFromActivity(data);
       if (moduleId === null) {
@@ -1182,8 +659,9 @@ export default function HomePage() {
       try {
         const runtimeData = await requestJson(
           `/api/v1/curriculum/modules/${moduleId}/runtime`,
-          { method: "GET" },
+          { method: "GET", signal: read.signal },
         );
+        if (!read.current()) throw new ParticipantRequestCancelled();
         setRuntime(isRuntime(runtimeData) ? runtimeData : null);
       } catch (caught) {
         if (caught instanceof PublicApiError && caught.code === "not_found") {
@@ -1192,9 +670,13 @@ export default function HomePage() {
           throw caught;
         }
       }
+      if (!read.current()) throw new ParticipantRequestCancelled();
       setActivityState("ready");
       setRetryAction(null);
     } catch (caught) {
+      if (!read.current() || caught instanceof ParticipantRequestCancelled)
+        throw new ParticipantRequestCancelled();
+      readError("activity", caught);
       setActivityState("error");
       throw caught;
     }
@@ -1212,7 +694,25 @@ export default function HomePage() {
       journeyActivity.attemptStatus === undefined ||
       journeyActivity.attemptVersion === undefined
     ) {
+      if (
+        mutationReceiptAnchors.current.blocksReplacement(
+          { activityId: nextActivityId, attemptId: null },
+          isUnresolvedMutation,
+        )
+      ) {
+        setAttemptReadState("ready");
+        return;
+      }
+      if (projectionCoherence.current.current?.activityId === nextActivityId) {
+        setAttemptReadState("ready");
+        return;
+      }
+      projectionCoherence.current.clear();
       setAttempt(null);
+      setAnswers({});
+      setAnswerErrors({});
+      setConfirmedAnswers({});
+      setAttemptReadState("idle");
       setCorrection(null);
       setCorrectionState("idle");
       setAppeals([]);
@@ -1220,25 +720,92 @@ export default function HomePage() {
       return;
     }
 
-    const restoredAttempt: AttemptProjection = {
-      attemptId: journeyActivity.attemptId,
-      activityId: nextActivityId,
-      status: journeyActivity.attemptStatus,
-      version: journeyActivity.attemptVersion,
-      answers: [],
-    };
+    const read = readRequests.current.begin("attempt");
+    readError("attempt");
+    setAttemptReadState("loading");
+    let restoredAttempt: AttemptProjection;
+    try {
+      const data = await requestJson(
+        `/api/v1/attempts/${encodeURIComponent(journeyActivity.attemptId)}`,
+        { method: "GET", signal: read.signal },
+      );
+      if (!read.current()) return;
+      if (
+        !isAttempt(data) ||
+        data.attemptId !== journeyActivity.attemptId ||
+        data.activityId !== nextActivityId ||
+        data.version < journeyActivity.attemptVersion
+      ) {
+        throw new PublicApiError(
+          "internal_error",
+          "invalid restored attempt projection",
+        );
+      }
+      if (
+        mutationReceiptAnchors.current.blocksReplacement(
+          data,
+          isUnresolvedMutation,
+        )
+      ) {
+        setAttemptReadState("ready");
+        return;
+      }
+      restoredAttempt = projectionCoherence.current.read(data, {
+        attemptId: journeyActivity.attemptId,
+        activityId: nextActivityId,
+        status: journeyActivity.attemptStatus,
+        version: journeyActivity.attemptVersion,
+      });
+      if (restoredAttempt !== data) {
+        setAttemptReadState("ready");
+        return;
+      }
+      const persisted = Object.fromEntries(
+        data.answers.map((answer) => [answer.itemId, answer.response]),
+      );
+      const sameAttempt = attempt?.attemptId === data.attemptId;
+      if (!sameAttempt) setAnswerErrors({});
+      setAnswers((previous) =>
+        sameAttempt
+          ? {
+              ...persisted,
+              ...Object.fromEntries(
+                Object.entries(previous).filter(
+                  ([itemId, response]) =>
+                    !sameParticipantResponse(
+                      response,
+                      confirmedAnswers[itemId] ?? "",
+                    ),
+                ),
+              ),
+            }
+          : persisted,
+      );
+      setConfirmedAnswers(persisted);
+      setAttemptReadState("ready");
+    } catch (caught) {
+      if (!read.current() || caught instanceof ParticipantRequestCancelled)
+        return;
+      setAttemptReadState("error");
+      readError("attempt", caught);
+      throw caught;
+    }
+    setCorrection(null);
+    setCorrectionState("idle");
+    setAppeals([]);
     setAttempt(restoredAttempt);
     if (
-      journeyActivity.attemptStatus === "CORRIGIDA_AUTOMATICAMENTE" ||
-      journeyActivity.attemptStatus === "CORRIGIDA_HUMANAMENTE"
+      restoredAttempt.status === "CORRIGIDA_AUTOMATICAMENTE" ||
+      restoredAttempt.status === "CORRIGIDA_HUMANAMENTE"
     ) {
-      await loadAppeals(restoredAttempt.attemptId);
-      await loadCorrection(restoredAttempt.attemptId);
+      await loadAppeals(restoredAttempt);
+      if (!read.current()) return;
+      await loadCorrection(restoredAttempt);
     } else if (
-      journeyActivity.attemptStatus === "SUBMETIDA" ||
-      journeyActivity.attemptStatus === "AGUARDA_CORRECAO_HUMANA"
+      restoredAttempt.status === "SUBMETIDA" ||
+      restoredAttempt.status === "AGUARDA_CORRECAO_HUMANA"
     ) {
-      await loadCorrection(restoredAttempt.attemptId);
+      await loadCorrection(restoredAttempt);
     } else {
       setCorrection(null);
       setCorrectionState("idle");
@@ -1246,12 +813,15 @@ export default function HomePage() {
   }
 
   async function loadJourney(): Promise<LearningJourneyProjection> {
+    const read = readRequests.current.begin("journey");
     setJourneyState("loading");
     setRetryAction("journey");
     try {
       const data = await requestJson("/api/v1/learning-path", {
         method: "GET",
+        signal: read.signal,
       });
+      if (!read.current()) throw new ParticipantRequestCancelled();
       if (!isJourney(data))
         throw new PublicApiError(
           "internal_error",
@@ -1263,62 +833,96 @@ export default function HomePage() {
       setRetryAction(null);
       return data;
     } catch (caught) {
+      if (!read.current() || caught instanceof ParticipantRequestCancelled)
+        throw new ParticipantRequestCancelled();
       setJourneyState("error");
       throw caught;
     }
   }
 
   async function loadParticipantDashboard(): Promise<void> {
+    const read = readRequests.current.begin("dashboard");
     try {
-      const data = await requestJson("/api/v1/dashboard", { method: "GET" });
-      if (!isParticipantDashboard(data)) return;
+      const data = await requestJson("/api/v1/dashboard", {
+        method: "GET",
+        signal: read.signal,
+      });
+      if (!read.current() || !isParticipantDashboard(data)) return;
       setParticipantDashboard(data);
     } catch {
-      setParticipantDashboard(null);
+      if (read.current()) setParticipantDashboard(null);
     }
   }
 
-  async function loadAppeals(attemptId: string): Promise<void> {
+  async function loadAppeals(context: AttemptProjection): Promise<void> {
+    const { attemptId } = context;
     if (attemptId.trim().length === 0) return;
+    const read = readRequests.current.begin("appeals");
+    readError("appeals");
     setAppealState("loading");
-    setRetryAction("appeals");
     try {
       const data = await requestJson(
         `/api/v1/appeals?attemptId=${encodeURIComponent(attemptId)}`,
-        { method: "GET" },
+        { method: "GET", signal: read.signal },
       );
+      if (!read.current()) return;
       if (!isParticipantAppeals(data)) {
         throw new PublicApiError("internal_error", "invalid appeal projection");
       }
-      setAppeals(data.appeals);
+      const currentActivity = activitySnapshot.current;
+      const itemIds =
+        currentActivity?.activityId === context.activityId
+          ? currentActivity.items
+              .filter((item) => item.kind === "QUESTAO" || item.kind === "CASO")
+              .map((item) => item.itemId)
+          : [];
+      const owned = data.appeals.filter((row) =>
+        isContextualParticipantAppeal(
+          row,
+          context,
+          projectionCoherence.current.current,
+          itemIds,
+        ),
+      );
+      setAppeals(owned);
       setAppealItemId((current) => {
         if (
           current.length > 0 &&
-          activity?.items.some((item) => item.itemId === current)
+          currentActivity?.items.some((item) => item.itemId === current)
         ) {
           return current;
         }
-        return activity?.items[0]?.itemId ?? "";
+        return currentActivity?.items[0]?.itemId ?? "";
       });
-      setAppealState(data.appeals.length === 0 ? "empty" : "ready");
-      setRetryAction(null);
+      setAppealState(owned.length === 0 ? "empty" : "ready");
     } catch (caught) {
+      if (!read.current() || caught instanceof ParticipantRequestCancelled)
+        return;
       setAppealState("error");
-      setRetryAction("appeals");
-      setError(publicErrorMessage(caught));
+      readError("appeals", caught);
     }
   }
 
-  async function loadCorrection(attemptId: string): Promise<void> {
+  async function loadCorrection(context: AttemptProjection): Promise<void> {
+    const { attemptId } = context;
     if (attemptId.trim().length === 0) return;
+    const read = readRequests.current.begin("correction");
+    readError("correction");
     setCorrectionState("loading");
-    setRetryAction("correction");
     try {
       const data = await requestJson(
         `/api/v1/attempts/${encodeURIComponent(attemptId)}/feedback`,
-        { method: "GET" },
+        { method: "GET", signal: read.signal },
       );
-      if (!isCorrection(data)) {
+      if (!read.current()) return;
+      if (
+        !isCorrection(data) ||
+        !isContextualParticipantCorrection(
+          data,
+          context,
+          projectionCoherence.current.current,
+        )
+      ) {
         throw new PublicApiError(
           "internal_error",
           "invalid correction projection",
@@ -1326,26 +930,30 @@ export default function HomePage() {
       }
       setCorrection(data);
       setCorrectionState("ready");
-      setRetryAction(null);
     } catch (caught) {
+      if (!read.current() || caught instanceof ParticipantRequestCancelled)
+        return;
       if (caught instanceof PublicApiError && caught.code === "not_found") {
         setCorrection(null);
         setCorrectionState("empty");
-        setRetryAction(null);
         return;
       }
       setCorrection(null);
       setCorrectionState("error");
-      setRetryAction("correction");
-      setError(publicErrorMessage(caught));
+      readError("correction", caught);
     }
   }
 
   async function loadFeedback(): Promise<void> {
+    const read = readRequests.current.begin("feedback");
+    readError("feedback");
     setFeedbackState("loading");
-    setRetryAction("feedback");
     try {
-      const data = await requestJson("/api/v1/feedback", { method: "GET" });
+      const data = await requestJson("/api/v1/feedback", {
+        method: "GET",
+        signal: read.signal,
+      });
+      if (!read.current()) return;
       if (!isParticipantFeedback(data)) {
         throw new PublicApiError(
           "internal_error",
@@ -1354,18 +962,18 @@ export default function HomePage() {
       }
       setFeedbackTickets(data.tickets);
       setFeedbackState(data.tickets.length === 0 ? "empty" : "ready");
-      setRetryAction(null);
     } catch (caught) {
+      if (!read.current() || caught instanceof ParticipantRequestCancelled)
+        return;
       setFeedbackState("error");
-      setRetryAction("feedback");
-      setError(publicErrorMessage(caught));
+      readError("feedback", caught);
     }
   }
 
   async function loadAuthenticatedExperience(
     requestedActivityId = activityId,
   ): Promise<void> {
-    await loadFeedback();
+    void loadFeedback();
     const loadedJourney = await loadJourney();
     const nextActivityId =
       requestedActivityId.trim().length > 0
@@ -1396,6 +1004,7 @@ export default function HomePage() {
   }
 
   async function activateAccess(): Promise<void> {
+    clearFieldError("invitation-token");
     setBusy(true);
     setError(null);
     setNotice(null);
@@ -1407,11 +1016,12 @@ export default function HomePage() {
       });
     } catch (caught) {
       setRetryAction("access");
-      setError(publicErrorMessage(caught));
+      fieldValidation(caught, "access", "invitation-token");
       setBusy(false);
       return;
     }
 
+    setFieldErrors({});
     setAuthenticated(true);
     setNotice("Acesso ativado.");
     try {
@@ -1433,7 +1043,6 @@ export default function HomePage() {
     setError(null);
     setNotice(null);
     try {
-      await loadFeedback();
       const loadedJourney = await loadJourney();
       const nextActivityId =
         activityId.trim().length > 0
@@ -1476,7 +1085,11 @@ export default function HomePage() {
       await restoreAttemptFromJourney(loadedJourney, nextActivityId);
       setNotice("Atividade aberta.");
     } catch (caught) {
-      setError(publicErrorMessage(caught));
+      if (
+        caught instanceof PublicApiError &&
+        caught.message === "activity is not present in the authorized journey"
+      )
+        setError(publicErrorMessage(caught));
     } finally {
       setBusy(false);
     }
@@ -1489,9 +1102,15 @@ export default function HomePage() {
     setNotice(null);
     try {
       await loadActivity(activityId);
+      if (journey !== null)
+        await restoreAttemptFromJourney(journey, activityId);
       setNotice("Atividade atualizada.");
     } catch (caught) {
-      setError(publicErrorMessage(caught));
+      if (
+        caught instanceof PublicApiError &&
+        caught.message === "activity is not present in the authorized journey"
+      )
+        setError(publicErrorMessage(caught));
     } finally {
       setBusy(false);
     }
@@ -1502,35 +1121,46 @@ export default function HomePage() {
     if (retryAction === "journey") void refreshJourney();
     if (retryAction === "activity") void refreshActivity();
     if (retryAction === "appeals" && attempt !== null) {
-      void loadAppeals(attempt.attemptId);
+      void loadAppeals(attempt);
     }
     if (retryAction === "feedback") void loadFeedback();
     if (retryAction === "correction" && attempt !== null) {
       setError(null);
-      void loadCorrection(attempt.attemptId);
+      void loadCorrection(attempt);
     }
   }
 
   async function handleStartAttempt(): Promise<void> {
     if (activity === null) return;
+    const operation = `start:${activity.activityId}`;
+    const payload = { activityId: activity.activityId };
+    const mutation = pendingMutations.current.prepare(operation, payload, () =>
+      idempotencyKey("start"),
+    );
+    const receiptAnchor = mutationReceiptAnchors.current.capture(
+      operation,
+      mutation.key,
+      {
+        operation: "start",
+        activityId: activity.activityId,
+      },
+    );
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
-      const data = await requestJson("/api/v1/attempts", {
-        method: "POST",
-        body: {
-          activityId: activity.activityId,
-          idempotencyKey: idempotencyKey("start"),
-        },
-      });
-      if (!isAttempt(data))
+      const data = await requestMutation("/api/v1/attempts", mutation);
+      if (!isParticipantMutationReceipt(data, receiptAnchor))
         throw new PublicApiError(
           "internal_error",
           "invalid attempt projection",
         );
-      setAttempt(data);
+      pendingMutations.current.complete(mutation);
+      mutationReceiptAnchors.current.complete(operation, mutation.key);
+      setAttempt(projectionCoherence.current.acknowledge(data));
+      setAttemptReadState("ready");
       setAnswers({});
+      setConfirmedAnswers({});
       setAppeals([]);
       setAppealItemId("");
       setAppealJustification("");
@@ -1541,8 +1171,10 @@ export default function HomePage() {
       // The activity projection may still carry the prior reflection. A new
       // attempt must begin with an empty response surface regardless of it.
       setAnswers({});
+      setConfirmedAnswers({});
       setNotice("Tentativa iniciada.");
     } catch (caught) {
+      pendingMutations.current.markAmbiguous(mutation);
       setError(publicErrorMessage(caught));
     } finally {
       setBusy(false);
@@ -1575,62 +1207,143 @@ export default function HomePage() {
   }
 
   async function handleSaveAnswer(item: ActivityItem): Promise<void> {
-    if (activity === null || attempt === null) return;
+    if (
+      busy ||
+      attemptReadState === "error" ||
+      activity === null ||
+      attempt === null
+    )
+      return;
+    const operation = `answer:${attempt.attemptId}:${item.itemId}`;
+    const payload = {
+      attemptId: attempt.attemptId,
+      activityId: activity.activityId,
+      itemId: item.itemId,
+      response: answers[item.itemId] ?? "",
+    };
+    if (
+      pendingMutations.current.get(operation) === undefined &&
+      canonicalParticipantResponse(payload.response) === null
+    ) {
+      setAnswerErrors((previous) => ({
+        ...previous,
+        [item.itemId]: "Revise a resposta deste item e tente salvar novamente.",
+      }));
+      focusParticipantField(`answer-${item.itemId}`);
+      return;
+    }
+    const mutation = pendingMutations.current.prepare(operation, payload, () =>
+      idempotencyKey("answer"),
+    );
+    const receiptAnchor = mutationReceiptAnchors.current.capture(
+      operation,
+      mutation.key,
+      {
+        operation: "answer",
+        attemptId: attempt.attemptId,
+        activityId: activity.activityId,
+        itemId: item.itemId,
+        response: payload.response,
+        version: attempt.version,
+      },
+    );
+    setAnswerErrors((previous) => {
+      const next = { ...previous };
+      delete next[item.itemId];
+      return next;
+    });
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
-      const data = await requestJson(
+      const sent: unknown = JSON.parse(mutation.body);
+      if (!isRecord(sent) || typeof sent.response !== "string")
+        throw new PublicApiError("internal_error", "invalid pending answer");
+      if (canonicalParticipantResponse(sent.response) === null)
+        throw new PublicApiError(
+          "internal_error",
+          "invalid pending answer response",
+        );
+      const data = await requestMutation(
         `/api/v1/attempts/${attempt.attemptId}/answers`,
-        {
-          method: "POST",
-          body: {
-            attemptId: attempt.attemptId,
-            activityId: activity.activityId,
-            itemId: item.itemId,
-            response: answers[item.itemId] ?? "",
-            idempotencyKey: idempotencyKey("answer"),
-          },
-        },
+        mutation,
       );
-      if (!isAttempt(data))
+      if (!isParticipantMutationReceipt(data, receiptAnchor))
         throw new PublicApiError("internal_error", "invalid answer projection");
-      setAttempt(data);
+      pendingMutations.current.complete(mutation);
+      mutationReceiptAnchors.current.complete(operation, mutation.key);
+      const retained = projectionCoherence.current.acknowledge(data);
+      setAttempt(retained);
+      setConfirmedAnswers(
+        Object.fromEntries(
+          retained.answers.map((answer) => [answer.itemId, answer.response]),
+        ),
+      );
       await loadActivity(activity.activityId);
       setNotice("Resposta salva.");
     } catch (caught) {
-      setError(publicErrorMessage(caught));
+      pendingMutations.current.markAmbiguous(mutation);
+      if (
+        caught instanceof PublicApiError &&
+        caught.code === "validation_error"
+      ) {
+        setAnswerErrors((previous) => ({
+          ...previous,
+          [item.itemId]: publicErrorMessage(caught, "answer"),
+        }));
+        focusParticipantField(`answer-${item.itemId}`);
+      } else if (!(caught instanceof ParticipantRequestCancelled))
+        setError(publicErrorMessage(caught, "answer"));
     } finally {
       setBusy(false);
     }
   }
 
   async function handleSubmitAttempt(): Promise<void> {
-    if (attempt === null) return;
+    if (
+      busy ||
+      attemptReadState === "error" ||
+      attempt === null ||
+      hasPendingAnswers
+    )
+      return;
+    const operation = `submit:${attempt.attemptId}`;
+    const mutation = pendingMutations.current.prepare(operation, {}, () =>
+      idempotencyKey("submit"),
+    );
+    const receiptAnchor = mutationReceiptAnchors.current.capture(
+      operation,
+      mutation.key,
+      {
+        operation: "submit",
+        attemptId: attempt.attemptId,
+        activityId: attempt.activityId,
+        version: attempt.version,
+      },
+    );
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
-      const data = await requestJson(
+      const data = await requestMutation(
         `/api/v1/attempts/${attempt.attemptId}/submit`,
-        {
-          method: "POST",
-          body: { idempotencyKey: idempotencyKey("submit") },
-        },
+        mutation,
       );
-      if (!isAttempt(data))
+      if (!isParticipantMutationReceipt(data, receiptAnchor))
         throw new PublicApiError(
           "internal_error",
           "invalid submission projection",
         );
-      setAttempt(data);
+      pendingMutations.current.complete(mutation);
+      mutationReceiptAnchors.current.complete(operation, mutation.key);
+      setAttempt(projectionCoherence.current.acknowledge(data));
       await loadActivity(attempt.activityId);
       if (
         data.status === "CORRIGIDA_AUTOMATICAMENTE" ||
         data.status === "CORRIGIDA_HUMANAMENTE"
       ) {
-        await loadAppeals(data.attemptId);
-        await loadCorrection(data.attemptId);
+        await loadAppeals(projectionCoherence.current.current ?? data);
+        await loadCorrection(projectionCoherence.current.current ?? data);
       } else if (
         data.status === "SUBMETIDA" ||
         data.status === "AGUARDA_CORRECAO_HUMANA"
@@ -1643,6 +1356,7 @@ export default function HomePage() {
       }
       setNotice("Tentativa submetida.");
     } catch (caught) {
+      pendingMutations.current.markAmbiguous(mutation);
       setError(publicErrorMessage(caught));
     } finally {
       setBusy(false);
@@ -1650,6 +1364,7 @@ export default function HomePage() {
   }
 
   async function handleCreateAppeal(): Promise<void> {
+    clearFieldError("appeal-justification");
     if (
       attempt === null ||
       appealItemId.length === 0 ||
@@ -1669,21 +1384,40 @@ export default function HomePage() {
           justification: appealJustification,
         },
       });
-      if (!isParticipantAppeal(data)) {
+      const currentActivity = activitySnapshot.current;
+      const itemIds =
+        currentActivity?.activityId === attempt.activityId
+          ? currentActivity.items
+              .filter((item) => item.kind === "QUESTAO" || item.kind === "CASO")
+              .map((item) => item.itemId)
+          : [];
+      if (
+        !isParticipantAppeal(data) ||
+        !isContextualParticipantAppeal(
+          data,
+          attempt,
+          projectionCoherence.current.current,
+          itemIds,
+          appealItemId,
+        )
+      ) {
         throw new PublicApiError("internal_error", "invalid appeal projection");
       }
       setAppeals((previous) => [...previous, data]);
       setAppealState("ready");
-      setAppealJustification("");
+      setAppealJustification((current) =>
+        current === appealJustification ? "" : current,
+      );
       setNotice("Contestação registrada. Acompanhe o protocolo nesta tela.");
     } catch (caught) {
-      setError(publicErrorMessage(caught));
+      fieldValidation(caught, "appeal", "appeal-justification");
     } finally {
       setBusy(false);
     }
   }
 
   async function handleCreateFeedback(): Promise<void> {
+    clearFieldError("feedback-description");
     if (feedbackDescription.trim().length === 0) return;
     setBusy(true);
     setError(null);
@@ -1704,10 +1438,13 @@ export default function HomePage() {
       }
       setFeedbackTickets((previous) => [data, ...previous].slice(0, 100));
       setFeedbackState("ready");
-      setFeedbackDescription("");
+      readError("feedback");
+      setFeedbackDescription((current) =>
+        current === feedbackDescription ? "" : current,
+      );
       setNotice("Feedback enviado. Acompanhe o status nesta tela.");
     } catch (caught) {
-      setError(publicErrorMessage(caught));
+      fieldValidation(caught, "feedback", "feedback-description");
     } finally {
       setBusy(false);
     }
@@ -1737,6 +1474,21 @@ export default function HomePage() {
     isTerminalAttemptStatus(attempt.status);
   const canEditAttempt =
     attempt !== null && isEditableAttemptStatus(attempt.status);
+  const hasPendingAnswers =
+    canEditAttempt &&
+    (activity?.items.some((item) => {
+      if (item.responseMode === "NONE") return false;
+      const current = answers[item.itemId] ?? "";
+      const confirmed = confirmedAnswers[item.itemId] ?? "";
+      return (
+        !sameParticipantResponse(current, confirmed) ||
+        (attempt !== null &&
+          pendingMutations.current.get(
+            `answer:${attempt.attemptId}:${item.itemId}`,
+          )?.ambiguous === true)
+      );
+    }) ??
+      false);
   const correctionNextAction =
     currentJourneyActivity?.nextAction ?? journey?.nextAction;
 
@@ -1783,13 +1535,23 @@ export default function HomePage() {
               name="token"
               type="password"
               autoComplete="one-time-code"
-              aria-describedby="invitation-help"
+              aria-invalid={
+                fieldErrors["invitation-token"] !== undefined || undefined
+              }
+              aria-describedby={
+                fieldErrors["invitation-token"] !== undefined
+                  ? "invitation-help invitation-error"
+                  : "invitation-help"
+              }
               value={token}
               onChange={(event) => setToken(event.target.value)}
               minLength={32}
               maxLength={256}
               required
             />
+            {fieldErrors["invitation-token"] !== undefined ? (
+              <p id="invitation-error">{fieldErrors["invitation-token"]}</p>
+            ) : null}
             <button type="submit" disabled={busy}>
               {busy ? "Ativando…" : "Ativar acesso"}
             </button>
@@ -1846,7 +1608,11 @@ export default function HomePage() {
                 permanece protegida; tente novamente em instantes.
               </p>
             </div>
-            <button type="button" onClick={handleRetry} disabled={busy}>
+            <button
+              type="button"
+              onClick={() => void refreshJourney()}
+              disabled={busy}
+            >
               Tentar novamente
             </button>
           </section>
@@ -1874,6 +1640,7 @@ export default function HomePage() {
                   nextAction={journey.nextAction}
                   nextActionTarget={journey.nextActionTarget}
                   busy={busy}
+                  actionLabel={nextActionLabel}
                   onSelect={handleSelectJourneyActivity}
                 />
                 {participantDashboard !== null ? (
@@ -1930,7 +1697,9 @@ export default function HomePage() {
               correctionState={correctionState}
               nextAction={correctionNextAction}
               busy={busy}
-              onRetry={handleRetry}
+              onRetry={() => {
+                if (attempt !== null) void loadCorrection(attempt);
+              }}
             />
             {activity.reflection !== undefined ? (
               <section
@@ -1957,99 +1726,88 @@ export default function HomePage() {
                 </p>
               </section>
             ) : null}
-            <div className="item-list">
-              {activity.items.map((item) => (
-                <article className="item-card" key={item.itemId}>
-                  <div className="item-meta">
-                    <span>Item {item.ordinal}</span>
-                    <span>
-                      {item.kind === "REFLEXAO"
-                        ? "Reflexão digital"
-                        : item.kind}
-                    </span>
-                  </div>
-                  <h2>{item.title}</h2>
-                  <p>{item.text}</p>
-                  {item.responseMode === "CHOICE" &&
-                  canEditAttempt &&
-                  item.choices !== undefined ? (
-                    <fieldset className="answer-area">
-                      <legend>Selecione sua resposta</legend>
-                      {item.choices.map((choice) => {
-                        const selected = selectedChoiceIds(
-                          item,
-                          answers[item.itemId],
-                        ).includes(choice.id);
-                        return (
-                          <label key={choice.id}>
-                            <input
-                              type={
-                                item.selectionMode === "MULTIPLE"
-                                  ? "checkbox"
-                                  : "radio"
-                              }
-                              name={`answer-${item.itemId}`}
-                              value={choice.id}
-                              checked={selected}
-                              onChange={(event) =>
-                                handleChoiceChange(
-                                  item,
-                                  choice.id,
-                                  event.target.checked,
-                                )
-                              }
-                            />
-                            <span>
-                              <strong>{choice.label})</strong> {choice.text}
-                            </span>
-                          </label>
-                        );
-                      })}
+            <ParticipantAnswerList
+              items={activity.items}
+              answers={answers}
+              errors={answerErrors}
+              editable={canEditAttempt}
+              disabled={busy || attemptReadState === "error"}
+              onChoice={handleChoiceChange}
+              onText={(itemId, response) =>
+                setAnswers((previous) => ({ ...previous, [itemId]: response }))
+              }
+              onSave={handleSaveAnswer}
+            />
+            {mutationReceiptAnchors.current.hasUnresolved(
+              isUnresolvedMutation,
+            ) ? (
+              <p role="status" className="feedback warning">
+                Há um envio pendente. Repita a operação pelos botões abaixo
+                antes de mudar de tentativa. Suas novas edições ficam
+                preservadas.
+              </p>
+            ) : null}
+            {canEditAttempt && attempt !== null
+              ? activity.items.map((item) => {
+                  const pending = pendingMutations.current.get(
+                    `answer:${attempt.attemptId}:${item.itemId}`,
+                  );
+                  if (!pending?.ambiguous) return null;
+                  return (
+                    <div
+                      className="feedback warning"
+                      key={item.itemId}
+                      aria-label={`Envio pendente de ${item.title}`}
+                    >
+                      <p role="status">
+                        O envio de {item.title} ainda não foi confirmado.
+                        Reenviar ou salvar novamente usa os dados originais.
+                        Suas novas edições ficam preservadas para salvar depois
+                        da confirmação.
+                      </p>
                       <button
                         type="button"
-                        className="secondary-button"
+                        disabled={busy || attemptReadState === "error"}
+                        aria-label={`Reenviar envio pendente de ${item.title}`}
                         onClick={() => void handleSaveAnswer(item)}
-                        disabled={
-                          busy ||
-                          selectedChoiceIds(item, answers[item.itemId])
-                            .length === 0
-                        }
                       >
-                        Salvar resposta
-                      </button>
-                    </fieldset>
-                  ) : item.responseMode === "TEXT" && canEditAttempt ? (
-                    <div className="answer-area">
-                      <label htmlFor={`answer-${item.itemId}`}>
-                        Resposta — {item.title}
-                      </label>
-                      <textarea
-                        id={`answer-${item.itemId}`}
-                        value={answers[item.itemId] ?? ""}
-                        onChange={(event) =>
-                          setAnswers((previous) => ({
-                            ...previous,
-                            [item.itemId]: event.target.value,
-                          }))
-                        }
-                        maxLength={10_000}
-                        rows={5}
-                      />
-                      <button
-                        type="button"
-                        className="secondary-button"
-                        onClick={() => void handleSaveAnswer(item)}
-                        disabled={busy}
-                      >
-                        Salvar resposta
+                        Reenviar envio pendente
                       </button>
                     </div>
-                  ) : null}
-                </article>
-              ))}
-            </div>
+                  );
+                })
+              : null}
+            {hasPendingAnswers ? (
+              <p
+                className="feedback warning"
+                id="pending-answers"
+                role="status"
+              >
+                Salve as alterações nas respostas antes de enviar a tentativa.
+              </p>
+            ) : null}
             <div className="action-row">
-              {attempt === null || canStartNewRemediationAttempt ? (
+              {canEditAttempt && attemptReadState === "ready" ? (
+                <button
+                  type="button"
+                  className="secondary-button"
+                  disabled={busy}
+                  onClick={() => void refreshActivity()}
+                >
+                  Atualizar respostas
+                </button>
+              ) : null}
+              {attemptReadState === "error" ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void refreshJourney()}
+                >
+                  Tentar carregar respostas
+                </button>
+              ) : attemptReadState === "loading" ? (
+                <p role="status">Carregando respostas salvas…</p>
+              ) : attempt === null || canStartNewRemediationAttempt ? (
                 <button
                   type="button"
                   onClick={() => void handleStartAttempt()}
@@ -2073,7 +1831,12 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => void handleSubmitAttempt()}
-                  disabled={busy || attempt.status === "SUBMETIDA"}
+                  disabled={
+                    busy || hasPendingAnswers || attempt.status === "SUBMETIDA"
+                  }
+                  aria-describedby={
+                    hasPendingAnswers ? "pending-answers" : undefined
+                  }
                 >
                   Enviar tentativa
                 </button>
@@ -2111,6 +1874,18 @@ export default function HomePage() {
                     Não foi possível consultar os protocolos. Tente novamente.
                   </p>
                 ) : null}
+                {appealState === "error" && attempt !== null ? (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void loadAppeals(attempt)}
+                  >
+                    Tentar carregar contestações
+                  </button>
+                ) : null}
+                {fieldErrors["appeal-justification"] !== undefined ? (
+                  <p id="appeal-error">{fieldErrors["appeal-justification"]}</p>
+                ) : null}
                 {appealState !== "loading" && appealState !== "error" ? (
                   <>
                     {appealableItems.length > 0 ? (
@@ -2124,6 +1899,15 @@ export default function HomePage() {
                         <label htmlFor="appeal-item">Questão</label>
                         <select
                           id="appeal-item"
+                          aria-invalid={
+                            fieldErrors["appeal-justification"] !== undefined ||
+                            undefined
+                          }
+                          aria-describedby={
+                            fieldErrors["appeal-justification"] !== undefined
+                              ? "appeal-error"
+                              : undefined
+                          }
                           value={appealItemId}
                           onChange={(event) =>
                             setAppealItemId(event.target.value)
@@ -2142,6 +1926,15 @@ export default function HomePage() {
                         </label>
                         <textarea
                           id="appeal-justification"
+                          aria-invalid={
+                            fieldErrors["appeal-justification"] !== undefined ||
+                            undefined
+                          }
+                          aria-describedby={
+                            fieldErrors["appeal-justification"] !== undefined
+                              ? "appeal-error"
+                              : undefined
+                          }
                           value={appealJustification}
                           onChange={(event) =>
                             setAppealJustification(event.target.value)
@@ -2211,6 +2004,7 @@ export default function HomePage() {
                   nextAction={journey.nextAction}
                   nextActionTarget={journey.nextActionTarget}
                   busy={busy}
+                  actionLabel={nextActionLabel}
                   onSelect={handleSelectJourneyActivity}
                 />
                 {participantDashboard !== null ? (
@@ -2297,6 +2091,15 @@ export default function HomePage() {
               enviar um novo relato.
             </p>
           ) : null}
+          {feedbackState === "error" ? (
+            <button
+              type="button"
+              onClick={() => void loadFeedback()}
+              disabled={busy}
+            >
+              Tentar carregar relatos
+            </button>
+          ) : null}
           <form
             className="answer-area"
             onSubmit={(event) => {
@@ -2321,6 +2124,14 @@ export default function HomePage() {
             <label htmlFor="feedback-description">Descrição</label>
             <textarea
               id="feedback-description"
+              aria-invalid={
+                fieldErrors["feedback-description"] !== undefined || undefined
+              }
+              aria-describedby={
+                fieldErrors["feedback-description"] !== undefined
+                  ? "feedback-error"
+                  : undefined
+              }
               value={feedbackDescription}
               onChange={(event) => setFeedbackDescription(event.target.value)}
               maxLength={10_000}
@@ -2334,6 +2145,9 @@ export default function HomePage() {
               Enviar feedback
             </button>
           </form>
+          {fieldErrors["feedback-description"] !== undefined ? (
+            <p id="feedback-error">{fieldErrors["feedback-description"]}</p>
+          ) : null}
           {feedbackTickets.length > 0 ? (
             <ul className="journey-list" aria-label="Meus relatos">
               {feedbackTickets.map((ticket) => (
@@ -2354,6 +2168,27 @@ export default function HomePage() {
         </section>
       ) : null}
 
+      {Object.entries(readErrors)
+        .filter(
+          ([resource, message]) =>
+            resource !== "journey" && message !== undefined,
+        )
+        .map(([resource, message]) => (
+          <div className="feedback-group" key={resource}>
+            <p className="feedback error" role="alert">
+              {message}
+            </p>
+            {resource === "activity" ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void refreshActivity()}
+              >
+                Tentar novamente
+              </button>
+            ) : null}
+          </div>
+        ))}
       {error !== null ? (
         <div className="feedback-group">
           <p className="feedback error" role="alert">

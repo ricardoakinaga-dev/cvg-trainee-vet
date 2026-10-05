@@ -55,6 +55,50 @@ const participant = {
 };
 
 describe("dashboard contracts", () => {
+  it.each(["PAUSADO", "BLOQUEADO"] as const)(
+    "accepts %s path with neutral guidance without exposing block metadata",
+    (status) => {
+      const projection = {
+        ...participant,
+        nextAction: "CONSULTAR_PROXIMO_PASSO",
+        path: [
+          {
+            moduleId: "M01",
+            month: 1,
+            status,
+            nextAction: "CONSULTAR_PROXIMO_PASSO",
+          },
+        ],
+      };
+      expect(parseDashboardProjection(projection)).toEqual(projection);
+      expect(() =>
+        parseDashboardProjection({
+          ...projection,
+          path: [{ ...projection.path[0], blockReason: "CONTEUDO_RETIRADO" }],
+        }),
+      ).toThrow();
+    },
+  );
+
+  it.each(["PAUSADO", "BLOQUEADO"] as const)(
+    "rejects executable guidance for %s",
+    (status) => {
+      for (const nextAction of [
+        "INICIAR_BASELINE",
+        "RETOMAR_MODULO",
+        "EXECUTAR_REMEDIACAO",
+        "EXECUTAR_RETENCAO",
+      ]) {
+        expect(() =>
+          parseDashboardProjection({
+            ...participant,
+            path: [{ moduleId: "M01", month: 1, status, nextAction }],
+          }),
+        ).toThrow();
+      }
+    },
+  );
+
   it("accepts the participant dashboard projection", () => {
     expect(parseDashboardProjection(participant)).toEqual(participant);
   });

@@ -226,13 +226,26 @@ describe("recovery mutation closure — issue guards", () => {
       acceptAccountRecovery(
         {
           token: "w".repeat(32),
-          sessionExpiresInSeconds: 604_800,
+          sessionExpiresInSeconds: 43_200,
           correlationId: admin.correlationId,
           now: NOW,
         },
         acceptDeps,
       ),
     ).resolves.toMatchObject({ accountId: admin.targetAccountId });
+    expect(acceptDeps.transaction.run).toHaveBeenCalledTimes(1);
+    await expect(
+      acceptAccountRecovery(
+        {
+          token: "w".repeat(32),
+          sessionExpiresInSeconds: 43_201,
+          correlationId: admin.correlationId,
+          now: NOW,
+        },
+        acceptDeps,
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" });
+    expect(acceptDeps.transaction.run).toHaveBeenCalledTimes(1);
   });
 
   it("rejects recovery for suspended and deactivated targets", async () => {

@@ -1,0 +1,16 @@
+{
+  "format": "cvg-rls-live-summary/v1",
+  "status": "PASS",
+  "sha": "3cd7bc32751d59d0142e7d1b21a5a5a79a0103ff",
+  "suite": "tests/integration/rls-full-matrix.test.ts",
+  "failed": 0,
+  "generatedAt": "2026-10-03T04:55:21.600Z",
+  "cross_scope_read_denied": true,
+  "cross_scope_write_denied": true,
+  "anonymous_denied": true,
+  "service_identity_constrained": true,
+  "pool_context_isolated": true,
+  "force_rls_verified": true,
+  "bypassrls_absent": true,
+  "superuser_absent": true
+}

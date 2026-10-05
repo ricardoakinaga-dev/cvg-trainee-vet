@@ -40,7 +40,7 @@ import type {
   ApiHttpDependencies,
   ApiHttpRequest,
   ApiPrincipal,
-} from "../../http.js";
+} from "../../http/contracts.js";
 import { isAllowed } from "../../http/authorization.js";
 import { isUuid } from "../../http/validation.js";
 
@@ -56,6 +56,15 @@ export function publicCurriculumRuntimeProjection(
     ...(evaluation.scorePercent === undefined
       ? {}
       : { scorePercent: evaluation.scorePercent }),
+    ...(evaluation.activityProgress === undefined
+      ? {}
+      : { activityProgress: evaluation.activityProgress }),
+    ...(evaluation.unansweredMandatoryItemIds === undefined
+      ? {}
+      : {
+          unansweredMandatoryCount:
+            evaluation.unansweredMandatoryItemIds.length,
+        }),
     remediationCount: evaluation.remediationObjectiveIds.length,
     retentionReviews: evaluation.retentionReviews,
     practicalCompetenceClaim: evaluation.practicalCompetenceClaim,
@@ -348,15 +357,9 @@ export async function handleCurriculumRuntimeEvaluation(
     participantId: parsed.data.participantId,
     scopeId: parsed.data.scopeId,
     moduleId,
-    answers: parsed.data.answers.map((answer) => ({
-      itemId: answer.itemId,
-      ...(answer.selectedChoiceIds === undefined
-        ? {}
-        : { selectedChoiceIds: [...answer.selectedChoiceIds] }),
-      ...(answer.text === undefined ? {} : { text: answer.text }),
-    })),
-    completedAt: parsed.data.completedAt,
-    ...(parsed.data.mode === undefined ? {} : { mode: parsed.data.mode }),
+    attemptId: parsed.data.attemptId,
+    attemptVersion: parsed.data.attemptVersion,
+    formVersion: parsed.data.formVersion,
   } satisfies EvaluateCurriculumModuleCommand;
   const state = await dependencies.evaluateCurriculumRuntime(command);
   return {

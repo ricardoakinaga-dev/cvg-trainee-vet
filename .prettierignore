@@ -8,3 +8,6 @@ coverage/
 pnpm-lock.yaml
 packages/persistence/drizzle/meta/
 *.pdf
+
+# Browser test run artifacts (failure screenshots and geometry dumps)
+apps/web/tests/__screenshots__/

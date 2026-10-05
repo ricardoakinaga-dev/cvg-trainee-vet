@@ -147,6 +147,7 @@ export {
   createAnswerUseCaseDependencies,
 } from "./answer-repository.js";
 export type { AnswerInsertRow, AnswerRowShape } from "./answer-repository.js";
+export { createParticipantAttemptReadRepository } from "./participant-attempt-read-repository.js";
 export {
   createSessionRepository,
   sessionRecordToRow,
@@ -196,6 +197,7 @@ export type {
   CurriculumRuntimeInsertRow,
   CurriculumRuntimeRowShape,
 } from "./curriculum-runtime-repository.js";
+export { createCurriculumModuleEvaluationUseCase } from "./curriculum-evaluation-repository.js";
 export { createParticipantJourneyRepository } from "./journey-repository.js";
 export { createContinuingEducationReportRepository } from "./continuing-education-report-repository.js";
 export type { ContinuingEducationReportRepositoryOptions } from "./continuing-education-report-repository.js";
@@ -296,6 +298,7 @@ export {
   createCorrectionUseCaseDependencies,
 } from "./correction-repository.js";
 export type { AssessmentResultRowShape } from "./correction-repository.js";
+export type { CorrectionCompletionOptions } from "./correction-repository.js";
 export { auditEntryToRow, createAuditRepository } from "./audit-repository.js";
 export type { AuditInsertRow } from "./audit-repository.js";
 export {

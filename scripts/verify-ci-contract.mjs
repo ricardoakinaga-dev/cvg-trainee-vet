@@ -276,6 +276,30 @@ export function validateCiContract(contract) {
     "      - name: Publish quality artifacts",
   );
   const failures = [
+    ...[
+      [
+        "test report preservation",
+        contract.testSummaryScript,
+        /rawReport:[\s\S]*test-results\.raw\.json/u,
+      ],
+      [
+        "full assertion inventory",
+        contract.testSummaryScript,
+        /selectedAssertionInventory\(root\)/u,
+      ],
+      [
+        "scanner run identity preservation",
+        contract.securitySummaryScript,
+        /scannerRun:[\s\S]*run_attempt/u,
+      ],
+      [
+        "authenticated artifact trust root",
+        contract.releaseEvidenceScript,
+        /await authenticatedArtifactProof\(/u,
+      ],
+    ]
+      .filter(([, text, pattern]) => !pattern.test(text ?? ""))
+      .map(([name]) => `CI proof contract is missing ${name}`),
     ...(contract.packageJson.packageManager !== `pnpm@${expectedPnpmVersion}`
       ? [`packageManager must be pnpm@${expectedPnpmVersion}`]
       : []),
@@ -303,6 +327,15 @@ export function validateCiContract(contract) {
     )
       ? []
       : ["pnpm verify must include pnpm verify:ci-contract"]),
+    ...(contract.packageJson.scripts?.typecheck ===
+      "tsc -b && pnpm --filter @cvg/web typecheck && pnpm typecheck:test" &&
+    contract.packageJson.scripts?.["typecheck:test"] ===
+      "tsc -p tsconfig.tests.json" &&
+    /(?:^|&&\s*)pnpm typecheck(?:\s*&&|$)/u.test(
+      contract.packageJson.scripts?.verify ?? "",
+    )
+      ? []
+      : ["pnpm verify must reach strict root test typechecking"]),
     ...requiredEnvironmentKeys
       .filter((key) => !envKeys(contract.envExample).has(key))
       .map((key) => `.env.example is missing ${key}`),
@@ -362,6 +395,9 @@ export async function readCiContract(rootDirectory = projectRoot) {
     nodeVersion,
     lockfile,
     artifactGovernanceScript,
+    testSummaryScript,
+    securitySummaryScript,
+    releaseEvidenceScript,
   ] = await Promise.all([
     readFile(join(rootDirectory, "package.json"), "utf8"),
     readFile(join(rootDirectory, ".env.example"), "utf8"),
@@ -370,6 +406,9 @@ export async function readCiContract(rootDirectory = projectRoot) {
     readFile(join(rootDirectory, ".nvmrc"), "utf8"),
     readFile(join(rootDirectory, "pnpm-lock.yaml"), "utf8"),
     readFile(join(rootDirectory, "scripts/ci-artifact-governance.mjs"), "utf8"),
+    readFile(join(rootDirectory, "scripts/write-test-summary.mjs"), "utf8"),
+    readFile(join(rootDirectory, "scripts/write-security-summary.mjs"), "utf8"),
+    readFile(join(rootDirectory, "scripts/release-evidence.mjs"), "utf8"),
   ]);
 
   return Object.freeze({
@@ -380,6 +419,9 @@ export async function readCiContract(rootDirectory = projectRoot) {
     nodeVersion: nodeVersion.trim(),
     lockfile,
     artifactGovernanceScript,
+    testSummaryScript,
+    securitySummaryScript,
+    releaseEvidenceScript,
   });
 }
 

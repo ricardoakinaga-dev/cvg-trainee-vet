@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateBundle } from "./release-evidence.mjs";
+import { validateCurrentMutationSummary } from "./mutation-summary-contract.mjs";
 
 const root = join(fileURLToPath(import.meta.url), "..", "..");
 const failures = [];
@@ -23,7 +24,7 @@ function check(name, ok, detail = "") {
  * the evidence artifacts to each other so that hand-editing any one of them
  * breaks another gate:
  * - coverage-summary must be consistent with coverage-final.json;
- * - mutation-summary must recompute from the Stryker reports (with caps);
+ * - mutation-summary must recompute from current Stryker reports and bounded closures;
  * - scorecard must mirror the latest machine-readable audit JSON;
  * - strict evidence validation must reject placeholders and stale SHAs.
  *
@@ -77,64 +78,45 @@ async function main() {
     const summary = JSON.parse(
       await readFile(join(root, "reports/mutation-summary.json"), "utf8"),
     );
+    const proof = await validateCurrentMutationSummary(summary, {
+      repositoryRoot: root,
+      expectedRunId: process.env.CVG_MUTATION_CANDIDATE_ID,
+      expectedSha: process.env.EXPECTED_SHA,
+      requireExpectedRunId: true,
+    });
     check(
-      "mutation summary format",
-      summary.format === "cvg-mutation-summary/v1",
-      summary.format ?? "missing",
+      "mutation evidence matches current reports and closure results",
+      true,
     );
-    let total = 0;
-    let rawKilled = 0;
-    for (const name of [
-      "mutation/mutation.json",
-      "mutation-critical/mutation.json",
-      "mutation-worker/mutation.json",
-    ]) {
-      let report = null;
-      try {
-        report = JSON.parse(
-          await readFile(join(root, "reports", name), "utf8"),
-        );
-      } catch {
-        continue;
-      }
-      for (const file of Object.values(report.files)) {
-        total += file.mutants.length;
-        rawKilled += file.mutants.filter((m) => m.status === "Killed").length;
-      }
-    }
     check(
       "mutation totals recompute",
-      summary.total === total,
-      `${summary.total}/${total}`,
+      summary.total === proof.total,
+      `${summary.total}/${proof.total}`,
     );
     check(
       "mutation raw kills recompute",
-      summary.raw_killed === rawKilled,
-      `${summary.raw_killed}/${rawKilled}`,
-    );
-    let capped = 0;
-    for (const scope of summary.scopes ?? []) {
-      capped += Math.min(
-        scope.raw_killed + scope.verified_kills,
-        scope.total - scope.equivalent_count,
-      );
-    }
-    check(
-      "mutation adjusted recomputes",
-      Math.abs(
-        summary.adjusted_score -
-          capped / (summary.total - summary.equivalent_count),
-      ) < 0.0001,
-      String(summary.adjusted_score),
+      summary.raw_killed ===
+        summary.scopes.reduce((total, scope) => total + scope.raw_killed, 0),
+      String(summary.raw_killed),
     );
     check(
       "mutation gate PASS with zero real survivors",
-      summary.status === "PASS" && summary.critical_real_survivors === 0,
+      summary.status === "PASS" &&
+        summary.critical_real_survivors === proof.criticalRealSurvivors &&
+        summary.critical_real_survivors === 0,
       summary.status ?? "missing",
     );
   } catch (error) {
-    if (error.message === "SKIP_ABSENT") {
-      console.log("skip: mutation summary not generated in this stage");
+    // A summary left over from an earlier candidate is not evidence for this
+    // stage either: it was not generated in this pipeline stage. Only a
+    // configured candidate run may fail closed on mutation evidence.
+    const candidateRunConfigured =
+      process.env.CVG_MUTATION_CANDIDATE_ID !== undefined &&
+      process.env.CVG_MUTATION_CANDIDATE_ID.trim().length > 0;
+    if (error.message === "SKIP_ABSENT" || !candidateRunConfigured) {
+      console.log(
+        `skip: mutation summary not generated in this stage (${error.message})`,
+      );
     } else {
       check("mutation summary present and consistent", false, error.message);
     }

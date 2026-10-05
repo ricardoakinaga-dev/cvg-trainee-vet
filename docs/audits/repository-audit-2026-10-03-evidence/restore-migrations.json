@@ -1,0 +1,13 @@
+{
+  "name": "restore-migrations",
+  "command": [
+    "pnpm",
+    "verify:restore-migrations"
+  ],
+  "startedAt": "2026-10-03T04:55:41.693312+00:00",
+  "durationSeconds": 3.42,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/restore-migrations.log",
+  "sha256": "9460b6313106c72db82407096166cfef3fa6e56053d0fc46c6e2f80b5597e256"
+}

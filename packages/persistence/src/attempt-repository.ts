@@ -27,12 +27,10 @@ import {
   setDatabaseSecurityContext,
 } from "./security-context.js";
 
-export class PersistenceMappingError extends Error {
-  public constructor(message: string) {
-    super(message);
-    this.name = "PersistenceMappingError";
-  }
-}
+import { PersistenceMappingError } from "./persistence-errors.js";
+import { capturePublishedCurriculumAttempt } from "./curriculum-attempt-capture.js";
+
+export { PersistenceMappingError } from "./persistence-errors.js";
 
 export class PersistenceConflictError extends Error {
   public constructor(message: string) {
@@ -317,8 +315,32 @@ export function outboxEventToRow(input: OutboxEventInput) {
 
 type DatabaseExecutor = PostgresJsDatabase<typeof schema>;
 
+async function insertAttempt(
+  db: DatabaseExecutor,
+  state: AttemptState,
+  context: TransactionSecurityContext | undefined,
+): Promise<void> {
+  if (context === undefined) {
+    throw new PersistenceStateConflictError(
+      "attempt insertion requires an authorized transaction",
+    );
+  }
+  try {
+    await db.insert(attempts).values(attemptStateToRow(state));
+    await capturePublishedCurriculumAttempt(db, state, context);
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new PersistenceStateConflictError(
+        "attempt already exists concurrently",
+      );
+    }
+    throw error;
+  }
+}
+
 function createOperations(
   db: DatabaseExecutor,
+  context?: TransactionSecurityContext,
 ): AttemptTransactionalOperations {
   const attemptsPort = {
     findOpenByParticipantAndActivity: async (
@@ -362,16 +384,7 @@ function createOperations(
       return row ? attemptRowToState(row) : null;
     },
     insert: async (state: AttemptState): Promise<void> => {
-      try {
-        await db.insert(attempts).values(attemptStateToRow(state));
-      } catch (error) {
-        if (isUniqueViolation(error)) {
-          throw new PersistenceStateConflictError(
-            "attempt already exists concurrently",
-          );
-        }
-        throw error;
-      }
+      await insertAttempt(db, state, context);
     },
     update: async (state: AttemptState): Promise<void> => {
       const previousVersion = state.version - 1;
@@ -542,7 +555,7 @@ export function createAttemptUseCaseDependencies(
           if (context !== undefined) {
             await setDatabaseSecurityContext(executor, context);
           }
-          return work(createOperations(executor));
+          return work(createOperations(executor, context));
         }),
     },
   });

@@ -12,6 +12,8 @@ import type {
 import { deriveReflectionState as deriveReflectionStateUseCase } from "@cvg/application";
 
 import { PersistenceMappingError } from "./attempt-repository.js";
+import { readCapturedParticipantActivity } from "./curriculum-attempt-activity-read.js";
+import type { ActivityRowShape } from "./activity-row-types.js";
 import {
   activityAssignments,
   answers,
@@ -28,21 +30,7 @@ import {
 
 export { PersistenceMappingError } from "./attempt-repository.js";
 
-export type ActivityRowShape = Readonly<{
-  readonly activityId: string;
-  readonly scopeId: string;
-  readonly slug: string;
-  readonly title: string;
-  readonly itemId: string;
-  readonly ordinal: number;
-  readonly kind: string;
-  readonly contentStatus: string;
-  readonly itemTitle: string;
-  readonly text: string;
-  readonly responseMode: string;
-  readonly choices?: unknown;
-  readonly selectionMode?: unknown;
-}>;
+export type { ActivityRowShape } from "./activity-row-types.js";
 
 export type ReflectionRowShape = Readonly<{
   readonly itemId: string;
@@ -377,6 +365,12 @@ export function createActivityReadRepository(
         );
         if (scopeId === null) return null;
         await setDatabaseSecurityContext(executor, { participantId, scopeId });
+        const captured = await readCapturedParticipantActivity(
+          executor,
+          { participantId, scopeId, activityId },
+          activityRowsToState,
+        );
+        if (captured !== undefined) return captured;
         const rows = await executor
           .select({
             activityId: learningActivities.id,
@@ -525,6 +519,20 @@ export function createParticipantActivityItemResolver(
       );
       if (scopeId === null) return false;
       await setDatabaseSecurityContext(executor, { participantId, scopeId });
+      const captured = await readCapturedParticipantActivity(
+        executor,
+        { participantId, scopeId, activityId },
+        activityRowsToState,
+      );
+      if (captured !== undefined) {
+        return (
+          captured?.items.some(
+            (item) =>
+              item.itemId === itemId &&
+              itemKinds.some((kind) => kind === item.kind),
+          ) ?? false
+        );
+      }
       const rows = await executor
         .select({ itemId: learningActivityItems.contentVersionId })
         .from(activityAssignments)

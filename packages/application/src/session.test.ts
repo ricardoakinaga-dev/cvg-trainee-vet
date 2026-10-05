@@ -7,24 +7,35 @@ import {
   hashSessionToken,
   rotateSession,
   type SessionRepositoryPort,
+  type SessionRecord,
 } from "./session.js";
 
 function repository(): SessionRepositoryPort & {
-  records: Array<Record<string, unknown>>;
+  records: SessionRecord[];
 } {
-  const records: Array<Record<string, unknown>> = [];
+  const records: SessionRecord[] = [];
   return {
     records,
     create: async (record) => {
       records.push(record);
     },
-    findActive: async (tokenHash, now) =>
-      (records.find(
+    findActive: async (tokenHash, now) => {
+      const found = records.find(
         (record) =>
           record.tokenHash === tokenHash &&
           record.revokedAt === null &&
-          (record.expiresAt as Date).getTime() > now.getTime(),
-      ) as never) ?? null,
+          record.expiresAt.getTime() > now.getTime(),
+      );
+      if (found === undefined) return null;
+      return {
+        ...found,
+        sessionLifetime: {
+          createdAt: found.createdAt,
+          expiresAt: found.expiresAt,
+          lastSeenAt: now,
+        },
+      };
+    },
     revoke: async (tokenHash) => {
       const index = records.findIndex((item) => item.tokenHash === tokenHash);
       const record = records[index];
@@ -34,8 +45,10 @@ function repository(): SessionRepositoryPort & {
     },
     rotate: async (tokenHash, record) => {
       const index = records.findIndex((item) => item.tokenHash === tokenHash);
-      if (index < 0) throw new Error("session is no longer active");
-      records[index] = { ...records[index], revokedAt: new Date() };
+      const previous = records[index];
+      if (index < 0 || previous === undefined)
+        throw new Error("session is no longer active");
+      records[index] = { ...previous, revokedAt: new Date() };
       records.push(record);
     },
   };
@@ -84,6 +97,7 @@ describe("server-side sessions", () => {
       authenticateSessionCookie(session.cookie, repo, now),
     ).resolves.toMatchObject({
       accountId: "account-1",
+      sessionId: session.sessionId,
     });
     await expect(
       authenticateSessionCookie(
@@ -190,8 +204,103 @@ describe("server-side sessions", () => {
     if (rotated === null) throw new Error("rotation is required");
     await expect(
       authenticateSessionCookie(rotated.cookie, repo, now),
-    ).resolves.toMatchObject({ accountId: "account-1" });
+    ).resolves.toMatchObject({
+      accountId: "account-1",
+      sessionId: rotated.sessionId,
+    });
+    expect(rotated.sessionId).not.toBe(current.sessionId);
     expect(clearSessionCookie()).toContain("Max-Age=0");
     expect(clearSessionCookie()).toContain("HttpOnly");
   });
+
+  it("preserves the original absolute deadline during rotation and strips internal clock proof", async () => {
+    const repo = repository();
+    const start = new Date("2026-08-09T00:00:00.000Z");
+    const current = await createSession(
+      {
+        accountId: "account-1",
+        roles: ["PARTICIPANT"],
+        scopes: ["scope-1"],
+        expiresInSeconds: 12 * 60 * 60,
+        tokenFactory: () => "current-session-token-1234567890abcdefgh",
+      },
+      repo,
+      start,
+    );
+    const nearDeadline = new Date("2026-08-09T11:59:00.000Z");
+    const rotated = await rotateSession(
+      current.cookie,
+      {
+        expiresInSeconds: 3600,
+        tokenFactory: () => "rotated-session-token-1234567890abcdefgh",
+      },
+      repo,
+      nearDeadline,
+    );
+    expect(rotated?.expiresAt).toEqual(new Date("2026-08-09T12:00:00.000Z"));
+    expect(rotated?.cookie).toContain("Max-Age=60");
+    expect(repo.records[1]?.createdAt).toEqual(start);
+    expect(
+      await authenticateSessionCookie(rotated?.cookie, repo, nearDeadline),
+    ).not.toHaveProperty("sessionLifetime");
+  });
+
+  it("requires trusted rotation clock proof while authenticating compatible old principal fixtures", async () => {
+    const repo = repository();
+    const oldPrincipal = {
+      accountId: "account-1",
+      accountStatus: "ACTIVE" as const,
+      roles: ["PARTICIPANT"] as const,
+      scopes: ["scope-1"],
+    };
+    const compatible: SessionRepositoryPort = {
+      ...repo,
+      findActive: async () => oldPrincipal,
+    };
+    const cookie =
+      "__Host-cvg_session=current-session-token-1234567890abcdefgh";
+    const now = new Date("2026-08-09T00:00:00.000Z");
+    expect(await authenticateSessionCookie(cookie, compatible, now)).toEqual(
+      oldPrincipal,
+    );
+    expect(
+      await rotateSession(cookie, { expiresInSeconds: 60 }, compatible, now),
+    ).toBeNull();
+    expect(repo.records).toHaveLength(0);
+  });
+
+  it.each([
+    { roles: ["AUTHOR"] as const, elapsed: 1 },
+    { roles: ["MODERATOR"] as const, elapsed: 30 * 60 * 1_000 },
+    { roles: ["PARTICIPANT"] as const, elapsed: 8 * 60 * 60 * 1_000 },
+  ])(
+    "does not rotate invalid trusted clock proof: $roles",
+    async ({ roles, elapsed }) => {
+      const repo = repository();
+      const start = new Date("2026-08-09T00:00:00.000Z");
+      const scoped: SessionRepositoryPort = {
+        ...repo,
+        findActive: async () => ({
+          accountId: "account-1",
+          accountStatus: "ACTIVE",
+          roles,
+          scopes: ["scope-1"],
+          sessionLifetime: {
+            createdAt: start,
+            lastSeenAt: start,
+            expiresAt: new Date(start.getTime() + 12 * 60 * 60 * 1_000),
+          },
+        }),
+      };
+      expect(
+        await rotateSession(
+          "__Host-cvg_session=current-session-token-1234567890abcdefgh",
+          { expiresInSeconds: 60 },
+          scoped,
+          new Date(start.getTime() + elapsed),
+        ),
+      ).toBeNull();
+      expect(repo.records).toHaveLength(0);
+    },
+  );
 });

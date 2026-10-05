@@ -152,6 +152,27 @@ describe("content review queue use case", () => {
         }),
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
+
+    await expect(
+      getContentReviewQueue(
+        {
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["ADMIN"],
+          scopes: [scopeId],
+          query: { scopeId },
+        },
+        repository({
+          ...state,
+          items: [
+            {
+              ...queueItem,
+              scopeId: "33333333-3333-4333-8333-333333333333",
+            },
+          ],
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
   });
 
   it("limits an author to authored records while scoped staff can see the queue", async () => {
@@ -187,5 +208,80 @@ describe("content review queue use case", () => {
       scopeId,
       limit: 50,
     });
+  });
+
+  it("does not advertise cross-author source access to AUTHOR plus MODERATOR", async () => {
+    const otherAuthorItem = {
+      ...queueItem,
+      authorId: "33333333-3333-4333-8333-333333333333",
+      canOpenAuthoring: true,
+    };
+    const result = await getContentReviewQueue(
+      {
+        principalId,
+        accountStatus: "ACTIVE",
+        roles: ["AUTHOR", "MODERATOR"],
+        scopes: [scopeId],
+        query: { scopeId },
+      },
+      repository({ ...state, items: [otherAuthorItem] }),
+    );
+
+    expect(result.items[0]?.canOpenAuthoring).toBe(false);
+  });
+
+  it("rejects a repository row owned by someone else for an author-only principal", async () => {
+    await expect(
+      getContentReviewQueue(
+        {
+          principalId,
+          accountStatus: "ACTIVE",
+          roles: ["AUTHOR"],
+          scopes: [scopeId],
+          query: { scopeId },
+        },
+        repository({
+          ...state,
+          items: [
+            {
+              ...queueItem,
+              authorId: "33333333-3333-4333-8333-333333333333",
+            },
+          ],
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
+  });
+
+  it("lets a scoped clinical reviewer open the queue without being the configured identity", async () => {
+    const otherAuthorQueue: ContentReviewQueueState = {
+      ...state,
+      items: [
+        {
+          ...queueItem,
+          authorId: "33333333-3333-4333-8333-333333333333",
+        },
+      ],
+    };
+    const findContentReviewQueue = vi.fn(async () => otherAuthorQueue);
+    const result = await getContentReviewQueue(
+      {
+        principalId,
+        accountStatus: "ACTIVE",
+        roles: ["CLINICAL_APPROVER"],
+        scopes: [scopeId],
+        query: { scopeId },
+      },
+      { findContentReviewQueue },
+    );
+
+    expect(findContentReviewQueue).toHaveBeenCalledWith({
+      scopeId,
+      limit: 50,
+    });
+    expect(result.items[0]?.authorId).toBe(
+      "33333333-3333-4333-8333-333333333333",
+    );
+    expect(result.items[0]?.canOpenAuthoring).toBe(true);
   });
 });

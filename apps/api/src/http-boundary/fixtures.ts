@@ -402,7 +402,7 @@ export const curriculumRuntime: CurriculumRuntimeState = {
     unansweredChoiceItemIds: [],
     openResponseItemIds: [],
     retentionReviews: [
-      { day: 7, dueAt: "2026-08-17T01:00:00.000Z", status: "PENDENTE" },
+      { day: 30, dueAt: "2026-09-09T01:00:00.000Z", status: "PENDENTE" },
     ],
     practicalCompetenceClaim: "PROIBIDO_MVP",
     scorePercent: 100,

@@ -3,6 +3,19 @@ import { createServer } from "node:http";
 import { describe, expect, it, vi } from "vitest";
 
 import { createWorkerRuntime } from "./main.js";
+import { afterEach, beforeEach } from "vitest";
+import type { ServerIntegrationSet } from "@cvg/integrations";
+import type {
+  ContentIndexSourcePort,
+  OutboxEventRecord,
+  OutboxRepositoryPort,
+} from "@cvg/persistence";
+import type {
+  LogRecord,
+  Observability,
+  ObservabilityOptions,
+} from "@cvg/observability";
+import type * as ObservabilityModule from "@cvg/observability";
 
 describe("worker runtime", () => {
   it("starts without assistive integrations", async () => {
@@ -678,6 +691,570 @@ describe("worker runtime", () => {
       if (runtime !== undefined) await runtime.close();
       vi.useRealTimers();
       await new Promise<void>((resolve) => qdrant.close(() => resolve()));
+    }
+  });
+});
+
+// T23: explicit integration/persistence doubles. The production main, loop,
+// lease guard, handlers and reconciliation execute unchanged through these ports.
+describe("worker shutdown T23", () => {
+  const environment = {
+    NODE_ENV: "test",
+    DATABASE_URL: "postgresql://synthetic:synthetic@localhost:1/synthetic",
+    QDRANT_ENABLED: "false",
+    AI_ENABLED: "false",
+  };
+  const gate = <T>() => {
+    let resolve!: (value: T) => void;
+    let reject!: (error: unknown) => void;
+    const promise = new Promise<T>((yes, no) => {
+      resolve = yes;
+      reject = no;
+    });
+    return { promise, resolve, reject };
+  };
+  const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
+  let repository: OutboxRepositoryPort;
+  let source: ContentIndexSourcePort;
+  let integrations: ServerIntegrationSet;
+  let close: ReturnType<typeof vi.fn<() => Promise<void>>>;
+  let initialize: ReturnType<typeof vi.fn<() => Promise<void>>>;
+  let recalculate: ReturnType<typeof vi.fn<() => Promise<void>>>;
+  let runtime: ReturnType<typeof createWorkerRuntime>;
+  const order: string[] = [];
+  const logs: string[] = [];
+  const records: LogRecord[] = [];
+  let telemetry: Observability;
+  const event = (): OutboxEventRecord => ({
+    id: "synthetic-event",
+    eventType: "appeal.recalculation.requested.v1",
+    aggregateType: "appeal",
+    aggregateId: "synthetic-appeal",
+    occurredAt: new Date(0),
+    schemaVersion: 1,
+    correlationId: "synthetic-correlation",
+    payload: {
+      appeal_id: "synthetic-appeal",
+      scope_id: "synthetic-scope",
+      attempt_id: "synthetic-attempt",
+      appeal_version: "1",
+      decision: "MANTER_RESULTADO",
+    },
+    status: "PROCESSING",
+    attempts: 1,
+    availableAt: new Date(0),
+    lockedUntil: new Date(60_000),
+    leaseToken: "synthetic-token",
+    lastErrorCode: null,
+    processedAt: null,
+    createdAt: new Date(0),
+  });
+  beforeEach(async () => {
+    vi.resetModules();
+    order.length = 0;
+    logs.length = 0;
+    records.length = 0;
+    close = vi.fn(async () => {
+      order.push("resources.close");
+      logs.push("resources.close");
+    });
+    initialize = vi.fn(async () => {});
+    recalculate = vi.fn(async () => {});
+    repository = {
+      claim: vi.fn(async () => []),
+      renewLease: vi.fn(async () => true),
+      withLeaseFence: async (_id, _token, _seconds, work) => ({
+        owned: true,
+        value: await work(),
+      }),
+      markProcessed: vi.fn(async () => {
+        order.push("event.processed");
+        return true;
+      }),
+      markFailed: vi.fn(async () => {
+        order.push("event.retry");
+        return true;
+      }),
+    };
+    source = {
+      findPublishedIndexable: vi.fn(async () => null),
+      listPublishedIndexable: vi.fn(async () => []),
+    };
+    // No database/client/provider is created: this is a lifecycle port double.
+    integrations = {
+      database: {
+        db: {},
+        withAdvisoryLock: async (_key: string, work: () => Promise<unknown>) =>
+          work(),
+      },
+      embedding: null,
+      vectorStore: null,
+      ai: null,
+      initialize,
+      close,
+    } as unknown as ServerIntegrationSet;
+    vi.doMock("@cvg/integrations", async () => ({
+      ...(await vi.importActual<object>("@cvg/integrations")),
+      createServerIntegrations: () => integrations,
+    }));
+    vi.doMock("@cvg/persistence", async () => ({
+      ...(await vi.importActual<object>("@cvg/persistence")),
+      createOutboxRepository: () => repository,
+      createContentIndexSourceRepository: () => source,
+      createAppealRecalculationProcessor: () => recalculate,
+      createAiSuggestionSink: () => ({
+        saveDraftSuggestion: vi.fn(async () => {}),
+      }),
+    }));
+    vi.doMock("@cvg/observability", async () => {
+      const actual =
+        await vi.importActual<typeof ObservabilityModule>("@cvg/observability");
+      return {
+        ...actual,
+        createObservability: (options: ObservabilityOptions) => {
+          telemetry = actual.createObservability({
+            ...options,
+            sink: (record: LogRecord) => {
+              logs.push(record.event);
+              records.push(record);
+            },
+          });
+          return telemetry;
+        },
+      };
+    });
+    runtime = (await import("./main.js")).createWorkerRuntime(environment);
+  });
+  afterEach(async () => {
+    await runtime.close().catch(() => undefined);
+    vi.doUnmock("@cvg/integrations");
+    vi.doUnmock("@cvg/persistence");
+    vi.doUnmock("@cvg/observability");
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
+  });
+
+  it("waits for the original blocked handler and stops subsequent intra-batch claims", async () => {
+    const work = gate<void>();
+    const entered = gate<void>();
+    vi.mocked(repository.claim).mockResolvedValue([event()]);
+    recalculate.mockImplementation(async () => {
+      entered.resolve();
+      await work.promise;
+      order.push("handler.settled");
+    });
+    const batch = runtime.processOnce({ batchSize: 3 });
+    await entered.promise;
+    const closing = runtime.close();
+    try {
+      await tick();
+      expect(close).not.toHaveBeenCalled();
+    } finally {
+      work.resolve();
+      await Promise.allSettled([batch, closing]);
+    }
+    expect(repository.claim).toHaveBeenCalledTimes(1);
+    expect(await batch).toEqual({ claimed: 1, processed: 1, failed: 0 });
+    expect(order).toEqual([
+      "handler.settled",
+      "event.processed",
+      "resources.close",
+    ]);
+    expect(logs).toEqual([
+      "worker.event.processed",
+      "worker.batch.completed",
+      "resources.close",
+      "worker.shutdown.completed",
+    ]);
+    expect(telemetry.metrics.snapshot().counters).toContainEqual({
+      name: "worker.events.processed",
+      value: 1,
+      labels: {
+        event_type: "appeal.recalculation.requested.v1",
+        outcome: "success",
+      },
+    });
+  });
+
+  it("refuses every new public operation after close", async () => {
+    await runtime.close();
+    await expect(runtime.processOnce()).rejects.toThrow("worker is stopping");
+    await expect(runtime.reconcile()).rejects.toThrow("worker is stopping");
+    await expect(runtime.initialize()).rejects.toThrow("worker is stopping");
+    await expect(runtime.run()).rejects.toThrow("worker is stopping");
+    expect(repository.claim).not.toHaveBeenCalled();
+    expect(initialize).not.toHaveBeenCalled();
+  });
+
+  it("shares the exact close promise and performs one resource close", async () => {
+    const first = runtime.close();
+    const second = runtime.close();
+    expect(first).toBe(second);
+    await first;
+    expect(runtime.close()).toBe(first);
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("drains an already started claim and its resulting callback", async () => {
+    const claim = gate<readonly OutboxEventRecord[]>();
+    vi.mocked(repository.claim).mockReturnValueOnce(claim.promise);
+    const batch = runtime.processOnce({ batchSize: 2 });
+    await tick();
+    const closing = runtime.close();
+    try {
+      await tick();
+      expect(close).not.toHaveBeenCalled();
+    } finally {
+      claim.resolve([event()]);
+      await Promise.allSettled([batch, closing]);
+    }
+    expect(recalculate).toHaveBeenCalledTimes(1);
+    expect(repository.claim).toHaveBeenCalledTimes(1);
+    expect(order).toEqual(["event.processed", "resources.close"]);
+  });
+
+  it("surfaces a claim failure while close safely drains the failed operation", async () => {
+    const claim = gate<readonly OutboxEventRecord[]>();
+    vi.mocked(repository.claim).mockReturnValueOnce(claim.promise);
+    const batch = runtime.processOnce();
+    const observed = expect(batch).rejects.toThrow("synthetic claim failure");
+    await tick();
+    const closing = runtime.close();
+    claim.reject(new Error("synthetic claim failure"));
+    await observed;
+    await closing;
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(repository.markProcessed).not.toHaveBeenCalled();
+  });
+
+  it("preserves a retryable failed handler instead of acknowledging it at shutdown", async () => {
+    const work = gate<void>();
+    const entered = gate<void>();
+    vi.mocked(repository.claim).mockResolvedValue([event()]);
+    recalculate.mockImplementation(async () => {
+      entered.resolve();
+      await work.promise;
+    });
+    const batch = runtime.processOnce({ batchSize: 2 });
+    await entered.promise;
+    const closing = runtime.close();
+    work.reject(new Error("synthetic handler failure"));
+    expect(await batch).toEqual({ claimed: 1, processed: 0, failed: 1 });
+    await closing;
+    expect(repository.markProcessed).not.toHaveBeenCalled();
+    expect(repository.markFailed).toHaveBeenCalledWith(
+      "synthetic-event",
+      "synthetic-token",
+      1,
+      "worker_handler_failed",
+      expect.any(Date),
+      5,
+      5,
+    );
+    expect(order).toEqual(["event.retry", "resources.close"]);
+  });
+
+  it("waits for original reconciliation under its advisory lock", async () => {
+    const work =
+      gate<
+        Awaited<ReturnType<ContentIndexSourcePort["listPublishedIndexable"]>>
+      >();
+    const entered = gate<void>();
+    source = {
+      ...source,
+      withContentVersionFence: async (_id, _version, callback) =>
+        callback(null),
+      listPublishedIndexable: vi.fn(async () => {
+        entered.resolve();
+        return work.promise;
+      }),
+    };
+    const vectorStore = {
+      list: vi.fn(async () => []),
+      upsert: vi.fn(async () => {}),
+      delete: vi.fn(async () => {}),
+    };
+    integrations = {
+      ...integrations,
+      vectorStore,
+      embedding: { embed: vi.fn(async () => []) },
+    } as unknown as ServerIntegrationSet;
+    runtime = (await import("./main.js")).createWorkerRuntime(environment);
+    const reconciliation = runtime.reconcile();
+    await entered.promise;
+    const closing = runtime.close();
+    try {
+      await tick();
+      expect(close).not.toHaveBeenCalled();
+    } finally {
+      work.resolve([]);
+      await Promise.allSettled([reconciliation, closing]);
+    }
+    expect(await reconciliation).toEqual({
+      expected: 0,
+      upserted: 0,
+      removed: 0,
+    });
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("drains initialization rejection without retries or unhandled background failures", async () => {
+    const work = gate<void>();
+    initialize.mockReturnValueOnce(work.promise);
+    await runtime.initialize();
+    const explicit = runtime.initialize({ waitForOptionalDependencies: true });
+    const observed = expect(explicit).rejects.toThrow(
+      "synthetic startup failure",
+    );
+    const closing = runtime.close();
+    await tick();
+    expect(close).not.toHaveBeenCalled();
+    work.reject(new Error("synthetic startup failure"));
+    await observed;
+    await closing;
+    expect(initialize).toHaveBeenCalledTimes(1);
+  });
+
+  it("wakes an idle run and settles it before resource close", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const running = runtime.run();
+    await tick();
+    expect(repository.claim).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(1);
+    let settled = false;
+    const observed = running.then(() => {
+      settled = true;
+    });
+    await runtime.close();
+    try {
+      await tick();
+      expect(settled).toBe(true);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      await vi.advanceTimersByTimeAsync(1000);
+      await observed;
+    }
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits for the active run batch instead of closing under its handler", async () => {
+    const entered = gate<void>();
+    const work = gate<void>();
+    vi.mocked(repository.claim).mockResolvedValue([event()]);
+    recalculate.mockImplementation(async () => {
+      entered.resolve();
+      await work.promise;
+    });
+    const running = runtime.run();
+    await entered.promise;
+    const closing = runtime.close();
+    try {
+      await tick();
+      expect(close).not.toHaveBeenCalled();
+    } finally {
+      work.resolve();
+      await Promise.all([running, closing]);
+    }
+    expect(repository.claim).toHaveBeenCalledTimes(1);
+    expect(order).toEqual(["event.processed", "resources.close"]);
+  });
+
+  it("keeps pools open until an original in-flight lease renewal settles", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const work = gate<void>();
+    const entered = gate<void>();
+    const renewal = gate<boolean>();
+    vi.mocked(repository.claim).mockResolvedValue([event()]);
+    vi.mocked(repository.renewLease!).mockReturnValue(renewal.promise);
+    recalculate.mockImplementation(async () => {
+      entered.resolve();
+      await work.promise;
+    });
+    const batch = runtime.processOnce({ batchSize: 2, leaseSeconds: 3 });
+    await entered.promise;
+    const closing = runtime.close();
+    try {
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(repository.renewLease).toHaveBeenCalledTimes(1);
+      work.resolve();
+      await tick();
+      expect(close).not.toHaveBeenCalled();
+      expect(repository.markProcessed).not.toHaveBeenCalled();
+    } finally {
+      work.resolve();
+      renewal.resolve(true);
+      await Promise.all([batch, closing]);
+    }
+    expect(vi.getTimerCount()).toBe(0);
+    expect(repository.claim).toHaveBeenCalledTimes(1);
+    expect(order).toEqual(["event.processed", "resources.close"]);
+  });
+
+  it("retains lost lease work for reclaim without fake acknowledgment at shutdown", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const work = gate<void>();
+    const entered = gate<void>();
+    vi.mocked(repository.claim).mockResolvedValue([event()]);
+    vi.mocked(repository.renewLease!).mockResolvedValue(false);
+    recalculate.mockImplementation(async () => {
+      entered.resolve();
+      await work.promise;
+    });
+    const batch = runtime.processOnce({ batchSize: 2, leaseSeconds: 3 });
+    await entered.promise;
+    const closing = runtime.close();
+    try {
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(close).not.toHaveBeenCalled();
+    } finally {
+      work.resolve();
+      await Promise.all([batch, closing]);
+    }
+    expect(await batch).toEqual({ claimed: 1, processed: 0, failed: 1 });
+    expect(repository.markProcessed).not.toHaveBeenCalled();
+    expect(repository.markFailed).not.toHaveBeenCalled();
+    expect(repository.claim).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("T23 diagnoses fatal run failure with fixed fields and preserves its error identity", async () => {
+    const failure = new Error("synthetic private claim failure");
+    Object.defineProperty(failure, "payload", {
+      get: () => {
+        throw new Error("payload must never be inspected");
+      },
+    });
+    vi.mocked(repository.claim).mockRejectedValueOnce(failure);
+    await expect(runtime.run()).rejects.toBe(failure);
+    await runtime.close();
+    expect(
+      records
+        .filter((record) => record.event === "worker.runtime.failed")
+        .map((record) => ({ level: record.level, fields: record.fields })),
+    ).toEqual([
+      {
+        level: "error",
+        fields: { outcome: "failure", error_code: "WORKER_RUN_FAILED" },
+      },
+    ]);
+    expect(JSON.stringify(records)).not.toContain(
+      "synthetic private claim failure",
+    );
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("T23 diagnoses fatal close once without replacing its error or exposing its message", async () => {
+    const failure = new Error("synthetic private shutdown failure");
+    close.mockRejectedValueOnce(failure);
+    const first = runtime.close();
+    expect(runtime.close()).toBe(first);
+    await expect(first).rejects.toBe(failure);
+    expect(
+      records
+        .filter((record) => record.event === "worker.shutdown.failed")
+        .map((record) => ({ level: record.level, fields: record.fields })),
+    ).toEqual([
+      {
+        level: "error",
+        fields: { outcome: "failure", error_code: "WORKER_CLOSE_FAILED" },
+      },
+    ]);
+    expect(JSON.stringify(records)).not.toContain(
+      "synthetic private shutdown failure",
+    );
+    expect(logs).not.toContain("worker.shutdown.completed");
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("shares a resource-close failure without retrying closure or emitting success", async () => {
+    close.mockRejectedValue(new Error("synthetic close failure"));
+    const first = runtime.close();
+    expect(runtime.close()).toBe(first);
+    await expect(first).rejects.toThrow("synthetic close failure");
+    expect(runtime.close()).toBe(first);
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(logs).not.toContain("worker.shutdown.completed");
+  });
+
+  it("surfaces synchronous initialization failure safely", async () => {
+    initialize.mockImplementation(() => {
+      throw new Error("synthetic synchronous startup failure");
+    });
+    await expect(runtime.initialize()).rejects.toThrow(
+      "synthetic synchronous startup failure",
+    );
+    await runtime.close();
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("handles repeated SIGTERM and SIGINT through one drain while original work is active", async () => {
+    const work = gate<void>();
+    const entered = gate<void>();
+    const beforeTerm = process.listeners("SIGTERM");
+    const beforeInt = process.listeners("SIGINT");
+    vi.mocked(repository.claim).mockResolvedValue([event()]);
+    recalculate.mockImplementation(async () => {
+      entered.resolve();
+      await work.promise;
+    });
+    for (const [key, value] of Object.entries(environment))
+      vi.stubEnv(key, value);
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("CVG_WORKER_AUTOSTART", "true");
+    vi.resetModules();
+    await import("./main.js");
+    await entered.promise;
+    try {
+      process.emit("SIGTERM");
+      process.emit("SIGTERM");
+      process.emit("SIGINT");
+      await tick();
+      expect(close).not.toHaveBeenCalled();
+      expect(process.listeners("SIGTERM")).toHaveLength(beforeTerm.length + 1);
+      expect(process.listeners("SIGINT")).toHaveLength(beforeInt.length + 1);
+    } finally {
+      work.resolve();
+      await tick();
+      for (const listener of process.listeners("SIGTERM"))
+        if (!beforeTerm.includes(listener))
+          process.removeListener("SIGTERM", listener);
+      for (const listener of process.listeners("SIGINT"))
+        if (!beforeInt.includes(listener))
+          process.removeListener("SIGINT", listener);
+    }
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(repository.claim).toHaveBeenCalledTimes(1);
+    expect(logs).toContain("worker.shutdown.completed");
+    expect(process.listeners("SIGTERM")).toEqual(beforeTerm);
+    expect(process.listeners("SIGINT")).toEqual(beforeInt);
+  });
+
+  it("closes resources after an autostart process error instead of leaving pools alive", async () => {
+    const beforeTerm = process.listeners("SIGTERM");
+    const beforeInt = process.listeners("SIGINT");
+    const previousExitCode = process.exitCode;
+    vi.mocked(repository.claim).mockRejectedValue(
+      new Error("synthetic claim failure"),
+    );
+    for (const [key, value] of Object.entries(environment))
+      vi.stubEnv(key, value);
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("CVG_WORKER_AUTOSTART", "true");
+    vi.resetModules();
+    try {
+      await import("./main.js");
+      await tick();
+      expect(process.exitCode).toBe(1);
+      expect(close).toHaveBeenCalledTimes(1);
+      expect(repository.claim).toHaveBeenCalledTimes(1);
+    } finally {
+      process.exitCode = previousExitCode;
+      for (const listener of process.listeners("SIGTERM"))
+        if (!beforeTerm.includes(listener))
+          process.removeListener("SIGTERM", listener);
+      for (const listener of process.listeners("SIGINT"))
+        if (!beforeInt.includes(listener))
+          process.removeListener("SIGINT", listener);
     }
   });
 });

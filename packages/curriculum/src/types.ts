@@ -36,7 +36,7 @@ export type HospitalTrainingDesign = Readonly<{
   readonly hospitalBehaviors: readonly string[];
   readonly teamBehaviors: readonly HospitalTeamBehavior[];
   readonly assessmentModes: readonly TrainingAssessmentMode[];
-  readonly spacedReviewDays: readonly [7, 30, 90];
+  readonly spacedReviewDays: readonly [30, 60, 90];
   readonly transferMetric: TransferMetric;
   readonly masteryRule: MasteryRule;
 }>;
@@ -53,7 +53,7 @@ export type HospitalTrainingBlueprint = Readonly<{
     "RETENCAO_ESPACADA",
     "TRANSFERENCIA_PILOTO",
   ];
-  readonly defaultSpacedReviewDays: readonly [7, 30, 90];
+  readonly defaultSpacedReviewDays: readonly [30, 60, 90];
   readonly digitalBoundary: "CONHECIMENTO_RACIOCINIO_COMUNICACAO_SIMULADA";
   readonly practicalBoundary: "NAO_COMPROVA_COMPETENCIA_PRATICA";
 }>;

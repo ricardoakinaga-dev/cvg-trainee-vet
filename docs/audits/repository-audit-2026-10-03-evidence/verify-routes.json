@@ -1,0 +1,13 @@
+{
+  "name": "verify-routes",
+  "command": [
+    "pnpm",
+    "verify:routes"
+  ],
+  "startedAt": "2026-10-03T04:54:32.760470+00:00",
+  "durationSeconds": 0.63,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-routes.log",
+  "sha256": "8716603ca8cfa85a016f00b9997fa0980cfc6f96f2aad62ad4132d255d5e1d31"
+}

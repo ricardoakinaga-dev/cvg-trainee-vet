@@ -192,16 +192,16 @@ export async function verifyComplexity() {
           `${file}: ${lines} lines exceeds ratchet cap ${exception.max} (${exception.reason})`,
         );
       }
-      continue;
-    }
-    const hard = isTest ? HARD_TEST : HARD_PROD;
-    const warn = isTest ? WARN_TEST : WARN_PROD;
-    if (lines > hard) {
-      failures.push(
-        `${file}: ${lines} lines exceeds hard budget ${hard} — split the module or register a ratcheted exception with reason`,
-      );
-    } else if (lines > warn) {
-      warnings.push(`${file}: ${lines} lines exceeds warning budget ${warn}`);
+    } else {
+      const hard = isTest ? HARD_TEST : HARD_PROD;
+      const warn = isTest ? WARN_TEST : WARN_PROD;
+      if (lines > hard) {
+        failures.push(
+          `${file}: ${lines} lines exceeds hard budget ${hard} — split the module or register a ratcheted exception with reason`,
+        );
+      } else if (lines > warn) {
+        warnings.push(`${file}: ${lines} lines exceeds warning budget ${warn}`);
+      }
     }
     if (!isTest && (file.startsWith("apps/") || file.startsWith("packages/"))) {
       for (const fn of topLevelFunctions(content)) {

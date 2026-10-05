@@ -1,0 +1,13 @@
+{
+  "name": "verify-documentation",
+  "command": [
+    "pnpm",
+    "verify:documentation"
+  ],
+  "startedAt": "2026-10-03T04:54:30.047232+00:00",
+  "durationSeconds": 0.78,
+  "exitCode": 0,
+  "result": "PASS",
+  "log": "docs/audits/repository-audit-2026-10-03-evidence/verify-documentation.log",
+  "sha256": "2a1530177d67fda573897c220ea7315c6ecf2051656af541161d117427b3ef6c"
+}

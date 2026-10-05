@@ -7,7 +7,10 @@ import {
   evaluateAndPersistCurriculumModule,
   getParticipantCurriculumRuntime,
 } from "../../packages/application/src/index.js";
-import { getModuleDraftPack } from "../../packages/curriculum/src/index.js";
+import {
+  evaluateModuleAttempt,
+  getModuleDraftPack,
+} from "../../packages/curriculum/src/index.js";
 import {
   createCurriculumRuntimeRepository,
   curriculumRuntimeStates,
@@ -29,7 +32,7 @@ const runLiveDatabaseTests = process.env.CVG_RUN_LIVE_DB_TESTS === "true";
 describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
   "PostgreSQL curriculum runtime integration",
   () => {
-    it("persists, versions and reads scoped digital mastery without public internals", async ({
+    it("characterizes scoped runtime storage while missing native attempt binding denies evaluation without writes", async ({
       skip,
     }) => {
       const harness = await openLivePostgresHarness();
@@ -76,28 +79,56 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           createdBy: creatorId,
         });
 
-        const first = await evaluateAndPersistCurriculumModule(
-          {
-            participantId,
-            scopeId,
-            moduleId: "M03",
-            answers,
-            completedAt: "2026-08-10T01:00:00.000Z",
-            mode: "FORMATIVE_CHOICE",
-          },
-          repository,
-        );
-        const second = await evaluateAndPersistCurriculumModule(
-          {
-            participantId,
-            scopeId,
-            moduleId: "M03",
-            answers,
-            completedAt: "2026-08-11T01:00:00.000Z",
-            mode: "FORMATIVE_CHOICE",
-          },
-          repository,
-        );
+        const command = {
+          participantId,
+          scopeId,
+          moduleId: "M03",
+          attemptId: randomUUID(),
+          attemptVersion: 3,
+          formVersion: 1,
+        };
+        for (const reader of [
+          undefined,
+          { findEvaluationAttempt: async () => null },
+        ]) {
+          await expect(
+            evaluateAndPersistCurriculumModule(command, repository, reader),
+          ).rejects.toMatchObject({ code: "state_conflict" });
+          expect(
+            await repository.findCurriculumRuntime(participantId, "M03"),
+          ).toBeNull();
+        }
+        const legacyCommand = {
+          ...command,
+          answers,
+          completedAt: "2026-08-10T01:00:00.000Z",
+          mode: "FORMATIVE_CHOICE",
+        };
+        await expect(
+          evaluateAndPersistCurriculumModule(legacyCommand, repository),
+        ).rejects.toMatchObject({ code: "state_conflict" });
+        expect(
+          await repository.findCurriculumRuntime(participantId, "M03"),
+        ).toBeNull();
+        // This is synthetic storage characterization, not proof of a native published
+        // attempt binding. The production evaluator above must remain closed until it exists.
+        const evaluation = evaluateModuleAttempt({
+          moduleId: "M03",
+          catalog: pack,
+          answers,
+          completedAt: "2026-08-10T01:00:00.000Z",
+          mode: "FORMATIVE_CHOICE",
+        });
+        const first = await repository.saveCurriculumRuntime({
+          participantId,
+          scopeId,
+          evaluation,
+        });
+        const second = await repository.saveCurriculumRuntime({
+          participantId,
+          scopeId,
+          evaluation,
+        });
         const read = await getParticipantCurriculumRuntime(
           { participantId, moduleId: "M03" },
           repository,
@@ -124,17 +155,11 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           /source|chapter|page|pdf|answer_key|rubric_internal/iu,
         );
         await expect(
-          evaluateAndPersistCurriculumModule(
-            {
-              participantId,
-              scopeId: foreignScopeId,
-              moduleId: "M03",
-              answers,
-              completedAt: "2026-08-12T01:00:00.000Z",
-              mode: "FORMATIVE_CHOICE",
-            },
-            repository,
-          ),
+          repository.saveCurriculumRuntime({
+            participantId,
+            scopeId: foreignScopeId,
+            evaluation,
+          }),
         ).rejects.toBeDefined();
       } finally {
         await admin.db

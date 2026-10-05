@@ -1,84 +1,9 @@
+import { ApplicationError } from "@cvg/application";
 import type {
-  AppealState,
-  AssessmentWorkflowState,
-  AttemptState,
-  FeedbackTicketState,
-  LearningAssignmentState,
-} from "@cvg/domain";
-import {
-  ApplicationError,
-  type CorrectionResult,
-  type CorrectOpenResponseCommand,
-  type AcceptInvitationCommand,
-  type AcceptedInvitation,
-  type CreatedSession,
-  type CreateInvitationCommand,
-  type CreatedInvitation,
-  type AdvanceContentCommand,
-  type AuthoringRecord,
-  type ReviewAuthoringCommand,
-  type AccountStatus,
-  type AccountStatusChangeCommand,
-  type AccountStatusChangeResult,
-  type AccountRecoveryAcceptCommand,
-  type AccountRecoveryAccepted,
-  type AccountRecoveryIssueCommand,
-  type AccountRecoveryIssueResult,
-  type ContentRecord,
-  type CreateAuthoringDraftCommand,
-  type CurriculumRuntimeState,
-  type AuthoringReview,
-  type EvaluateCurriculumModuleCommand,
-  type AppealCreateCommand,
-  type AppealReviewTransitionCommand,
-  type GetParticipantAppealsCommand,
-  type AssignmentCreateCommand,
-  type AssignmentTransitionCommand,
-  type AssignCurriculumFromDiagnosticCommand,
-  type MaterializedCurriculumAssignments,
-  type WorkflowCreateCommand,
-  type WorkflowTransitionCommand,
-  type TicketCreateCommand,
-  type TicketTransitionCommand,
-  type ParticipantFeedbackReadCommand,
-  type ParticipantActivityState,
-  type ParticipantLearningJourneyState,
-  type ParticipantProgressState,
-  type DiagnosticResultState,
-  type DiagnosticSessionCatalog,
-  type DiagnosticSessionRepositoryPort,
-  type EvaluateDiagnosticDraftCommand,
-  type StaffDashboardState,
-  type ContinuingEducationReportState,
-  type ReflectionManagementState,
-  type ContentReviewQueueState,
-  type GetContentReviewQueueCommand,
-  type AppealReviewQueueState,
-  type GetAppealReviewQueueCommand,
-  type AppealReviewHistoryState,
-  type GetAppealReviewHistoryCommand,
-  type AppealDecisionImpactPreviewState,
-  type GetAppealDecisionImpactPreviewCommand,
-  type FeedbackTriageQueueState,
-  type GetFeedbackTriageQueueCommand,
-  type FeedbackTriageMetadataState,
-  type UpdateFeedbackTriageMetadataCommand,
-  type FeedbackTicketHistoryState,
-  type GetFeedbackTicketHistoryCommand,
-  type SaveAnswerCommand,
-  type SaveAnswerResult,
-  type Role,
-  type ResendAccountInvitationCommand,
-  type ResendAccountInvitationResult,
-  type StartAttemptCommand,
-  type SubmitAttemptCommand,
-  type TransactionSecurityContext,
-  type AuditPort,
-  type AuditTrailState,
-  type GetAuditTrailCommand,
-} from "@cvg/application";
-import { type Observability } from "@cvg/observability";
-import type { DependencyStatus } from "@cvg/integrations";
+  ApiHttpDependencies,
+  ApiHttpRequest,
+  ApiPrincipal,
+} from "./http/contracts.js";
 import {
   errorResponse,
   validationResponse,
@@ -86,11 +11,11 @@ import {
 } from "./http/errors.js";
 import {
   handleCorrection,
+  handleGetAttempt,
   handleSaveAnswer,
   handleStart,
   handleSubmit,
 } from "./features/attempts/attempts.handler.js";
-import { type ParticipantActivityItemKind } from "./http/authorization.js";
 import {
   handleDiagnosticDraftEvaluation,
   handleFinalizeDiagnosticSession,
@@ -164,209 +89,45 @@ import { recordApiRejectionAudit } from "./http/rejection-audit.js";
 
 export type { ApiHttpResponse };
 
-export type ApiHttpRequest = Readonly<{
-  readonly method: string;
-  readonly path: string;
-  readonly route?: string;
-  readonly body: unknown;
-  readonly query?: Readonly<Record<string, string | undefined>>;
-  readonly queryDuplicateKeys?: readonly string[];
-  readonly headers?: Readonly<Record<string, string | undefined>>;
-}>;
-
-export type ApiPrincipal = Readonly<{
-  readonly principalId: string;
-  readonly accountStatus: AccountStatus;
-  readonly roles: readonly Role[];
-  readonly scopes: readonly string[];
-}>;
-
-export interface ApiHttpDependencies {
-  readonly requestIdFactory: () => string;
-  readonly observability?: Observability;
-  readonly audit?: AuditPort;
-  readonly approvedClinicalApproverId?: string;
-  readonly createInvitation: (
-    command: CreateInvitationCommand,
-  ) => Promise<CreatedInvitation>;
-  readonly changeAccountStatus?: (
-    command: AccountStatusChangeCommand,
-  ) => Promise<AccountStatusChangeResult>;
-  readonly resendAccountInvitation?: (
-    command: ResendAccountInvitationCommand,
-  ) => Promise<ResendAccountInvitationResult>;
-  readonly issueAccountRecovery?: (
-    command: AccountRecoveryIssueCommand,
-  ) => Promise<AccountRecoveryIssueResult>;
-  readonly acceptInvitation: (
-    command: AcceptInvitationCommand,
-  ) => Promise<AcceptedInvitation>;
-  readonly acceptAccountRecovery?: (
-    command: AccountRecoveryAcceptCommand,
-  ) => Promise<AccountRecoveryAccepted>;
-  readonly revokeSession?: (cookieHeader: string | undefined) => Promise<void>;
-  readonly rotateSession?: (
-    cookieHeader: string | undefined,
-    expiresInSeconds: number,
-  ) => Promise<CreatedSession | null>;
-  readonly createLearningAssignment?: (
-    command: AssignmentCreateCommand,
-  ) => Promise<LearningAssignmentState>;
-  readonly assignCurriculumFromDiagnostic?: (
-    command: AssignCurriculumFromDiagnosticCommand,
-  ) => Promise<MaterializedCurriculumAssignments>;
-  readonly diagnosticSessionRepository?: DiagnosticSessionRepositoryPort;
-  readonly diagnosticSessionCatalog?: DiagnosticSessionCatalog;
-  readonly transitionLearningAssignment?: (
-    command: AssignmentTransitionCommand,
-  ) => Promise<LearningAssignmentState>;
-  readonly createAssessmentWorkflow?: (
-    command: WorkflowCreateCommand,
-  ) => Promise<AssessmentWorkflowState>;
-  readonly transitionAssessmentWorkflow?: (
-    command: WorkflowTransitionCommand,
-  ) => Promise<AssessmentWorkflowState>;
-  readonly createFeedbackTicket?: (
-    command: TicketCreateCommand,
-  ) => Promise<FeedbackTicketState>;
-  readonly getParticipantFeedback?: (
-    command: ParticipantFeedbackReadCommand,
-  ) => Promise<readonly FeedbackTicketState[]>;
-  readonly transitionFeedbackTicket?: (
-    command: TicketTransitionCommand,
-  ) => Promise<FeedbackTicketState>;
-  readonly updateFeedbackTriageMetadata?: (
-    command: UpdateFeedbackTriageMetadataCommand,
-  ) => Promise<FeedbackTriageMetadataState>;
-  readonly resolveFeedbackTicketParticipant?: (
-    ticketId: string,
-    scopeId: string,
-  ) => Promise<string | null>;
-  readonly createAppeal?: (
-    command: AppealCreateCommand,
-  ) => Promise<AppealState>;
-  readonly getParticipantAppeals?: (
-    command: GetParticipantAppealsCommand,
-  ) => Promise<readonly AppealState[]>;
-  readonly transitionAppealReview?: (
-    command: AppealReviewTransitionCommand,
-  ) => Promise<AppealState>;
-  readonly authenticate: (
-    request: ApiHttpRequest,
-  ) => Promise<ApiPrincipal | null>;
-  readonly resolveActivityScope: (
-    activityId: string,
-    context: TransactionSecurityContext,
-  ) => Promise<string | null>;
-  readonly hasParticipantActivityItem?: (
-    participantId: string,
-    activityId: string,
-    itemId: string,
-    itemKinds?: readonly ParticipantActivityItemKind[],
-  ) => Promise<boolean>;
-  readonly resolveAttempt: (
-    attemptId: string,
-    context?: TransactionSecurityContext,
-  ) => Promise<AttemptState | null>;
-  readonly getParticipantActivity: (
-    participantId: string,
-    activityId: string,
-  ) => Promise<ParticipantActivityState>;
-  readonly advanceContent: (
-    command: AdvanceContentCommand,
-  ) => Promise<ContentRecord>;
-  readonly createAuthoringDraft?: (
-    command: CreateAuthoringDraftCommand,
-  ) => Promise<AuthoringRecord>;
-  readonly getInternalAuthoringRecord?: (
-    contentId: string,
-    version: number,
-    scopeId: string,
-  ) => Promise<AuthoringRecord | null>;
-  readonly reviewAuthoringContent?: (
-    command: ReviewAuthoringCommand,
-  ) => Promise<Readonly<{ record: AuthoringRecord; review: AuthoringReview }>>;
-  readonly getParticipantProgress: (
-    participantId: string,
-    activityId: string,
-  ) => Promise<ParticipantProgressState>;
-  readonly getParticipantLearningJourney?: (
-    participantId: string,
-    scopeIds: readonly string[],
-  ) => Promise<ParticipantLearningJourneyState>;
-  readonly getStaffDashboard?: (
-    principalId: string,
-    scopeIds: readonly string[],
-  ) => Promise<StaffDashboardState>;
-  readonly getContinuingEducationReport?: (
-    principalId: string,
-    query: Readonly<{
-      readonly scopeId: string;
-      readonly moduleId?: string | undefined;
-      readonly accountStatus?: AccountStatus | undefined;
-    }>,
-  ) => Promise<ContinuingEducationReportState>;
-  readonly getReflectionManagementReport?: (
-    principalId: string,
-    query: Readonly<{ readonly scopeId: string }>,
-  ) => Promise<ReflectionManagementState>;
-  readonly getContentReviewQueue?: (
-    command: GetContentReviewQueueCommand,
-  ) => Promise<ContentReviewQueueState>;
-  readonly getAppealReviewQueue?: (
-    command: GetAppealReviewQueueCommand,
-  ) => Promise<AppealReviewQueueState>;
-  readonly getFeedbackTriageQueue?: (
-    command: GetFeedbackTriageQueueCommand,
-  ) => Promise<FeedbackTriageQueueState>;
-  readonly getFeedbackTicketHistory?: (
-    command: GetFeedbackTicketHistoryCommand,
-  ) => Promise<FeedbackTicketHistoryState | null>;
-  readonly getAppealReviewHistory?: (
-    command: GetAppealReviewHistoryCommand,
-  ) => Promise<AppealReviewHistoryState | null>;
-  readonly getAppealDecisionImpactPreview?: (
-    command: GetAppealDecisionImpactPreviewCommand,
-  ) => Promise<AppealDecisionImpactPreviewState | null>;
-  readonly getAuditTrail?: (
-    command: GetAuditTrailCommand,
-  ) => Promise<AuditTrailState>;
-  readonly getParticipantCurriculumRuntime?: (
-    participantId: string,
-    moduleId: string,
-  ) => Promise<CurriculumRuntimeState>;
-  readonly evaluateCurriculumRuntime?: (
-    command: EvaluateCurriculumModuleCommand,
-  ) => Promise<CurriculumRuntimeState>;
-  readonly evaluateDiagnosticDraft?: (
-    command: EvaluateDiagnosticDraftCommand,
-  ) => Promise<DiagnosticResultState>;
-  readonly isParticipantInScope?: (
-    participantId: string,
-    scopeId: string,
-  ) => Promise<boolean>;
-  readonly getAttemptFeedback: (
-    participantId: string,
-    attemptId: string,
-  ) => Promise<CorrectionResult | null>;
-  readonly correctOpenResponse: (
-    command: CorrectOpenResponseCommand,
-  ) => Promise<CorrectionResult>;
-  readonly startAttempt: (
-    command: StartAttemptCommand,
-  ) => Promise<AttemptState>;
-  readonly saveAnswer: (
-    command: SaveAnswerCommand,
-  ) => Promise<SaveAnswerResult>;
-  readonly submitAttempt: (
-    command: SubmitAttemptCommand,
-  ) => Promise<AttemptState>;
-  readonly healthcheck: () => Promise<void>;
-  readonly dependencyStatus?: () => Promise<DependencyStatus>;
-}
+export type {
+  ApiHttpDependencies,
+  ApiHttpRequest,
+  ApiPrincipal,
+} from "./http/contracts.js";
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+async function handleCredentialRoutes(
+  request: ApiHttpRequest,
+  requestId: string,
+  dependencies: ApiHttpDependencies,
+): Promise<ApiHttpResponse | null> {
+  if (
+    request.method === "POST" &&
+    request.path === "/api/v1/invitations/accept"
+  ) {
+    return await handleAcceptInvitation(request, requestId, dependencies);
+  }
+
+  if (request.method === "POST" && request.path === "/api/v1/recovery/accept") {
+    return await handleAcceptAccountRecovery(request, requestId, dependencies);
+  }
+
+  if (request.method === "POST" && request.path === "/api/v1/session/revoke") {
+    return await handleRevokeSession(request, requestId, dependencies);
+  }
+
+  if (request.method === "GET" && request.path === "/api/v1/session/current") {
+    return await handleCurrentSession(request, requestId, dependencies);
+  }
+
+  if (request.method === "POST" && request.path === "/api/v1/session/rotate") {
+    return await handleRotateSession(request, requestId, dependencies);
+  }
+
+  return null;
 }
 
 async function handleApiRequestCore(
@@ -386,44 +147,12 @@ async function handleApiRequestCore(
     );
     if (operational !== null) return operational;
 
-    if (
-      request.method === "POST" &&
-      request.path === "/api/v1/invitations/accept"
-    ) {
-      return await handleAcceptInvitation(request, requestId, dependencies);
-    }
-
-    if (
-      request.method === "POST" &&
-      request.path === "/api/v1/recovery/accept"
-    ) {
-      return await handleAcceptAccountRecovery(
-        request,
-        requestId,
-        dependencies,
-      );
-    }
-
-    if (
-      request.method === "POST" &&
-      request.path === "/api/v1/session/revoke"
-    ) {
-      return await handleRevokeSession(request, requestId, dependencies);
-    }
-
-    if (
-      request.method === "GET" &&
-      request.path === "/api/v1/session/current"
-    ) {
-      return await handleCurrentSession(request, requestId, dependencies);
-    }
-
-    if (
-      request.method === "POST" &&
-      request.path === "/api/v1/session/rotate"
-    ) {
-      return await handleRotateSession(request, requestId, dependencies);
-    }
+    const credentials = await handleCredentialRoutes(
+      request,
+      requestId,
+      dependencies,
+    );
+    if (credentials !== null) return credentials;
 
     if (
       request.method === "POST" &&
@@ -687,6 +416,21 @@ async function handleApiRequestCore(
       return await handleTransitionAppeal(
         request,
         appealTransitionMatch[1],
+        requestId,
+        principal,
+        dependencies,
+      );
+    }
+
+    const attemptReadMatch = request.path.match(
+      /^\/api\/v1\/attempts\/([^/]+)$/u,
+    );
+    if (request.method === "GET" && attemptReadMatch?.[1]) {
+      const principal = await dependencies.authenticate(request);
+      if (principal === null)
+        return errorResponse("unauthenticated", requestId);
+      return await handleGetAttempt(
+        attemptReadMatch[1],
         requestId,
         principal,
         dependencies,

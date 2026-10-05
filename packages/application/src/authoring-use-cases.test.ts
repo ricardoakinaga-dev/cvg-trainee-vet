@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ContentRecord } from "./content-use-cases.js";
 import {
   createAuthoringDraft,
   reviewAuthoringContent,
@@ -9,6 +8,7 @@ import {
   type AuthoringRecord,
   type AuthoringRepositoryPort,
   type AuthoringReview,
+  type AuthoringReviewTransition,
 } from "./authoring-use-cases.js";
 
 const contentId = "11111111-1111-4111-8111-111111111111";
@@ -72,8 +72,25 @@ function repository(
   value: AuthoringRecord = record,
 ): AuthoringRepositoryPort & {
   readonly savedReview: AuthoringReview | undefined;
+  readonly commitReviewTransition: ReturnType<typeof vi.fn>;
 } {
   let savedReview: AuthoringReview | undefined;
+  const commitReviewTransition = vi.fn(
+    async (
+      current: AuthoringRecord,
+      preflight: AuthoringRecord["preflight"],
+      review: AuthoringReview,
+      transition: AuthoringReviewTransition,
+    ) => {
+      savedReview = review;
+      return {
+        ...current,
+        preflight,
+        latestReview: review,
+        contentStatus: transition.nextStatus,
+      };
+    },
+  );
   return {
     find: vi.fn(async () => value),
     createDraft: vi.fn(async (draft) => draft),
@@ -81,19 +98,11 @@ function repository(
       ...value,
       preflight,
     })),
-    saveReview: vi.fn(async (_record, review) => {
-      savedReview = review;
-      return { ...value, latestReview: review };
-    }),
-    rollbackReview: vi.fn(async () => undefined),
+    commitReviewTransition,
     get savedReview() {
       return savedReview;
     },
   };
-}
-
-function workflow(status: ContentRecord["status"]): ContentRecord {
-  return { contentId, version: 1, scopeId, status };
 }
 
 describe("authoring and clinical review use cases", () => {
@@ -373,7 +382,6 @@ describe("authoring and clinical review use cases", () => {
 
   it("requires an independent clinical approver and advances only after review", async () => {
     const repositoryPort = repository();
-    const transition = vi.fn(async () => workflow("APROVADO_CLINICAMENTE"));
 
     const result = await reviewAuthoringContent(
       {
@@ -381,6 +389,7 @@ describe("authoring and clinical review use cases", () => {
         accountStatus: "ACTIVE",
         roles: ["CLINICAL_APPROVER"],
         scopes: [scopeId],
+        approvedClinicalApproverId: authorId,
         contentId,
         version: 1,
         scopeId,
@@ -388,18 +397,77 @@ describe("authoring and clinical review use cases", () => {
         rationale: "Revisão clínica sintética concluída.",
         correlationId: "66666666-6666-4666-8666-666666666666",
       },
-      { repository: repositoryPort, transition },
+      {
+        repository: repositoryPort,
+        idFactory: () => "99999999-9999-4999-8999-999999999999",
+      },
     );
 
     expect(result.review.decision).toBe("APROVAR_CLINICAMENTE");
     expect(result.record.latestReview?.reviewerId).toBe(reviewerId);
-    expect(transition).toHaveBeenCalledWith(
-      expect.objectContaining({ event: "APROVAR_CLINICAMENTE" }),
+    expect(repositoryPort.commitReviewTransition).toHaveBeenCalledOnce();
+    expect(repositoryPort.commitReviewTransition).toHaveBeenCalledWith(
+      record,
+      expect.objectContaining({ technicalChecksPassed: true }),
+      expect.objectContaining({ reviewerId, decision: "APROVAR_CLINICAMENTE" }),
+      expect.objectContaining({
+        nextStatus: "APROVADO_CLINICAMENTE",
+        event: expect.objectContaining({
+          eventType: "content.workflow.changed.v1",
+          correlationId: "66666666-6666-4666-8666-666666666666",
+        }),
+        audit: expect.objectContaining({
+          action: "CONTENT_APROVAR_CLINICAMENTE",
+          principalId: reviewerId,
+        }),
+      }),
     );
-    expect(repositoryPort.saveReview).toHaveBeenCalledOnce();
   });
 
-  it("rejects approval when preflight is incomplete or reviewer is the author", async () => {
+  it("allows the configured approved clinical approver to review their own MVP content", async () => {
+    const repositoryPort = repository();
+
+    const result = await reviewAuthoringContent(
+      {
+        principalId: authorId,
+        accountStatus: "ACTIVE",
+        roles: ["CLINICAL_APPROVER"],
+        scopes: [scopeId],
+        approvedClinicalApproverId: authorId,
+        contentId,
+        version: 1,
+        scopeId,
+        decision: "APROVAR_CLINICAMENTE",
+        rationale:
+          "Autorrevisão autorizada no MVP pelo aprovador clínico configurado.",
+        correlationId: "88888888-8888-4888-8888-888888888888",
+      },
+      {
+        repository: repositoryPort,
+        idFactory: () => "99999999-9999-4999-8999-999999999999",
+      },
+    );
+
+    expect(result.review.reviewerId).toBe(authorId);
+    expect(result.record.latestReview?.reviewerId).toBe(authorId);
+    expect(repositoryPort.commitReviewTransition).toHaveBeenCalledOnce();
+    expect(repositoryPort.commitReviewTransition).toHaveBeenCalledWith(
+      record,
+      expect.objectContaining({ technicalChecksPassed: true }),
+      expect.objectContaining({
+        reviewerId: authorId,
+        decision: "APROVAR_CLINICAMENTE",
+      }),
+      expect.objectContaining({
+        nextStatus: "APROVADO_CLINICAMENTE",
+        event: expect.objectContaining({
+          eventType: "content.workflow.changed.v1",
+        }),
+      }),
+    );
+  });
+
+  it("rejects approval when preflight is incomplete or an unconfigured author self-reviews", async () => {
     const incomplete = repository({
       ...record,
       correctChoiceIds: [],
@@ -419,7 +487,10 @@ describe("authoring and clinical review use cases", () => {
           rationale: "Não deve aprovar.",
           correlationId: "66666666-6666-4666-8666-666666666666",
         },
-        { repository: incomplete, transition: vi.fn() },
+        {
+          repository: incomplete,
+          idFactory: () => "99999999-9999-4999-8999-999999999999",
+        },
       ),
     ).rejects.toMatchObject({ code: "state_conflict" });
 
@@ -437,16 +508,62 @@ describe("authoring and clinical review use cases", () => {
           rationale: "O autor não pode aprovar seu próprio item.",
           correlationId: "66666666-6666-4666-8666-666666666666",
         },
-        { repository: repository(), transition: vi.fn() },
+        {
+          repository: repository(),
+          idFactory: () => "99999999-9999-4999-8999-999999999999",
+        },
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
+
+    await expect(
+      reviewAuthoringContent(
+        {
+          principalId: authorId,
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [scopeId],
+          approvedClinicalApproverId: reviewerId,
+          contentId,
+          version: 1,
+          scopeId,
+          decision: "APROVAR_CLINICAMENTE",
+          rationale: "A identidade configurada diverge do autor.",
+          correlationId: "66666666-6666-4666-8666-666666666666",
+        },
+        {
+          repository: repository(),
+          idFactory: () => "99999999-9999-4999-8999-999999999999",
+        },
+      ),
+    ).rejects.toMatchObject({ code: "forbidden" });
+
+    await expect(
+      reviewAuthoringContent(
+        {
+          principalId: reviewerId,
+          accountStatus: "ACTIVE",
+          roles: ["CLINICAL_APPROVER"],
+          scopes: [scopeId],
+          contentId,
+          version: 1,
+          scopeId,
+          decision: "SOLICITAR_AJUSTES",
+          rationale: "Solicitar ajustes exige MODERATE_CONTENT.",
+          correlationId: "66666666-6666-4666-8666-666666666666",
+        },
+        {
+          repository: repository(),
+          idFactory: () => "99999999-9999-4999-8999-999999999999",
+        },
       ),
     ).rejects.toMatchObject({ code: "forbidden" });
   });
 
-  it("compensates the persisted review when the workflow transition fails", async () => {
+  it("leaves the review unrecorded when the atomic transition commit fails", async () => {
     const repositoryPort = repository();
-    const transition = vi.fn(async () => {
-      throw new Error("transition unavailable");
-    });
+    repositoryPort.commitReviewTransition.mockRejectedValueOnce(
+      new Error("transaction aborted"),
+    );
 
     await expect(
       reviewAuthoringContent(
@@ -463,23 +580,20 @@ describe("authoring and clinical review use cases", () => {
           rationale: "Falha sintética após persistência.",
           correlationId: "77777777-7777-4777-8777-777777777777",
         },
-        { repository: repositoryPort, transition },
+        {
+          repository: repositoryPort,
+          idFactory: () => "99999999-9999-4999-8999-999999999999",
+        },
       ),
-    ).rejects.toThrow("transition unavailable");
-    expect(repositoryPort.rollbackReview).toHaveBeenCalledWith(
-      record,
-      record.preflight,
-      expect.objectContaining({
-        reviewerId,
-        decision: "APROVAR_CLINICAMENTE",
-      }),
-    );
+    ).rejects.toThrow("transaction aborted");
+    expect(repositoryPort.commitReviewTransition).toHaveBeenCalledOnce();
+    expect(repositoryPort.savedReview).toBeUndefined();
   });
 
   it("validates review commands, scope, status, and adjustment decisions", async () => {
     const dependencies = {
       repository: repository(),
-      transition: vi.fn(async () => workflow("AJUSTES_SOLICITADOS")),
+      idFactory: () => "99999999-9999-4999-8999-999999999999",
     };
 
     await expect(

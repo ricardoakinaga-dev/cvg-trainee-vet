@@ -1,6 +1,7 @@
 export type FakeDatabaseOptions = Readonly<{
   readonly rows?: readonly (readonly unknown[])[];
   readonly onExecute?: (query: unknown) => void;
+  readonly onWhere?: (condition: unknown) => void;
   readonly onInsert?: (table: unknown, values: unknown) => void;
   readonly onUpdate?: (table: unknown, values: unknown) => void;
   readonly onDelete?: (table: unknown, values: unknown) => void;
@@ -15,6 +16,7 @@ export type FakeBuilder = {
   leftJoin: (table?: unknown, on?: unknown) => FakeBuilder;
   orderBy: (...columns: unknown[]) => FakeBuilder;
   groupBy: (...columns: unknown[]) => FakeBuilder;
+  for: (...modifiers: unknown[]) => FakeBuilder;
   onConflictDoNothing: () => FakeBuilder;
   onConflictDoUpdate: (...args: unknown[]) => FakeBuilder;
   returning: (columns?: unknown) => Promise<readonly unknown[]>;
@@ -54,12 +56,16 @@ export function createFakeDatabase(options: FakeDatabaseOptions = {}) {
         options.onUpdate?.(table, values);
         return builder;
       },
-      where: () => builder,
+      where: (condition?: unknown) => {
+        if (condition !== undefined) options.onWhere?.(condition);
+        return builder;
+      },
       from: () => builder,
       innerJoin: () => builder,
       leftJoin: () => builder,
       orderBy: () => builder,
       groupBy: () => builder,
+      for: () => builder,
       onConflictDoNothing: () => builder,
       onConflictDoUpdate: () => builder,
       returning: async () => next(),

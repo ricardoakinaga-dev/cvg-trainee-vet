@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createObservability } from "@cvg/observability";
-import type { OutboxEventRecord } from "@cvg/persistence";
+import type { OutboxEventRecord, OutboxRepositoryPort } from "@cvg/persistence";
 
 import { processOutboxOnce } from "./loop.js";
 
@@ -39,8 +39,21 @@ function baseEvent(): OutboxEventRecord {
 const base = baseEvent();
 
 function repository(events: readonly OutboxEventRecord[]) {
+  let remaining = [...events];
+  const withLeaseFence: NonNullable<
+    OutboxRepositoryPort["withLeaseFence"]
+  > = async (_id, _token, _seconds, work) => ({
+    owned: true,
+    value: await work(),
+  });
   return {
-    claim: vi.fn(async () => events),
+    claim: vi.fn(async (limit: number) => {
+      const batch = remaining.slice(0, limit);
+      remaining = remaining.slice(limit);
+      return batch;
+    }),
+    renewLease: vi.fn(async () => true),
+    withLeaseFence,
     markProcessed: vi.fn(async () => true),
     markFailed: vi.fn(async () => true),
   };

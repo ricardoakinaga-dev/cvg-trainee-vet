@@ -69,7 +69,7 @@ function syntheticPreflight() {
       sourceTraceability: true,
       publicationBlocked: true,
     },
-    checkedAt: new Date("2026-08-23T17:00:00.000Z"),
+    checkedAt: new Date("2026-08-23T17:00:00.000Z").toISOString(),
   };
 }
 
