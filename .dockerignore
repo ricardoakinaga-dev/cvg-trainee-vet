@@ -1,0 +1,36 @@
+# Build context for apps/*/Dockerfile (context = repository root).
+# Only sources, manifests and patches enter the image build.
+.git
+.github
+.agent
+.agents
+.opencode
+.orchestrate
+.gauntlet
+.vitest-attachments
+node_modules
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/*.tsbuildinfo
+coverage
+playwright-report
+test-results
+staging-evidence
+release-evidence
+reports
+snapshots
+docs
+BRIEFING
+tests
+deploy
+*.md
+*.log
+*.pdf
+*.png
+.env
+.env.*
+!.env.example
+sbom.cyclonedx.json
+traceability.yml

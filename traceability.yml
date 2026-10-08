@@ -6,6 +6,60 @@ rules:
   - "participant projections never contain internal authorship/source fields"
   - "every completed item requires evidence"
 artifacts:
+  - id: "PROD-UNBLOCK-20261008"
+    requirements:
+      [
+        "AAA-001",
+        "AUDIT-REM-06",
+        "H-REMOTE",
+        "H-CONTENT",
+        "RNF-015",
+        "PROD-M04",
+        "PROD-M08",
+        "PROD-M09",
+        "PROD-M19",
+      ]
+    documents:
+      [
+        "docs/decisions/2026-10-08-production-unblock.md",
+        "docs/45_aaa001_decision_packet.md",
+        "docs/decisions/2026-10-02-rem06-summative-eligibility.md",
+        "docs/clinical/review-m02-b07-2026-10-08.md",
+        "docs/operations/homologation-vps.md",
+        "docs/audits/production-readiness-implementation-2026-10-07.md",
+        "docs/operations/deploy.md",
+      ]
+    code:
+      [
+        "apps/api/Dockerfile",
+        "apps/worker/Dockerfile",
+        "apps/web/Dockerfile",
+        "apps/web/package.json",
+        "pnpm-lock.yaml",
+        "deploy/compose.yml",
+        ".github/workflows/release.yml",
+        "packages/config/src/env.ts",
+        "scripts/deploy-smoke.mjs",
+        "scripts/evidence-freshness.mjs",
+      ]
+    tests:
+      [
+        "packages/config/src/env.test.ts",
+        "tests/integration/backup-script.test.ts",
+        "tests/integration/deploy-smoke.test.ts",
+        "tests/integration/evidence-freshness.test.ts",
+      ]
+    artifacts:
+      [
+        "docs/decisions/2026-10-08-production-unblock.md",
+        "docs/clinical/review-m02-b07-2026-10-08.md",
+      ]
+    verification:
+      [
+        "Gates locais proporcionais e execuções remotas serão registrados no log após execução; nenhum sucesso remoto inferido",
+      ]
+    commit: "UNCOMMITTED_WORKTREE"
+    status: "IN_PROGRESS"
   - id: "EXEC-AUDIT-20261003-R53-R54-R55-R57"
     requirements:
       [

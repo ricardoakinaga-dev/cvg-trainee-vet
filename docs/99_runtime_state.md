@@ -11,7 +11,55 @@
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
-## CHECKPOINT PREVALENTE — R63 P2/P3 somativo ligados fail-closed e `pnpm verify` verde em 2026-10-05T13:36:00Z
+## CHECKPOINT PREVALENTE — Destravamento autorizado em 2026-10-08T01:31:15Z
+
+- current_engine: BUILD ENGINE / RUNTIME CONTROLLER
+- current_phase: FIX_RETEST; decisões humanas recebidas, preparação do commit/CI remoto.
+- current_task: PROD-UNBLOCK-20261008 (rodada PROD-IMPL-20261007).
+- status: IN_PROGRESS
+- last_completed_action: Ricardo autorizou commit em main, push dos quatro commits anteriores e rodada, quality/security e release somente após ambos verdes same-SHA; aprovou AAA-001 D1–D7 atualizado (RPO ≤1h/RTO ≤4h), boundary REM-06 e abertura da revisão M02→B-07; escolheu VPS dedicada.
+- next_action: revisar/stage do delta pretendido, gates locais proporcionais, commit/push e verificar runs quality/security; release manual somente após success dos dois no mesmo SHA. Obter dados da VPS e decisões clínicas por item em paralelo às tarefas elegíveis.
+- blockers: VPS sem provedor/região/capacidade/DNS/acesso/destino externo de backup/canal; H-CONTENT aguarda revisão clínica por Ricardo; implementação somativa nativa requer PRD/SPEC complementar. Nenhum impedimento humano ao commit/push/CI autorizado.
+- human_decision_required: yes — fornecer dados não secretos da VPS e segundo contato de alertas; revisar IDs/versões M02 e depois B-07. Autorizações Git/H-REMOTE e resposta AAA-001/REM-06 recebidas.
+- active_execplan: .agent/plans/2026-10-03-remediation-execution.md
+- active_action_id: PROD-UNBLOCK-20261008
+- last_update: 2026-10-08T01:31:15Z
+- evidence: docs/decisions/2026-10-08-production-unblock.md; docs/clinical/review-m02-b07-2026-10-08.md; docs/operations/homologation-vps.md.
+- head: `07532c2c949477489ed5c63362abd7ec97d1f5ad` (`main`); commit/push/workflows autorizados, ainda não executados neste checkpoint.
+
+## CHECKPOINT ANTERIOR — Implementação das melhorias de prontidão para produção em 2026-10-07T13:30:00Z
+
+- current_engine: BUILD ENGINE / RUNTIME CONTROLLER
+- current_phase: FIX_RETEST; rodada PROD-IMPL-20261007 concluída no worktree (sem commit); gates locais verdes.
+- current_task: PROD-IMPL-20261007 (solicitação direta de Ricardo: implementar todas as melhorias da auditoria de prontidão e salvar a documentação em `docs/`).
+- status: WAITING_HUMAN_APPROVAL
+- last_completed_action: 14 melhorias implementadas e verificadas (M04 Dockerfiles api/migrator/worker/web + `.dockerignore` + standalone opt-in do web; M05 parcial `deploy/compose.yml` com infra fixada por digest, `migrate`/`provision` one-shot, Caddy TLS, backup e perfil de observabilidade; M06 `deploy/backup/backup.sh` + 4 testes + runbook; M08 `.github/workflows/release.yml` com preflight same-SHA, GHCR, provenance/SBOM, Cosign keyless + `scripts/deploy-smoke.mjs` + 4 testes + `docs/operations/deploy.md`; M09 overrides `sharp`/`source-map-js` com `pnpm audit` global e `--prod` limpos; M10 `deploy/observability/*` + `docs/operations/alerting.md`; M11/M21/M24 runbooks e políticas; M17 defaults `AI_ENABLED=false`/`QDRANT_ENABLED=false`; M18 parcial CODEOWNERS; M19 freshness exclui `__screenshots__` com teste RED→GREEN; M20 `.gitignore`), 3 confirmadas no código existente (M22, M26, M27) e `@cvg/config` passou a tratar variáveis opcionais em branco como ausentes (RED 2 → GREEN 16). Ensaio do stack completo via compose com imagens locais: 59 migrations, roles `cvg_app` sem SUPERUSER/BYPASSRLS, API `READY` pela borda (web → api), smoke PASS pela borda e pela rede interna, 401 sem sessão, worker processando, backups verificados. Gates: format, lint, typecheck, unit 2858 PASS, contract, worker, ci-contract, secrets, migrations, traceability, architecture, routes, complexity, cycles, dead-code, security, otel, release-evidence, documentation, product-definition, exposure e `git diff --check` EXIT 0; `test:coverage` 3927 PASS / 212 skip (308 arquivos), cobertura 91,05 / 86,95 / 95,07 / 92,38 contra pisos 90/85/90/90, `verify:coverage-floor` e `verify:evidence-consistency` PASS. Integração não-live: 755 PASS; `triple-aaa-verifier.test.ts` 177/177 isolado (24 timeouts anteriores sob carga das builds Docker, não de código).
+- next_action: decisão humana — (a) commit do worktree desta rodada; (b) responder AAA-001 D1–D7 e REM-06; (c) autorizar push e disparo dos workflows `quality`, `security` e `release` (H-REMOTE); (d) escolher provedor/host de homologação (AAA-001 D6) para executar M05/M14/M15/M16; depois M13 re-congelar candidato e continuar M12/M23/M25 pelo ExecPlan vigente.
+- blockers: nenhum bloqueio técnico novo. P0 remanescentes são decisões (AAA-001, REM-06, H-CONTENT) e ambiente real (host, CI remota verde, RPO/RTO medidos). Fontes sob hold do backlog 61 não foram tocadas.
+- human_decision_required: yes — perguntas objetivas: (1) Ricardo autoriza o commit desta rodada em `main`? (2) Autoriza push e execução remota dos workflows no SHA resultante? (3) Qual provedor/host para homologação e quem é o segundo contato do canal de alertas?
+- active_execplan: .agent/plans/2026-10-03-remediation-execution.md (inalterado)
+- active_action_id: PROD-IMPL-20261007
+- last_update: 2026-10-07T13:30:00Z
+- evidence: docs/audits/production-readiness-implementation-2026-10-07.md; docs/operations/production-readiness-checklist.md; docs/30_backlog_master.md (PROD-M01…M27); documento editável https://claude.ai/code/artifact/195a2eb3-c2b4-4686-91a2-d54d6e0ee0cd
+- head: `07532c2c949477489ed5c63362abd7ec97d1f5ad` (`main`) com worktree modificado; sem commit/push/deploy/publicação/globalaccept.
+
+## CHECKPOINT ANTERIOR — Auditoria de prontidão para produção em 2026-10-07T12:30:00Z
+
+- current_engine: AUDIT ENGINE / RUNTIME CONTROLLER
+- current_phase: FIX_RETEST; auditoria consultiva de prontidão para produção concluída sobre o HEAD `07532c2`; nenhum arquivo de produto alterado.
+- current_task: AUDIT-PROD-READINESS-20261007 (solicitação direta de Ricardo: ler documentação, auditar o sistema e entregar relatório de melhorias para produção).
+- status: WAITING_HUMAN_APPROVAL
+- last_completed_action: relatório `docs/audits/production-readiness-audit-2026-10-07.md` publicado (31 achados: 8 P0, 13 P1, 10 P2; 27 melhorias M01–M27; plano em 4 fases/gates). Verificações executadas: lint, typecheck, `test:unit` 2856 PASS, 11 gates estáticos PASS, `git diff --check` PASS; `verify:traceability:release` FAIL (worktree com diretórios não rastreados), `pnpm audit --prod` FAIL (2 HIGH: `sharp` 0.35.4, `source-map-js` 1.2.1 via `next`), `verify:triple-aaa` FAIL (1 fatal, 17 pendências), `verify:aaa-candidate` FAIL (11 gates). Veredito: NÃO PRONTO para produção.
+- next_action: decisão humana sobre a ordem do plano (Fase 1: responder AAA-001 D1–D7, decidir REM-06, corrigir SE-01, iniciar revisão clínica); depois M02/M04/M07/M08 em BUILD com TDD.
+- blockers: nenhum bloqueio técnico novo; P0 de produção são decisões (AAA-001, REM-06, H-CONTENT) e infraestrutura inexistente (artefato, ambientes, backup, CI remota verde, pipeline de deploy).
+- human_decision_required: yes — pergunta objetiva: Ricardo aprova a sequência Fase 1→4 do relatório e autoriza (a) resposta ao pacote AAA-001, (b) decisão REM-06, (c) atualização de `sharp`/`source-map-js` no lockfile como primeira task de BUILD?
+- active_execplan: .agent/plans/2026-10-03-remediation-execution.md (inalterado; o relatório mapeia achados herdados às tasks T01–T34/G01–G10)
+- active_action_id: AUDIT-PROD-READINESS-20261007
+- last_update: 2026-10-07T12:30:00Z
+- evidence: docs/audits/production-readiness-audit-2026-10-07.md; documento editável https://claude.ai/code/artifact/195a2eb3-c2b4-4686-91a2-d54d6e0ee0cd
+- head: `07532c2c949477489ed5c63362abd7ec97d1f5ad` (`main`); sem commit/push/deploy/publicação/globalaccept nesta rodada.
+
+## CHECKPOINT ANTERIOR — R63 P2/P3 somativo ligados fail-closed e `pnpm verify` verde em 2026-10-05T13:36:00Z
 
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - current_phase: FIX_RETEST; R63 concluído (P3 `SummativeGradePolicy` composta no caminho produtivo, P2 `summativeApproval` ligado fail-closed em `apps/api/src/main.ts`, TDD RED→GREEN, `pnpm verify` exit 0).

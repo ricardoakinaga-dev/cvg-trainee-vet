@@ -3,6 +3,11 @@ import { resolve } from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Standalone output is opt-in for the container build (apps/web/Dockerfile);
+  // local development, tests and `next start` keep the default output.
+  ...(process.env.CVG_NEXT_STANDALONE === "true"
+    ? { output: "standalone" as const }
+    : {}),
   poweredByHeader: false,
   reactStrictMode: true,
   turbopack: {

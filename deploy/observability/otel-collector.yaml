@@ -1,0 +1,43 @@
+# OpenTelemetry Collector for the CVG stack (docs/operations/otel-collector-reference.md).
+# Receives OTLP traces from the API (OTEL_TRACES_ENABLED=true) and forwards
+# them to the configured backend. Attributes that could carry identity or
+# payload are deleted before export.
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 256
+  batch: {}
+  attributes/redact:
+    actions:
+      - key: http.request.body
+        action: delete
+      - key: http.request.header.cookie
+        action: delete
+      - key: user.id
+        action: delete
+      - key: enduser.id
+        action: delete
+
+exporters:
+  # Replace with the provider's OTLP endpoint (Tempo, Honeycomb, Datadog ...).
+  debug:
+    verbosity: basic
+  otlphttp:
+    endpoint: ${env:CVG_OTLP_BACKEND_ENDPOINT:-http://127.0.0.1:1}
+    tls:
+      insecure: false
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/redact, batch]
+      exporters: [debug]

@@ -1,7 +1,9 @@
-# Pacote de decisão AAA-001 — opções recomendadas (PROPOSED)
+# Pacote de decisão AAA-001 — proposta histórica e decisão vigente
 
 **Data:** 2026-09-09
-**Status:** `WAITING_HUMAN_APPROVAL` — nada aqui vigora sem o aceite explícito de Ricardo.
+**Status vigente:** `COMPLETED` (decisão D1–D7); aceite operacional e piloto ainda dependem de evidências.
+**Decisão:** `docs/decisions/2026-10-08-production-unblock.md`, aprovada explicitamente por Ricardo.
+**Histórico:** as recomendações abaixo são a proposta de 2026-09-09, preservada; D3 e D7 foram ajustadas na decisão vigente.
 **Como decidir:** marque APROVO / REJEITO / AJUSTO em cada item e devolva. Sem resposta, nenhum gate live/produção/clínica/piloto abre.
 
 ## D1 — Barra de qualidade AAA (AAA-Q01–Q11)
@@ -48,3 +50,12 @@
 ## Efeito do aceite
 
 Cada APROVO libera somente a fatia indicada, com evidência corrente obrigatória. Publicação clínica continua exigindo revisão item a item (`AAA-304`); produção continua exigindo G4; competência prática nunca decorre de sinal digital.
+
+## Resposta vigente — 2026-10-08
+
+Ricardo respondeu **“Aprovo pacote atualizado”**: D1/D2/D4/D5 aprovados como
+descritos, mantendo pisos de cobertura atuais; D3 ajustado para RPO ≤1 h e
+RTO ≤4 h; D6 autorizado para CI/homologação sintéticos e roles separados, com
+topologia VPS dedicada escolhida e dados do host pendentes; D7 ajustado para CI
+do candidato atual em `main`, revisão clínica, homologação/readiness e piloto
+após gates. A decisão e os limites completos estão no registro acima.

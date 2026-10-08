@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+  # /internal/metrics requires an authenticated internal session
+  # (VIEW_INTERNAL_AUDIT); it is not scraped anonymously. Readiness and
+  # dependency health are public and probed via blackbox.
+  - job_name: cvg-health
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://api:3000/health/live
+          - http://api:3000/health/ready
+          - http://api:3000/health/dependencies
+          - http://web:3100/
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115

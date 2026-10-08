@@ -96,6 +96,50 @@ describe("loadRuntimeConfig", () => {
     expect(production.diagnosticSessionDraftEnabled).toBe(false);
   });
 
+  it("treats blank optional variables as absent, as container orchestrators deliver them", () => {
+    const config = loadRuntimeConfig({
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://cvg_app:secret@postgres:5432/cvg",
+      AUDIT_CURSOR_SECRET: productionAuditCursorKey,
+      CLINICAL_APPROVER_ID: "",
+      QDRANT_ENABLED: "false",
+      QDRANT_URL: "   ",
+      QDRANT_API_KEY: "",
+      EMBEDDING_MODEL: "",
+      EMBEDDING_API_KEY: "",
+      EMBEDDING_DIMENSION: "",
+      AI_ENABLED: "false",
+      AI_API_KEY: "",
+      AI_MODEL: "",
+      TRUSTED_PROXIES: "",
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "",
+    });
+
+    expect(config.approvedClinicalApproverId).toBeUndefined();
+    expect(config.qdrant).toEqual({ enabled: false });
+    expect(config.ai).toEqual({ enabled: false, provider: "openai" });
+    expect(config.tracing).toEqual({ enabled: false });
+  });
+
+  it("still fails closed when a blank value hides a required setting", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgresql://cvg_app:secret@postgres:5432/cvg",
+        AUDIT_CURSOR_SECRET: "",
+      }),
+    ).toThrow(ConfigError);
+    expect(() =>
+      loadRuntimeConfig({
+        NODE_ENV: "test",
+        DATABASE_URL: "postgresql://cvg:cvg@localhost:5432/cvg",
+        AI_ENABLED: "true",
+        AI_API_KEY: "",
+        AI_MODEL: "",
+      }),
+    ).toThrow("Missing runtime configuration: AI_API_KEY, AI_MODEL");
+  });
+
   it("requires a valid database URL", () => {
     expect(() =>
       loadRuntimeConfig({

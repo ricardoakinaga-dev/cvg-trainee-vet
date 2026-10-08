@@ -74,6 +74,31 @@ describe("promotion evidence freshness", () => {
       (await isEvidenceFresh(root, sha, git(root, "rev-parse", "HEAD"))).fresh,
     ).toBe(false);
   });
+  it("excludes generated browser screenshots but still inventories sibling untracked runtime files", async () => {
+    const { root, sha } = await repository();
+    await mkdir(
+      join(root, "apps/web/tests/__screenshots__/journey.browser.test.tsx"),
+      {
+        recursive: true,
+      },
+    );
+    await writeFile(
+      join(
+        root,
+        "apps/web/tests/__screenshots__/journey.browser.test.tsx/failure-1.png",
+      ),
+      "synthetic png bytes\n",
+    );
+    expect((await isEvidenceFresh(root, sha, sha)).fresh).toBe(true);
+    await writeFile(
+      join(root, "apps/web/tests/journey.browser.test.tsx"),
+      "export const spec = 1;\n",
+    );
+    const dirty = await isEvidenceFresh(root, sha, sha);
+    expect(dirty.fresh).toBe(false);
+    expect(dirty.detail).toContain("apps/web/tests/journey.browser.test.tsx");
+    expect(dirty.detail).not.toContain("__screenshots__");
+  });
   it("accepts clean identity and preserves the measured SHA across docs commits", async () => {
     const { root, sha } = await repository();
     expect(await isEvidenceFresh(root, sha, sha)).toMatchObject({

@@ -1,0 +1,235 @@
+# CVG reference stack for homologation/production on a single host or VM
+# (M04/M05/M06/M08/M10). Images are the immutable artifacts published by
+# .github/workflows/release.yml; infrastructure images are pinned by digest.
+#
+#   cp deploy/.env.example deploy/.env   # fill secrets; never commit deploy/.env
+#   docker compose --env-file deploy/.env -f deploy/compose.yml up -d
+#   docker compose --env-file deploy/.env -f deploy/compose.yml --profile observability up -d
+#
+# Rollback = set CVG_IMAGE_TAG (or the digests) to the previous release and
+# run `up -d` again; migrations are forward-only (see docs/operations/deploy.md).
+name: cvg
+
+x-app-env: &app-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://cvg_app:${CVG_APP_DB_PASSWORD}@postgres:5432/cvg
+  AUDIT_CURSOR_SECRET: ${CVG_AUDIT_CURSOR_SECRET}
+  CLINICAL_APPROVER_ID: ${CVG_CLINICAL_APPROVER_ID:-}
+  DIAGNOSTIC_SESSION_DRAFT_ENABLED: ${CVG_DIAGNOSTIC_SESSION_DRAFT_ENABLED:-false}
+  QDRANT_ENABLED: ${CVG_QDRANT_ENABLED:-false}
+  QDRANT_URL: ${CVG_QDRANT_URL:-}
+  QDRANT_API_KEY: ${CVG_QDRANT_API_KEY:-}
+  EMBEDDING_PROVIDER: ${CVG_EMBEDDING_PROVIDER:-openai}
+  EMBEDDING_MODEL: ${CVG_EMBEDDING_MODEL:-}
+  EMBEDDING_API_KEY: ${CVG_EMBEDDING_API_KEY:-}
+  EMBEDDING_DIMENSION: ${CVG_EMBEDDING_DIMENSION:-}
+  AI_ENABLED: ${CVG_AI_ENABLED:-false}
+  AI_API_KEY: ${CVG_AI_API_KEY:-}
+  AI_MODEL: ${CVG_AI_MODEL:-}
+  OTEL_TRACES_ENABLED: ${CVG_OTEL_TRACES_ENABLED:-false}
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${CVG_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://otel-collector:4318/v1/traces}
+
+services:
+  postgres:
+    image: postgres:16.15-bookworm@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cvg
+      POSTGRES_PASSWORD: ${CVG_MIGRATOR_DB_PASSWORD}
+      POSTGRES_DB: cvg
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cvg -d cvg"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks: [internal]
+
+  redis:
+    image: redis:7.4.11-bookworm@sha256:4fa24486b8bcca8eec45ee0eb166edc674795e53a2b53d1a9ef263eecebaac85
+    restart: unless-stopped
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--save",
+        "",
+        "--maxmemory-policy",
+        "noeviction",
+      ]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    networks: [internal]
+
+  # One-shot: applies forward-only migrations with the migrator role before
+  # the API starts. Re-run on every release; exits 0 when nothing is pending.
+  migrate:
+    image: ${CVG_REGISTRY}/cvg-api-migrator:${CVG_IMAGE_TAG}
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://cvg:${CVG_MIGRATOR_DB_PASSWORD}@postgres:5432/cvg
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    networks: [internal]
+
+  # One-shot, idempotent: creates/updates the runtime role `cvg_app`
+  # (NOSUPERUSER NOBYPASSRLS, per-table grants, statement timeouts) and the
+  # operations role `cvg_admin` (BYPASSRLS, restore/support only) with the
+  # same audited matrix used in CI and in the restore drill. Variable names
+  # follow the script's contract (CVG_TEST_* = target role URLs).
+  provision:
+    image: ${CVG_REGISTRY}/cvg-api-migrator:${CVG_IMAGE_TAG}
+    command: ["node", "scripts/provision-ci-postgres.mjs"]
+    environment:
+      NODE_ENV: production
+      CVG_MIGRATION_DATABASE_URL: postgresql://cvg:${CVG_MIGRATOR_DB_PASSWORD}@postgres:5432/cvg
+      CVG_TEST_DATABASE_URL: postgresql://cvg_app:${CVG_APP_DB_PASSWORD}@postgres:5432/cvg
+      CVG_TEST_ADMIN_DATABASE_URL: postgresql://cvg_admin:${CVG_ADMIN_DB_PASSWORD}@postgres:5432/cvg
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+    networks: [internal]
+
+  api:
+    image: ${CVG_REGISTRY}/cvg-api:${CVG_IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      API_HOST: 0.0.0.0
+      API_PORT: "3000"
+      WEB_ORIGINS: ${CVG_PUBLIC_ORIGIN}
+      TRUSTED_PROXIES: ${CVG_TRUSTED_PROXIES:-}
+      CVG_RATE_LIMIT_BACKEND: redis
+      CVG_RATE_LIMIT_REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      provision:
+        condition: service_completed_successfully
+    networks: [internal]
+
+  worker:
+    image: ${CVG_REGISTRY}/cvg-worker:${CVG_IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      provision:
+        condition: service_completed_successfully
+    networks: [internal]
+
+  web:
+    image: ${CVG_REGISTRY}/cvg-web:${CVG_IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3100"
+      HOSTNAME: 0.0.0.0
+      CVG_API_INTERNAL_URL: http://api:3000
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [internal, edge]
+
+  # TLS termination. Replace with the managed load balancer of the provider
+  # when one exists; keep HTTPS-only and HSTS either way.
+  caddy:
+    image: caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
+    restart: unless-stopped
+    environment:
+      CVG_PUBLIC_HOST: ${CVG_PUBLIC_HOST}
+      CVG_ACME_EMAIL: ${CVG_ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    networks: [edge]
+
+  # Hourly verified pg_dump with retention (RPO <= 1 h, RNF-015/D-107).
+  # Ship /backups off-host (object storage with versioning) — see
+  # docs/runbooks/backup-postgres.md.
+  backup:
+    image: postgres:16.15-bookworm@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/opt/cvg/backup.sh"]
+    environment:
+      CVG_BACKUP_DATABASE_URL: postgresql://cvg:${CVG_MIGRATOR_DB_PASSWORD}@postgres:5432/cvg
+      CVG_BACKUP_DIR: /backups
+      CVG_BACKUP_INTERVAL_SECONDS: ${CVG_BACKUP_INTERVAL_SECONDS:-3600}
+      CVG_BACKUP_RETENTION_DAYS: ${CVG_BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - ./backup/backup.sh:/opt/cvg/backup.sh:ro
+      - ${CVG_BACKUP_HOST_DIR:-./backups}:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [internal]
+
+  otel-collector:
+    profiles: [observability]
+    image: otel/opentelemetry-collector-contrib:0.162.0@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./observability/otel-collector.yaml:/etc/otelcol/config.yaml:ro
+    networks: [internal]
+
+  blackbox:
+    profiles: [observability]
+    image: prom/blackbox-exporter:v0.29.0@sha256:9613f2884689b6fad9f1939f6a3b0388c93a022cfaededb19545b329b5c83dea
+    restart: unless-stopped
+    volumes:
+      - ./observability/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    networks: [internal]
+
+  prometheus:
+    profiles: [observability]
+    image: prom/prometheus:v3.15.0@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e
+    restart: unless-stopped
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - promdata:/prometheus
+    networks: [internal]
+
+  alertmanager:
+    profiles: [observability]
+    image: prom/alertmanager:v0.34.1@sha256:e9733bafb1bdef9b00e25a21f8f99dc26a22224bf16641ad754d1649f4c3357a
+    restart: unless-stopped
+    environment:
+      CVG_ALERT_WEBHOOK_URL: ${CVG_ALERT_WEBHOOK_URL:-}
+    volumes:
+      - ./observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks: [internal]
+
+volumes:
+  pgdata:
+  redisdata:
+  caddydata:
+  caddyconfig:
+  promdata:
+
+networks:
+  internal:
+    internal: true
+  edge:

@@ -3505,3 +3505,52 @@ permanece histórica; as 51 notas consultivas não são rebaseline AAA.
 - last_completed_action: commit `85efec0` + gates pós-commit verdes; next_action: P1 produtor nativo (exige PRD/SPEC), consumer histórico, integração live, mutação do candidato e fresh critic.
 - evidence: .agent/artifacts/remediation-20261003/r63-p2p3-summative/post-commit-gates.log; r63-p2p3-summative/verify-full.log.
 - Sem push/deploy/publicação/clínica/G07/global accept; REM-06/H-CONTENT/same-UID/remote/AAA-001 seguem decisões humanas específicas.
+
+## 2026-10-07 — Prontidão para produção (PROD-M01…M27)
+
+Origem: `docs/audits/production-readiness-audit-2026-10-07.md` (31 achados) e
+`docs/audits/production-readiness-implementation-2026-10-07.md` (rodada de
+implementação). Checklist viva em `docs/operations/production-readiness-checklist.md`.
+Nenhum item abaixo autoriza produção, piloto ou publicação clínica.
+
+| Item | Título | Status | Evidência / dependência |
+|---|---|---|---|
+| PROD-M01 | Responder pacote AAA-001 (D1–D7) | COMPLETED (decisão) | `docs/decisions/2026-10-08-production-unblock.md`; evidência operacional/piloto ainda pendente |
+| PROD-M02 | Decidir REM-06 e fechar somativa nativa | READY_FOR_NEXT_STEP (PRD/SPEC) | boundary aprovado; fontes e implementação nativas continuam pendentes |
+| PROD-M03 | Publicar conteúdo clínico do piloto (H-CONTENT) | IN_PROGRESS (revisão aberta) / WAITING_HUMAN_APPROVAL (publicação) | pacote interno `docs/clinical/review-m02-b07-2026-10-08.md`; 0/153 revisados nesta rodada |
+| PROD-M04 | Artefato implantável (Dockerfiles api/migrator/worker/web) | COMPLETED (local) | `apps/*/Dockerfile`, `.dockerignore`, build local; execução remota pendente de H-REMOTE |
+| PROD-M05 | Provisionar homologação e produção | BLOCKED (dados/acesso) | VPS dedicada escolhida; provedor/região/capacidade/DNS/acesso pendentes; `docs/operations/homologation-vps.md` |
+| PROD-M06 | Backup automatizado e restore ensaiado | COMPLETED (mecanismo) / BLOCKED (medição) | `deploy/backup/backup.sh` + testes + runbook; RPO/RTO reais dependem de M05 |
+| PROD-M07 | CI remota verde no mesmo SHA | IN_PROGRESS | push/workflows autorizados explicitamente; execuções/verdes ainda pendentes; T01/T02 no backlog 61 |
+| PROD-M08 | Pipeline de release com assinatura | COMPLETED (definição) | `.github/workflows/release.yml`, `docs/operations/deploy.md`; primeira execução pendente de H-REMOTE |
+| PROD-M09 | Corrigir `sharp` e `source-map-js` | COMPLETED | overrides no `package.json`; `pnpm audit --prod --audit-level=high` limpo |
+| PROD-M10 | Observabilidade ligada | COMPLETED (configuração) / BLOCKED (teste real) | `deploy/observability/*`, `docs/operations/alerting.md`; alerta sintético exige M05 |
+| PROD-M11 | Entrega de convite e recuperação | COMPLETED (procedimento) | `docs/runbooks/invitation-delivery.md`; provedor de e-mail é feature com PRD/SPEC |
+| PROD-M12 | Fechar correções de jornada herdadas T13–T22 | IN_PROGRESS | backlog 61 (fontes sob hold de outras rodadas; não tocadas aqui) |
+| PROD-M13 | Re-congelar candidato no HEAD | READY_FOR_NEXT_STEP | exige Stryker/k6/RLS/Redis/staging locais (horas) e commit do candidato |
+| PROD-M14 | Medir RPO/RTO e carga | BLOCKED | M05 |
+| PROD-M15 | Topologia HTTPS real com `TRUSTED_PROXIES` | BLOCKED | M05; `deploy/caddy/Caddyfile` preparado |
+| PROD-M16 | Aceitação manual e leitor de tela | BLOCKED | M05 + colaboradores do CVG |
+| PROD-M17 | IA e Qdrant desligados no go-live | COMPLETED (default) | `deploy/.env.example` com `AI_ENABLED=false`, `QDRANT_ENABLED=false`; decisão de ligar permanece humana |
+| PROD-M18 | Branch protection, CODEOWNERS reais | IN_PROGRESS | `.github/CODEOWNERS` preenchido; regras do GitHub exigem ação remota autorizada |
+| PROD-M19 | Freshness ignora screenshots gerados | COMPLETED | `scripts/evidence-freshness.mjs` + teste em `tests/integration/evidence-freshness.test.ts` |
+| PROD-M20 | Evidência pesada fora do índice | COMPLETED | `.gitignore` (`.agent/artifacts/remediation-20261003/`, `.opencode/`, `.orchestrate/`) |
+| PROD-M21 | Procedimentos LGPD | COMPLETED (documento) | `docs/security/lgpd-procedures.md`; endpoint de exclusão é feature com PRD/SPEC |
+| PROD-M22 | Rate limiter fail-closed com 429 | COMPLETED (verificado no código existente) | `apps/api/src/server.ts` `checkRateLimit` e `createRateLimitGuard` já negam em falha do backend; RF-11 permanece registrado até prova live |
+| PROD-M23 | Trilha para negações sem escopo (T24) | IN_PROGRESS | backlog 61 T24 (fonte sob hold) |
+| PROD-M24 | Gestão de segredos | COMPLETED (documento) | `docs/security/secrets-management.md`; ensaio de rotação exige M05 |
+| PROD-M25 | Decompor páginas web extensas | PENDENTE | T07 do backlog 61; não iniciado nesta rodada por risco de conflito |
+| PROD-M26 | Typecheck dos testes raiz | COMPLETED (já vigente) | `pnpm typecheck` inclui `tsc -p tsconfig.tests.json` (T08) |
+| PROD-M27 | Node 22 nos shells; arquivar checkpoints | PENDENTE | `.nvmrc` existe; arquivamento do estado é tarefa documental separada |
+
+## 2026-10-08 — PROD-UNBLOCK: decisões recebidas
+
+- AAA-001 D1–D7 respondido; D3 mantém RPO ≤1h/RTO ≤4h e D7 passa a usar
+  candidato atual em main. A decisão não fecha gates de operação ou piloto.
+- REM-06: boundary server-side aprovado; detalhar fontes/contratos PRD/SPEC
+  antes de código. Somativa nativa e produtor de evidência crítica não concluídos.
+- H-REMOTE: commit/push/quality/security autorizados; release após ambos verdes
+  same-SHA. Resultados serão registrados após execução real.
+- H-CONTENT: abertura autorizada M02→B-07, revisão humana por item pendente;
+  publicação continua bloqueada. VPS dedicada escolhida sem dados/acesso ainda.
+- Evidência: `docs/decisions/2026-10-08-production-unblock.md`.

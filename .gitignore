@@ -33,3 +33,8 @@ reports/mutation-bounded/
 
 # Browser test run artifacts (failure screenshots and geometry dumps)
 apps/web/tests/__screenshots__/
+
+# Session/evidence state of local agents (never tracked; see docs/audits/production-readiness-audit-2026-10-07.md M20)
+.agent/artifacts/remediation-20261003/
+.opencode/
+.orchestrate/

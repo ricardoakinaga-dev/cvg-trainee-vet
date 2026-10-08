@@ -1,0 +1,21 @@
+# Routes every alert to one webhook receiver (chat, pager or e-mail bridge).
+# The receiver owner is named in docs/operations/alerting.md.
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: cvg-ops
+  group_by: [alertname]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers: [severity="critical"]
+      receiver: cvg-ops
+      repeat_interval: 1h
+
+receivers:
+  - name: cvg-ops
+    webhook_configs:
+      - url: ${CVG_ALERT_WEBHOOK_URL}
+        send_resolved: true

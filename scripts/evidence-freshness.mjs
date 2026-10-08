@@ -94,6 +94,8 @@ export async function dirtyRuntimePaths(root) {
         "playwright-report",
         "test-results",
         ".stryker-tmp",
+        // Browser-test failure screenshots and geometry dumps (generated).
+        "__screenshots__",
       ].flatMap((directory) => [
         `--exclude=${directory}/**`,
         `--exclude=**/${directory}/**`,

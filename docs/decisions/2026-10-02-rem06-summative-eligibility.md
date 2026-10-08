@@ -1,11 +1,12 @@
 # AUDIT-REM-06 — Proposta de contrato para elegibilidade somativa
 
-- **Status:** `WAITING_HUMAN_APPROVAL` — proposta técnica, ainda não aprovada.
+- **Status:** `READY_FOR_NEXT_STEP` — boundary aprovado por Ricardo em 2026-10-08; detalhamento de fontes/contratos PRD/SPEC pendente.
+- **Decisão:** `docs/decisions/2026-10-08-production-unblock.md` — resposta explícita “Aprovo boundary proposto”.
 - **Responsável pela decisão:** Ricardo.
 - **Origem:** AUDIT-20261001-06; PRD UC-006, RF-041/RF-043–047,
   RN-020–022/RN-026–029; SPEC 0104/0106/0107.
 
-## Evidência atual
+## Evidência do levantamento original — 2026-10-02
 
 - **CURRENT — produto:** UC-006 exige módulo concluído e elegibilidade
   satisfeita. O PRD distingue atividades formativas e somativas, fixa limites
@@ -46,8 +47,12 @@ Ricardo autoriza este boundary server-side para AUDIT-REM-06 — incluindo a
 preservação do fluxo formativo e falha fechada quando faltar contexto somativo
 obrigatório? Se não, indicar a fonte autoritativa ou o boundary desejado.
 
-## Efeito enquanto aguarda
+## Efeito da decisão — 2026-10-08
 
-AUDIT-REM-06 permanece `WAITING_HUMAN_APPROVAL`. Não alterar código, contratos
-ou persistência de elegibilidade somativa até a decisão; tarefas independentes
-podem continuar.
+O boundary server-side proposto foi autorizado, incluindo preservação do
+formativo e negação do somativo incompleto. A pendência humana desta proposta
+está resolvida; AUDIT-REM-06 continua trabalho técnico aberto. Próximo passo:
+contratar fontes persistidas de modalidade, versões, itens, histórico e
+elegibilidade em PRD/SPEC, com rastreabilidade e testes, antes da implementação.
+O provedor somativo ligado em R63 continua fail-closed; aprovação desta decisão
+não cria evidência crítica autenticada nem autoriza publicação clínica.

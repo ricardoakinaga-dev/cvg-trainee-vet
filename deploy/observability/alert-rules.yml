@@ -1,0 +1,43 @@
+groups:
+  - name: cvg-availability
+    rules:
+      - alert: CvgApiNotLive
+        expr: probe_success{instance="http://api:3000/health/live"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          runbook: docs/runbooks/api-down.md
+        annotations:
+          summary: "API liveness probe failing"
+      - alert: CvgPostgresNotReady
+        expr: probe_success{instance="http://api:3000/health/ready"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          runbook: docs/runbooks/database-down.md
+        annotations:
+          summary: "Readiness failing: PostgreSQL, migration head or configuration (postgres_not_ready)"
+      - alert: CvgDependenciesDegraded
+        expr: probe_success{instance="http://api:3000/health/dependencies"} == 0
+        for: 10m
+        labels:
+          severity: warning
+          runbook: docs/runbooks/qdrant-down.md
+        annotations:
+          summary: "Dependency health not 200 for 10m (Qdrant/IA/outbox degraded)"
+      - alert: CvgWebDown
+        expr: probe_success{instance="http://web:3100/"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          runbook: docs/runbooks/failed-deploy.md
+        annotations:
+          summary: "Web front-end not responding"
+      - alert: CvgProbeLatencyHigh
+        expr: probe_duration_seconds{instance="http://api:3000/health/ready"} > 1.5
+        for: 5m
+        labels:
+          severity: warning
+          runbook: docs/operations/slo.md
+        annotations:
+          summary: "Readiness latency above the mutation SLO budget (1.5 s)"

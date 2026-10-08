@@ -153,10 +153,25 @@ function parseTrustedProxies(value: string | undefined): readonly string[] {
   return Object.freeze([...new Set(entries)]);
 }
 
+/**
+ * Container orchestrators and env files deliver unset optional settings as
+ * empty strings. A blank value is treated as absent so that `.optional()`
+ * settings stay optional; required settings still fail closed because an
+ * absent value is rejected by the schema or by the explicit checks below.
+ */
+function withoutBlankValues(environment: EnvironmentInput): EnvironmentInput {
+  const entries = Object.entries(environment).filter(
+    ([, value]) => value !== undefined && value.trim().length > 0,
+  );
+  return Object.fromEntries(entries);
+}
+
 export function loadRuntimeConfig(
   environment: EnvironmentInput,
 ): RuntimeConfig {
-  const parsed = rawEnvironmentSchema.safeParse(environment);
+  const parsed = rawEnvironmentSchema.safeParse(
+    withoutBlankValues(environment),
+  );
 
   if (!parsed.success) {
     const fields = parsed.error.issues.map(
