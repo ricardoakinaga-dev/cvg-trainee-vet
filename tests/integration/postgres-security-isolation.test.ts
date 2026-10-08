@@ -129,6 +129,8 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
         "public.cvg_learning_activity_assignment_write_allowed(uuid,uuid,uuid,text,text)",
         "public.cvg_learning_activity_journey_visible(uuid,text)",
         "public.cvg_learning_activity_scope_for_participant(uuid,text)",
+        "public.cvg_curriculum_attempt_context(uuid)",
+        "public.cvg_validate_frozen_answer_response(jsonb,text)",
       ] as const;
 
       try {
@@ -145,8 +147,11 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           await admin.db.execute(
             sql.raw(`grant usage on schema public to ${role}`),
           );
+          // Attempt start locks the published activity, its items and the
+          // bound content (`FOR UPDATE` capture-lock policies of 0056), so the
+          // participant path needs UPDATE besides SELECT on those rows.
           await admin.db.execute(
-            sql.raw(`grant select on learning_activities to ${role}`),
+            sql.raw(`grant select, update on learning_activities to ${role}`),
           );
           await admin.db.execute(
             sql.raw(`grant select on activity_assignments to ${role}`),
@@ -158,7 +163,32 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
           }
           for (const table of ["content_versions", "learning_activity_items"]) {
             await admin.db.execute(
+              sql.raw(`grant select, update on ${table} to ${role}`),
+            );
+          }
+          // Curriculum read model consulted by availability/RLS predicates.
+          for (const table of [
+            "curriculum_blueprint_versions",
+            "curriculum_form_versions",
+            "curriculum_form_items",
+            "curriculum_activity_forms",
+          ]) {
+            await admin.db.execute(
               sql.raw(`grant select on ${table} to ${role}`),
+            );
+          }
+          // Append-only curriculum capture and module-obligation storage,
+          // mirroring the application matrix (SELECT, INSERT only).
+          for (const table of [
+            "curriculum_attempt_forms",
+            "curriculum_attempt_items",
+            "curriculum_module_blueprint_versions",
+            "curriculum_module_obligation_manifests",
+            "curriculum_assignment_obligations",
+            "curriculum_module_completion_receipts",
+          ]) {
+            await admin.db.execute(
+              sql.raw(`grant select, insert on ${table} to ${role}`),
             );
           }
           for (const procedure of rlsHelperFunctions) {
@@ -761,6 +791,16 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
             "rate_limit_buckets",
             "outbox_events",
             "audit_entries",
+            "curriculum_blueprint_versions",
+            "curriculum_form_versions",
+            "curriculum_form_items",
+            "curriculum_activity_forms",
+            "curriculum_attempt_forms",
+            "curriculum_attempt_items",
+            "curriculum_module_blueprint_versions",
+            "curriculum_module_obligation_manifests",
+            "curriculum_assignment_obligations",
+            "curriculum_module_completion_receipts",
           ]) {
             await admin.db.execute(
               sql.raw(`revoke all privileges on ${table} from ${role}`),

@@ -11,7 +11,23 @@
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
-## CHECKPOINT PREVALENTE — Destravamento e CI remoto em 2026-10-08T03:21:04Z
+## CHECKPOINT PREVALENTE — Remediação CI-LIVE-01…05 da integração PostgreSQL real em 2026-10-08T05:10:00Z
+
+- current_engine: BUILD ENGINE / RUNTIME CONTROLLER
+- current_phase: FIX_RETEST; os 46 testes live que falharam no run remoto `quality` 37719804195 (SHA `112b720`) foram reproduzidos em PostgreSQL 18.4 descartável e corrigidos com TDD; commit e push autorizados pelas decisões Git/H-REMOTE já registradas.
+- current_task: CI-LIVE-REMEDIATION-20261008 (continuação de PROD-UNBLOCK-20261008; tasks T01/G08/M07).
+- status: IN_PROGRESS
+- last_completed_action: RED local 40/46 reproduzido com o ambiente da etapa live; correções: (01) `CVG_OWNED_DISPOSABLE_BINDING_DATABASE=true` declarado na etapa live de `quality.yml`/`candidate.yml` (serviço PostgreSQL do job é banco próprio e descartável) e `postgres-module-obligations` (prova nativa R59) com `describe.skipIf` sem `CVG_R59_RUN_DIRECTORY`, registrado em `docs/quality/skip-inventory.md`; (02) `applicationTablePrivileges` com `SELECT, INSERT` nas quatro tabelas da 0058, matriz do teste de governança e inventário de schema (`module-obligation-schema.ts`) alinhados, role restrito de `postgres-security-isolation` com os grants de currículo e `FOR UPDATE` das políticas de captura; (03) limpeza do evento de recálculo no teste de appeal, quarentena explícita de eventos pendentes de outras suítes no fencing e asserção do papel admin alinhada ao contrato `NOSUPERUSER BYPASSRLS`; (04) `createCorrectionOperations` restaura o contexto de staff após `triggerModuleCompletionOnCorrection` (RED wiring → GREEN 24/24); (05) `ATRIBUIDO` incluído nos predicados de autoridade/ordenação da jornada (RED unit → GREEN 41/41). Live local completo em banco recém-criado: 879 PASS / 103 skip; `migration-governance` 28/28 após ajuste do inventário; `triple-aaa-verifier` 177/177 isolado (timeouts só sob carga concorrente). Unit 2860 PASS; lint/typecheck/format/ci-contract/secrets/documentation PASS. Browser, e2e e verificador isolado: browser 290/290, e2e 45/45, `triple-aaa-verifier` isolado 177/177.
+- next_action: commit + push do SHA remediado; acompanhar `quality`/`security` remotos até verde no mesmo SHA; registrar run IDs; depois dispatch manual de `release` (já autorizado) e continuidade G08/M07.
+- blockers: nenhum técnico local; `quality` remoto ainda não executado no SHA remediado. Divergências PG18/PG16 não observadas nesta rodada.
+- human_decision_required: no (autorizações Git/H-REMOTE vigentes); permanecem pendentes de Ricardo os dados da VPS, segundo contato de alertas e a revisão clínica M02/B-07.
+- active_execplan: .agent/plans/2026-10-03-remediation-execution.md
+- active_action_id: CI-LIVE-REMEDIATION-20261008
+- last_update: 2026-10-08T05:10:00Z
+- evidence: docs/operations/remote-ci-2026-10-08.md (seção "Remediação executada"); docs/quality/skip-inventory.md (adendo 2026-10-08); docs/61_backlog_repository_remediation_2026-10-03.md (T01).
+- head: commit desta rodada em preparação; SHA e run IDs remotos registrados na entrada seguinte
+
+## CHECKPOINT ANTERIOR — Destravamento e CI remoto em 2026-10-08T03:21:04Z
 
 - current_engine: BUILD ENGINE / RUNTIME CONTROLLER
 - current_phase: FIX_RETEST; decisões e commit/push concluídos; release bloqueada por integração PostgreSQL real vermelha.

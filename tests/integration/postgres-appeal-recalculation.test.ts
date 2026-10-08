@@ -224,7 +224,13 @@ describe.skipIf(!runLiveDatabaseTests || liveDatabaseUrl === undefined)(
       } finally {
         // The history is append-only by design. This suite runs against a
         // disposable database, so retaining this synthetic aggregate is safer
-        // than weakening the trigger for fixture cleanup.
+        // than weakening the trigger for fixture cleanup. The outbox event it
+        // enqueued is operational state, not history: it is removed so that
+        // later suites measuring the shared outbox (worker fencing) only see
+        // their own events.
+        await admin.db
+          .delete(outboxEvents)
+          .where(eq(outboxEvents.aggregateId, appealId));
         await closeLivePostgresHarness(harness);
       }
     });

@@ -64,6 +64,45 @@ function repository(
 }
 
 describe("participant learning journey use case", () => {
+  it("targets a freshly assigned (ATRIBUIDO) activity when the next action is to start it", async () => {
+    // Adaptive assignment links the activity as ATRIBUIDO before any attempt;
+    // the projection already derives INICIAR_ATIVIDADE for it, so the journey
+    // must point at that activity instead of leaving the target undefined.
+    const value: ParticipantLearningJourneyState = {
+      ...state,
+      // M01 has no predecessor, so no prerequisite can block the start.
+      assignments: [
+        {
+          ...assignment,
+          state: { ...assignment.state, moduleId: "M01", status: "ATRIBUIDO" },
+        },
+      ],
+      activities: [
+        {
+          ...(() => {
+            const { attemptStatus: _unstarted, ...rest } = activity;
+            void _unstarted;
+            return rest;
+          })(),
+          moduleId: "M01",
+          status: "ATRIBUIDO",
+          nextAction: "INICIAR_ATIVIDADE",
+        },
+      ],
+      runtimes: [],
+      completionReceipts: [],
+    };
+    await expect(
+      getParticipantLearningJourney(
+        { participantId, scopeIds: [scopeId] },
+        repository(value),
+      ),
+    ).resolves.toMatchObject({
+      nextAction: "INICIAR_ATIVIDADE",
+      nextActionTarget: { kind: "ACTIVITY", activityId },
+    });
+  });
+
   it.each([false, true])(
     "prioritizes unevaluated mandatory work over completed-module retention; reversed=%s",
     async (reversed) => {

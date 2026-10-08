@@ -39,3 +39,18 @@ Todos os 32 `describe.skipIf` em `tests/integration/` + skips internos via
   (`liveAdminCapabilityMessage`) ou a condição `skipIf` explícita.
 - Skips **não** promovem release: o contrato same-SHA (§42) exige runs
   `quality`/`security` verdes no CI com serviços live provisionados.
+
+## Adendo 2026-10-08 — prova nativa R59 fora do runner próprio
+
+`tests/integration/postgres-module-obligations.test.ts` (R59, storage nativo
+da migration 0058) passou a usar `describe.skipIf` quando
+`CVG_R59_RUN_DIRECTORY` está ausente, além da condição de live. Classe:
+**environmental**. A suíte exige o runner nativo próprio (`cluster-ownership.json`
+e `checkpoint.json` aprovados, PostgreSQL 18.4, papéis/banco dedicados) e, em
+runs live ordinários (serviço PostgreSQL 16 da CI, bancos de desenvolvedor),
+abortava no `beforeAll` com "Owned native checkpoint runner required" em vez de
+pular — o que derrubava a esteira `quality` sem medir nada. A cobertura dos
+grants e das políticas RLS da 0058 em runs ordinários fica a cargo da matriz
+RLS live (`pnpm test:rls:live`), de `postgres-security-isolation`,
+`postgres-learning-state` e das suítes de currículo/jornada. A prova nativa
+continua sendo executada apenas pelo runner R59 registrado no log mestre.

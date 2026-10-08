@@ -495,6 +495,33 @@ describe("module obligation wiring: automatic completion receipt on correction",
     expect(correctionAudit).toHaveLength(1);
   });
 
+  it("restores the staff scope context after the completion step before the idempotency record", async () => {
+    const { fake, dependencies } = createFake({
+      summativeApproval: summativeApproval,
+    });
+
+    await correctOpenResponse(command(), dependencies);
+
+    const storeIndex = fake.operations.findIndex(
+      (op) => op.kind === "insert" && op.table === "assessment_idempotency",
+    );
+    expect(storeIndex).toBeGreaterThan(-1);
+    const contexts = fake.operations
+      .slice(0, storeIndex)
+      .filter(
+        (op) =>
+          op.kind === "execute" &&
+          (op.sql ?? "").includes("set_config('cvg.participant_id'"),
+      );
+    expect(contexts.length).toBeGreaterThan(1);
+    // The completion step legitimately switches to the participant context
+    // for its receipt policies; the correction transaction must be back on
+    // the staff scope (no participant) when it records idempotency, because
+    // the assessment_idempotency insert policy is a staff-scope policy.
+    expect(contexts.some((op) => op.params?.[0] === participantId)).toBe(true);
+    expect(contexts.at(-1)?.params?.slice(0, 2)).toEqual(["", scopeId]);
+  });
+
   it("leaves no receipt and no audit proof when the transaction aborts", async () => {
     const { fake, dependencies } = createFake({
       summativeApproval: summativeApproval,

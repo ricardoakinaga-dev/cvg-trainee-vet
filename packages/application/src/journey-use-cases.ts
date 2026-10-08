@@ -165,7 +165,9 @@ function isAuthorizedModuleActivity(
   return (
     candidate.scopeId === context.scopeId &&
     candidate.moduleId === context.moduleId &&
-    ["DISPONIVEL", "EM_ANDAMENTO", "EM_REFORCO"].includes(candidate.status) &&
+    ["ATRIBUIDO", "DISPONIVEL", "EM_ANDAMENTO", "EM_REFORCO"].includes(
+      candidate.status,
+    ) &&
     ["INICIAR_ATIVIDADE", "RETOMAR_ATIVIDADE", "AGUARDAR_CORRECAO"].includes(
       candidate.nextAction,
     ) &&
@@ -213,7 +215,7 @@ function compareAuthorizedActivities(
   const humanPriority =
     Number(right.nextAction === "AGUARDAR_CORRECAO") -
     Number(left.nextAction === "AGUARDAR_CORRECAO");
-  const statuses = ["EM_REFORCO", "EM_ANDAMENTO", "DISPONIVEL"];
+  const statuses = ["EM_REFORCO", "EM_ANDAMENTO", "DISPONIVEL", "ATRIBUIDO"];
   return (
     humanPriority ||
     statuses.indexOf(left.status) - statuses.indexOf(right.status) ||
@@ -251,7 +253,14 @@ function deriveActualPendingDecision(
 ):
   | Readonly<{ action: JourneyNextAction; target?: JourneyNextActionTarget }>
   | undefined {
-  const statuses = ["EM_REFORCO", "EM_ANDAMENTO", "DISPONIVEL"] as const;
+  // A freshly linked activity (ATRIBUIDO) is startable: the projection maps it
+  // to INICIAR_ATIVIDADE (deriveProgressNextAction), so it is a valid target.
+  const statuses = [
+    "EM_REFORCO",
+    "EM_ANDAMENTO",
+    "DISPONIVEL",
+    "ATRIBUIDO",
+  ] as const;
   const activity = statuses.flatMap((status) =>
     state.activities
       .filter(

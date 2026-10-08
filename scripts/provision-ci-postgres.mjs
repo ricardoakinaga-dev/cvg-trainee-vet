@@ -189,6 +189,14 @@ export const applicationTablePrivileges = Object.freeze({
   curriculum_activity_forms: Object.freeze(["SELECT"]),
   curriculum_attempt_forms: Object.freeze(["SELECT", "INSERT"]),
   curriculum_attempt_items: Object.freeze(["SELECT", "INSERT"]),
+  // Migration 0058 (module obligations): immutable, append-only storage.
+  // The application publishes blueprints/manifests, binds obligations at the
+  // original start and records completion receipts; it never updates,
+  // deletes or truncates these rows (RLS policies only define INSERT/SELECT).
+  curriculum_module_blueprint_versions: Object.freeze(["SELECT", "INSERT"]),
+  curriculum_module_obligation_manifests: Object.freeze(["SELECT", "INSERT"]),
+  curriculum_assignment_obligations: Object.freeze(["SELECT", "INSERT"]),
+  curriculum_module_completion_receipts: Object.freeze(["SELECT", "INSERT"]),
   diagnostic_results: Object.freeze(["SELECT", "INSERT", "UPDATE", "DELETE"]),
   diagnostic_sessions: Object.freeze(["SELECT", "INSERT", "UPDATE"]),
   diagnostic_session_answers: Object.freeze([

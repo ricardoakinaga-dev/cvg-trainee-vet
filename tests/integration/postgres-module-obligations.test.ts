@@ -920,9 +920,14 @@ if (phase === "red58") {
     });
   });
 } else {
-  // Reachable by the official integration glob; ordinary non-native runs opt out.
-  describe.skipIf(process.env.CVG_RUN_LIVE_DB_TESTS !== "true")(
-    "R59 proposed module obligation native storage",
-    defineGreen,
-  );
+  // Reachable by the official integration glob; ordinary live runs (CI
+  // service container, developer databases) opt out because this proof is
+  // executed only by its owned native checkpoint runner, which provides
+  // CVG_R59_RUN_DIRECTORY with cluster ownership and an approved checkpoint.
+  // The 0058 grants and RLS of ordinary runs are covered by the live RLS
+  // matrix and the curriculum/journey suites.
+  describe.skipIf(
+    process.env.CVG_RUN_LIVE_DB_TESTS !== "true" ||
+      !process.env.CVG_R59_RUN_DIRECTORY,
+  )("R59 proposed module obligation native storage", defineGreen);
 }

@@ -57,6 +57,28 @@ describe.skipIf(
       second = createPostgresDatabase(liveDatabaseUrl);
       ids = [];
       contentIds = [];
+      // This suite measures claim/lease totals over the shared outbox, so
+      // the window must start empty. Earlier live suites exercise real use
+      // cases (attempt/answer/appeal events) against the same disposable
+      // database and legitimately leave operational outbox rows behind; they
+      // are not audit or immutable history. Quarantine them here with the
+      // administrative role and say so, instead of counting them as ours.
+      const foreign = await harness.admin.db
+        .select({ id: outboxEvents.id, eventType: outboxEvents.eventType })
+        .from(outboxEvents)
+        .where(inArray(outboxEvents.status, ["PENDING", "PROCESSING"]));
+      if (foreign.length > 0) {
+        await harness.admin.db.delete(outboxEvents).where(
+          inArray(
+            outboxEvents.id,
+            foreign.map((event) => event.id),
+          ),
+        );
+        const summary = [...new Set(foreign.map((event) => event.eventType))];
+        console.warn(
+          `worker fencing: removed ${foreign.length} pending outbox event(s) left by earlier suites (${summary.join(", ")})`,
+        );
+      }
     });
     afterEach(async () => {
       await harness.admin.db
@@ -151,7 +173,12 @@ describe.skipIf(
         canCreateDatabases: false,
         canReplicate: false,
       });
-      expect(harness.adminRole.isSuperuser).toBe(true);
+      // Harness contract (provision-ci-postgres.mjs): the administrative
+      // role is NOSUPERUSER with BYPASSRLS, dedicated to fixture cleanup.
+      expect(harness.adminRole).toMatchObject({
+        isSuperuser: false,
+        bypassesRls: true,
+      });
       expect(harness.applicationRole.roleName).not.toBe(
         harness.adminRole.roleName,
       );

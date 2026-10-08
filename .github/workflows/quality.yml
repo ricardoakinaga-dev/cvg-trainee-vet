@@ -107,6 +107,12 @@ jobs:
         run: node scripts/provision-ci-postgres.mjs
 
       - name: Run live PostgreSQL integration tests
+        # The PostgreSQL service container is created for this job and
+        # destroyed with it: an owned, disposable database by construction.
+        # Immutable synthetic fixtures (curriculum provenance/start/evaluation)
+        # refuse to run anywhere else.
+        env:
+          CVG_OWNED_DISPOSABLE_BINDING_DATABASE: "true"
         run: pnpm test:integration:live
 
       - name: Run live Qdrant integration tests

@@ -121,7 +121,7 @@ correção local, geração de evidência e conclusão do próprio workflow.
 ### AUDIT-20261003-T01 — Reconciliar workflows PostgreSQL editoriais
 
 - **Origem / prioridade / dono:** A01; S-APP/S-DATA/S-SEC/S-TEST; P1; backend/dados.
-- **Estado:** IN_PROGRESS — RED PG18.4 capturado; builder reconcilia fixtures editoriais, sem liberar hold.
+- **Estado:** IN_PROGRESS — RED PG18.4 capturado; builder reconcilia fixtures editoriais, sem liberar hold. 2026-10-08: os 46 testes live que falharam na CI remota (SHA `112b720`) foram reproduzidos e corrigidos localmente (CI-LIVE-01…05 em `docs/operations/remote-ci-2026-10-08.md`): flag de banco descartável na etapa live dos workflows, opt-out da prova nativa R59, grants mínimos das tabelas da 0058, limpeza/quarentena de outbox no fencing, contexto de staff restaurado após o gatilho de conclusão e `ATRIBUIDO` como alvo iniciável na jornada; live local 879 PASS; aguarda `quality` remoto verde no SHA do commit.
 - **O que:** eliminar os dois testes live vermelhos sem remover o gate editorial.
 - **Onde:** `tests/integration/postgres-authoring-workflow.test.ts`, `tests/integration/postgres-content-workflow.test.ts`, contratos em `packages/application/src/authoring-use-cases.ts` e `content-use-cases.ts`.
 - **Como:** fornecer idFactory e construir fixtures publicationReady conforme contrato vigente; alterar implementação somente se o RED comprovar defeito nela.

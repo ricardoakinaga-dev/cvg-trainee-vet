@@ -771,6 +771,10 @@ describe("migration governance", () => {
       curriculum_activity_forms: ["SELECT"],
       curriculum_attempt_forms: ["SELECT", "INSERT"],
       curriculum_attempt_items: ["SELECT", "INSERT"],
+      curriculum_module_blueprint_versions: ["SELECT", "INSERT"],
+      curriculum_module_obligation_manifests: ["SELECT", "INSERT"],
+      curriculum_assignment_obligations: ["SELECT", "INSERT"],
+      curriculum_module_completion_receipts: ["SELECT", "INSERT"],
       diagnostic_results: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       diagnostic_sessions: ["SELECT", "INSERT", "UPDATE"],
       diagnostic_session_answers: ["SELECT", "INSERT", "UPDATE", "DELETE"],
@@ -849,17 +853,18 @@ describe("migration governance", () => {
     expect(applicationTablePrivileges).not.toHaveProperty(
       "knowledge_documents",
     );
-    const captureSchema = await readFile(
-      fileURLToPath(
-        new URL(
-          "../../packages/persistence/src/curriculum-attempt-schema.ts",
-          import.meta.url,
-        ),
+    const [captureSchema, obligationSchema] = await Promise.all(
+      [
+        "../../packages/persistence/src/curriculum-attempt-schema.ts",
+        "../../packages/persistence/src/module-obligation-schema.ts",
+      ].map((path) =>
+        readFile(fileURLToPath(new URL(path, import.meta.url)), "utf8"),
       ),
-      "utf8",
     );
     const schemaTableNames = [
-      ...(schema + captureSchema).matchAll(/pgTable\(\s*["']([^"']+)["']/gu),
+      ...(schema + captureSchema + obligationSchema).matchAll(
+        /pgTable\(\s*["']([^"']+)["']/gu,
+      ),
     ]
       .map((match) => match[1])
       .filter((table): table is string => table !== undefined)

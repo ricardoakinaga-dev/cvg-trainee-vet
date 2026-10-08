@@ -240,6 +240,7 @@ function createCorrectionIdempotency(
 function createCorrectionOperations(
   executor: DatabaseExecutor,
   options: CorrectionCompletionOptions,
+  context?: TransactionSecurityContext,
 ): CorrectionTransactionalOperations {
   const attemptOperations = {
     findById: async (attemptId: string): Promise<AttemptState | null> => {
@@ -343,6 +344,13 @@ function createCorrectionOperations(
           },
           options,
         );
+        // The completion step runs under the participant context required by
+        // the receipt policies. Restore the transaction's own (staff scope)
+        // context so later writes, such as the idempotency record, are
+        // evaluated by their staff-scope policies.
+        if (context !== undefined) {
+          await setDatabaseSecurityContext(executor, context);
+        }
       },
     },
   };
@@ -366,7 +374,7 @@ export function createCorrectionUseCaseDependencies(
           if (context !== undefined) {
             await setDatabaseSecurityContext(executor, context);
           }
-          return work(createCorrectionOperations(executor, options));
+          return work(createCorrectionOperations(executor, options, context));
         }),
     },
   });
