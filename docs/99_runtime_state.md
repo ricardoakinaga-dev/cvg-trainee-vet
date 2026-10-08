@@ -25,7 +25,7 @@
 - active_action_id: CI-LIVE-REMEDIATION-20261008
 - last_update: 2026-10-08T05:10:00Z
 - evidence: docs/operations/remote-ci-2026-10-08.md (seção "Remediação executada"); docs/quality/skip-inventory.md (adendo 2026-10-08); docs/61_backlog_repository_remediation_2026-10-03.md (T01).
-- head: commit desta rodada em preparação; SHA e run IDs remotos registrados na entrada seguinte
+- head: `2420ffb` (`main` local); push a origin negado pela permissão desta sessão — executar `git push origin main` para disparar `quality`/`security` no SHA e então registrar os run IDs
 
 ## CHECKPOINT ANTERIOR — Destravamento e CI remoto em 2026-10-08T03:21:04Z
 
