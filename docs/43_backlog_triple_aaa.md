@@ -4,6 +4,13 @@
 **Base canônica:** `BRIEFING/03.BUILD/0302_backlog_master.md` (não substituída; este doc é o snapshot operacional derivado do relatório `docs/40_*`).
 **Regra:** task só avança por evidência corrente. `COMPLETED_WITH_GAPS` não é terminal: gaps viram tasks AAA. Estados: `READY_FOR_NEXT_STEP`, `IN_PROGRESS`, `WAITING_HUMAN_APPROVAL`, `BLOCKED`, `COMPLETED`. Critério de pronto na seção 12.
 
+**Overlay vigente 2026-10-08:** AAA-001 D1–D7 aprovado (decisão concluída),
+H-REMOTE autorizado para quality/security/release após verdes same-SHA,
+revisão AAA-304 aberta M02→B-07. Fonte:
+`docs/decisions/2026-10-08-production-unblock.md`. As tabelas datadas de
+setembro abaixo preservam o snapshot histórico; operação/piloto/publicação
+continuam exigindo seus gates e evidências.
+
 ## 1. Governança (G0)
 
 | ID | P | Status 2026-09-09 | Próximo passo verificável |

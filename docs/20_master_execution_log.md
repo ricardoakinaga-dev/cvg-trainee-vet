@@ -16587,3 +16587,14 @@ IN_PROGRESS — objetivo integral ativo; nenhuma sprint/phase promovida.
 - Patch Next 16.3.8 e lockfile aplicados; `pnpm audit --audit-level=high` PASS (“No known vulnerabilities found”, zero advisories no audit corrente).
 - `pnpm test:e2e` PASS sob Node 22.22.0: build dos 12 workspaces, Next 16.3.8 compilado e 45/45 E2E sintéticos. Format/product-definition/release-evidence/diff-check PASS. Os 46 testes focais, lint/typecheck e gates documentais/segredos do preflight anterior continuam registrados; CI remoto ainda não executado neste checkpoint.
 - Revisão do escopo inclui artefatos de implantação da rodada anterior, dependências corrigidas, decisões humanas, pacote clínico e checklist VPS. Próximo passo: stage apenas dos arquivos pretendidos, commit autorizado e push, seguido da observação dos workflows no SHA exato.
+
+## 2026-10-08 — PROD-UNBLOCK: commit/push e RED remoto do build limpo
+
+- Commit `c14b1ed768d042e8598892b656db61c7ac68e430` em main (46 arquivos, +2523/−195); release traceability PASS pós-commit; push dos cinco commits locais concluído (`3cd7bc3..c14b1ed`), árvore limpa naquele ponto.
+- quality run https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/37713888547 FAIL no typecheck: contratos dist ausentes na primeira compilação do checkout limpo, com TS2307 e erros derivados. Security run https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/37713889133 em andamento; audit/SBOM e OSV já PASS, CodeQL pendente, dependency-review skipped por evento push (comportamento previsto).
+- Reprodução local canônica: `tsc -b --clean && pnpm typecheck` FAIL TS2307 em curriculum/application. Correção mínima: ordenar packages/contracts antes desses pacotes nas referências de `tsconfig.json` (mesma ordem já usada nos Dockerfiles), sem mudar testes/assertions, código de produto ou severidade de gate. Repetir typecheck limpo e publicar novo SHA; não executar release sobre o candidato vermelho.
+
+### PROD-UNBLOCK — GREEN do build limpo
+
+- `tsc -b --clean && pnpm typecheck` PASS com ordem contracts primeiro; inclui web e testes raiz. Security run 37713889133 terminou SUCCESS no SHA c14b1ed (CodeQL, OSV, audit/secrets/SBOM), dependency-review skipped por não ser PR.
+- Backlog BUILD canônico, overlays, REM-06/G02/G08/G09 e checklist sincronizados com as decisões recebidas. G03/same-UID e candidate/AAA global continuam separados. Próximo passo: commit/push do reparo e novos quality/security same-SHA antes de release.

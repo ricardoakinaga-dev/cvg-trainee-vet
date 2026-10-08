@@ -36,6 +36,7 @@ artifacts:
         "apps/web/Dockerfile",
         "apps/web/package.json",
         "pnpm-lock.yaml",
+        "tsconfig.json",
         "deploy/compose.yml",
         ".github/workflows/release.yml",
         "packages/config/src/env.ts",

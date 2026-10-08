@@ -130,8 +130,9 @@ teste de aplicação.
 
 - **Achado:** AUDIT-20261001-06, gap de produto; a auditoria não atribuiu
   severidade P0/P1/P2.
-- **Estado:** WAITING_HUMAN_APPROVAL — revisão PRD/SPEC/runtime encontrou ausência
-  de contrato aprovado para modalidade, versão e fonte de elegibilidade.
+- **Estado:** READY_FOR_NEXT_STEP (PRD/SPEC) — boundary server-side aprovado
+  por Ricardo em 2026-10-08; detalhamento de modalidade, versão e fontes
+  persistidas ainda obrigatório antes de código. Implementação não concluída.
 - **Origem:** SOA-14/15/16; PRD RF-041/043–047, RN-020–022/026 e SPEC 0106.
 - **O que / onde / como:** primeiro localizar o contrato aprovado de
   modalidade, versão e gatilho de elegibilidade; depois propagar os dados e

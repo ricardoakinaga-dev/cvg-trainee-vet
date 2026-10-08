@@ -3,8 +3,8 @@
 **Revisão:** 2026-09-06
 **Plano:** [STATE_OF_THE_ART_MASTER_PLAN.md](STATE_OF_THE_ART_MASTER_PLAN.md)
 **Roadmap:** [0301_roadmap.md](0301_roadmap.md)
-**Status global:** `IN_PROGRESS` — execução técnica local autorizada; G0
-operacional/piloto continua aguardando aprovação humana
+**Status global:** `IN_PROGRESS` — AAA-001 D1–D7 aprovado em 2026-10-08;
+evidência operacional e aprovação de início do piloto continuam pendentes
 **Fonte funcional:** PRD/SPEC em `BRIEFING/09.PROJETO_CVG_TREINAMENTO`
 
 ## 1. Regras do backlog
@@ -97,7 +97,7 @@ rebaseline do Gauntlet e a próxima fatia `AAA-701` continuam pendentes.
 | ID | P | Status | O que / onde / como | Dependências | Validação e pronto |
 | --- | --- | --- | --- | --- | --- |
 | AAA-000 | P0 | COMPLETED | Consolidar plano executivo, roadmap, backlog, baseline e evidências em `BRIEFING/03.BUILD` | SPEC-0190; auditoria 0550 | links resolvem, diff-check passa e os quatro docs apontam para a mesma revisão |
-| AAA-001 | P0 | WAITING_HUMAN_APPROVAL | Aprovar quality bar, metas de SLO/RPO/RTO, capacidade, escopo do piloto e autoridade dos gates | AAA-000 | decisão de Ricardo registrada; sem decisão, nenhuma prova live, publicação clínica, produção, deploy ou piloto começa; fatias locais bounded exigem registro explícito |
+| AAA-001 | P0 | COMPLETED (decisão) | Quality bar, SLO/RPO/RTO, capacidade, escopo e autoridade aprovados por Ricardo em `docs/decisions/2026-10-08-production-unblock.md` | AAA-000 | D1–D7 respondidos; RPO ≤1h/RTO ≤4h; CI/homologação sintéticos autorizados; publicação clínica, evidência operacional e início do piloto mantêm gates próprios |
 | AAA-002 | P0 | COMPLETED | Sincronizar `docs/99_runtime_state.md`, `docs/20_master_execution_log.md`, `docs/30_backlog_master.md` e `traceability.yml` com HEAD atual | AAA-000 | `verify-documentation`, `verify-traceability`, `verify-product-definition` e `git diff --check` passaram; alterações externas foram preservadas |
 | AAA-003 | P1 | READY_FOR_NEXT_STEP | Criar registro de evidência same-SHA para cada gate, com comando, artefato, hash, limitação e revisor | AAA-001 | auditor independente reproduz o índice sem depender da conversa |
 
@@ -133,7 +133,7 @@ rebaseline do Gauntlet e a próxima fatia `AAA-701` continuam pendentes.
 | AAA-301 | P0 | READY_FOR_NEXT_STEP | Versionar conteúdo, validade, checksum, compatibilidade e retirada sem apagar histórico | AAA-300 | migration, contrato, replay de versão e projeção pública passam |
 | AAA-302 | P0 | WAITING_HUMAN_APPROVAL | Produzir B-07 autoral sintético e internamente rastreável conforme blueprint | B07-01; decisão de Ricardo | 120 itens e rubricas passam preflight; nenhuma publicação sem revisão |
 | AAA-303 | P0 | WAITING_HUMAN_APPROVAL | Executar a fatia curricular M02 com cenários fictícios e instrumentos aprovados | CUR-24-01; AAA-302 | protocolo T2, carga, avaliabilidade e decisão humana registrados |
-| AAA-304 | P0 | WAITING_HUMAN_APPROVAL | Revisar clinicamente itens, rubricas, feedback e fontes permitidas | AAA-302/303 | revisão item a item, conflitos resolvidos e gate clínico assinado |
+| AAA-304 | P0 | IN_PROGRESS | Revisão aberta M02→B-07 em `docs/clinical/review-m02-b07-2026-10-08.md`, autorizada por Ricardo | AAA-302/303 | revisão clínica item a item e aprovação ainda pendentes; 0/153 itens revisados nesta rodada, publicação em hold |
 | AAA-305 | P1 | READY_FOR_NEXT_STEP | Criar preflight automático de publicação, exposição, rastreabilidade e redaction | AAA-300/304 | publicação falha fechada para conteúdo incompleto ou proibido |
 
 ## 7. Experiência, acessibilidade e papéis

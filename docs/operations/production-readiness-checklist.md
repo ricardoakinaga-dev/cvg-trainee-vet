@@ -2,19 +2,20 @@
 
 Fonte: `docs/audits/production-readiness-audit-2026-10-07.md` (31 achados,
 27 melhorias). Cada item só é marcado com evidência registrada em
-`docs/20_master_execution_log.md`. Estado em 2026-10-07 após a rodada de
-implementação (`docs/audits/production-readiness-implementation-2026-10-07.md`).
+`docs/20_master_execution_log.md`. Estado atualizado em 2026-10-08; decisões
+em `docs/decisions/2026-10-08-production-unblock.md`.
 
 ## Decisões humanas (Fase 1)
 
-- [ ] AAA-001 respondido item a item (D1–D7); PRD atualizado se algum alvo mudar — `docs/45_aaa001_decision_packet.md`
-- [ ] REM-06 decidido (contrato do contexto somativo) — `docs/decisions/2026-10-02-rem06-summative-eligibility.md`
-- [ ] H-CONTENT: revisão clínica item a item de M02/B-07 iniciada (AAA-304)
-- [ ] same-UID e H-REMOTE decididos (G03/G08 do backlog 61)
+- [x] AAA-001 D1–D7 respondido; RPO ≤1h/RTO ≤4h mantidos — `docs/45_aaa001_decision_packet.md`
+- [x] REM-06 boundary decidido; detalhamento PRD/SPEC e implementação ainda pendentes — `docs/decisions/2026-10-02-rem06-summative-eligibility.md`
+- [x] H-CONTENT: pacote de revisão M02→B-07 aberto; aprovação por item ainda pendente — `docs/clinical/review-m02-b07-2026-10-08.md`
+- [x] H-REMOTE autorizado para commit/push/quality/security e release após verdes same-SHA (G08)
+- [ ] same-UID decidido (G03 do backlog 61, independente de H-REMOTE)
 
 ## Candidato (Fase 2)
 
-- [x] Dependências de produção sem HIGH/critical (`pnpm audit --prod --audit-level=high`) — M09
+- [x] Audit corrente global sem advisories após Next 16.3.8; sharp/source-map corrigidos — M09
 - [x] Artefato implantável: Dockerfiles api/migrator/worker/web, `.dockerignore`, build local verificado — M04
 - [x] Workflow `release` com preflight same-SHA, GHCR, provenance/SBOM, Cosign keyless e digests — M08
 - [x] Freshness ignora `__screenshots__` gerados; evidência pesada fora do índice (`.gitignore`) — M19/M20

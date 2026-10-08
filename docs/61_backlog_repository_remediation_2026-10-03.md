@@ -508,14 +508,14 @@ correção local, geração de evidência e conclusão do próprio workflow.
 ### AUDIT-20261003-G02 — Decidir e executar o boundary somativo
 
 - **Origem / prioridade / dono:** REM-06, N23, S-DOM/S-APP/S-DATA; P1; Ricardo para decisão, backend para implementação.
-- **Estado:** WAITING_HUMAN_APPROVAL — decisão anterior REM-06.
+- **Estado:** READY_FOR_NEXT_STEP (PRD/SPEC) — boundary REM-06 aprovado em `docs/decisions/2026-10-08-production-unblock.md`; fontes/contratos e implementação ainda pendentes.
 - **O que:** fonte versionada/persistida da elegibilidade e consumidor somativo definidos e implementados no escopo aprovado.
 - **Onde:** `docs/decisions/2026-10-02-rem06-summative-eligibility.md`, contratos SPEC e aplicação/persistência do consumidor escolhido.
 - **Como:** preparar opções e impactos; registrar decisão antes de codificar; detalhar subtasks da alternativa aprovada sem bloquear fluxo formativo.
 - **Dependências:** resposta de Ricardo; G01; T18 para contexto de tentativa quando aplicável.
 - **Teste:** inspeção da decisão; depois RED dos critérios de elegibilidade, versão/concurrency e ausência de bloqueio somativo no quiz formativo.
 - **Pronto:** regra vem do PRD/decisão, fonte e consumidor são reais e auditáveis; não fechar por política pura sem integração.
-- **Pergunta pendente:** qual fonte/contexto versionado e persistido deve fornecer a elegibilidade somativa da proposta REM-06?
+- **Próximo passo:** detalhar fontes/contexto persistidos conforme boundary server-side aprovado, sem transformar aprovação do boundary em prova de somativa nativa.
 
 ### AUDIT-20261003-G03 — Resolver confiança same-UID e validar hardening
 
@@ -576,19 +576,19 @@ correção local, geração de evidência e conclusão do próprio workflow.
 ### AUDIT-20261003-G08 — Executar e verificar CI remota same-SHA
 
 - **Origem / prioridade / dono:** H-REMOTE/RF-02/RF-09, N49/N50; S-TEST/S-OPS; P1; release engineering.
-- **Estado:** WAITING_HUMAN_APPROVAL — autoridade remota anterior pendente.
+- **Estado:** IN_PROGRESS — H-REMOTE concedido por Ricardo em 2026-10-08 para quality/security e release após verdes same-SHA; primeiro quality remoto FAIL no build limpo, correção de ordem de contratos em validação. Candidate/global assurance continuam pendentes.
 - **O que:** comprovar os workflows e scanners no candidato congelado.
 - **Onde:** quality/candidate/security workflows, bundles e summaries remotos.
 - **Como:** após autoridade registrada, executar runs e coletar conclusões/artefatos do mesmo SHA; assinaturas e origem verificadas conforme contrato.
 - **Dependências:** G05; T04/T05; H-REMOTE; recursos/credenciais do CI no mecanismo autorizado.
 - **Teste:** same-SHA de todos os runs, tentativa com artefato de outro run/SHA, scanners pending/failure, bundle incompleto e assinatura quando exigida.
 - **Pronto:** nenhum run requerido está in_progress/unknown; verificação independente demonstra origem, conclusão e identidade comum.
-- **Pergunta pendente:** a autoridade H-REMOTE inclui executar os workflows necessários e coletar os artefatos do candidato escolhido?
+- **Autoridade recebida:** commit/push/quality/security/release e coleta de resultados da rodada; não declara G08 completo nem prova candidate/AAA global.
 
 ### AUDIT-20261003-G09 — Revisar prontidão e autorização clínica
 
 - **Origem / prioridade / dono:** H-CONTENT, N25/N26, S-SEC; P1; Ricardo/revisão clínica + autoria.
-- **Estado:** WAITING_HUMAN_APPROVAL — publicação clínica anterior pendente.
+- **Estado:** IN_PROGRESS (revisão aberta M02→B-07) / WAITING_HUMAN_APPROVAL (publicação) — `docs/clinical/review-m02-b07-2026-10-08.md`; 0/153 itens revisados nesta rodada, autorização clínica não inferida.
 - **O que:** demonstrar prontidão das versões incluídas no escopo de uso aprovado.
 - **Onde:** pacote autoral interno, revisão/editorial, gates de publicação e pré-voo.
 - **Como:** produzir internamente a partir da literatura e submeter revisão a Ricardo; registrar correções, versão, validade e decisão. Não publicar por conclusão técnica.
