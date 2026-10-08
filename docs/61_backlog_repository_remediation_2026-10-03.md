@@ -576,7 +576,7 @@ correção local, geração de evidência e conclusão do próprio workflow.
 ### AUDIT-20261003-G08 — Executar e verificar CI remota same-SHA
 
 - **Origem / prioridade / dono:** H-REMOTE/RF-02/RF-09, N49/N50; S-TEST/S-OPS; P1; release engineering.
-- **Estado:** IN_PROGRESS — H-REMOTE concedido por Ricardo em 2026-10-08 para quality/security e release após verdes same-SHA; primeiro quality remoto FAIL no build limpo, correção de ordem de contratos em validação. Candidate/global assurance continuam pendentes.
+- **Estado:** BLOCKED (CI live) — H-REMOTE recebido; no112b720 security SUCCESS, quality passou pnpm verify mas livePG836PASS/46FAIL/103skip. Remediar CI-LIVE-01–03 em `docs/operations/remote-ci-2026-10-08.md` antes de release; candidate/global assurance pendentes.
 - **O que:** comprovar os workflows e scanners no candidato congelado.
 - **Onde:** quality/candidate/security workflows, bundles e summaries remotos.
 - **Como:** após autoridade registrada, executar runs e coletar conclusões/artefatos do mesmo SHA; assinaturas e origem verificadas conforme contrato.

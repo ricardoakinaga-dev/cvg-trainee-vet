@@ -11,21 +11,21 @@
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
-## CHECKPOINT PREVALENTE — Destravamento autorizado em 2026-10-08T01:31:15Z
+## CHECKPOINT PREVALENTE — Destravamento e CI remoto em 2026-10-08T03:21:04Z
 
 - current_engine: BUILD ENGINE / RUNTIME CONTROLLER
-- current_phase: FIX_RETEST; commit/push concluídos; reparo da primeira falha remota de build limpo.
+- current_phase: FIX_RETEST; decisões e commit/push concluídos; release bloqueada por integração PostgreSQL real vermelha.
 - current_task: PROD-UNBLOCK-20261008 (rodada PROD-IMPL-20261007).
-- status: IN_PROGRESS
-- last_completed_action: decisões/commit/push c14b1ed e reparo build limpo 2495327 concluídos; security SUCCESS em ambos. Segundo quality FAIL (16 testes + uma suíte sem coleta) por seis caminhos absolutos locais em três suítes. Caminhos corrigidos via import.meta.url, 249/249 focais PASS em 490,27s; janela do job quality passa a 45min para executar todos os gates/live/E2E. Ricardo confirmou VPS ainda por contratar.
-- next_action: gates proporcionais e commit/push do reparo de portabilidade; observar quality/security no novo SHA; release manual somente após ambos success. Após contratação, obter dados/acesso da VPS; revisão clínica por item segue pendente.
-- blockers: VPS sem provedor/região/capacidade/DNS/acesso/destino externo de backup/canal; H-CONTENT aguarda revisão clínica por Ricardo; implementação somativa nativa requer PRD/SPEC complementar. Nenhum impedimento humano ao commit/push/CI autorizado.
+- status: BLOCKED
+- last_completed_action: decisões AAA-001/REM-06/Git/H-REMOTE recebidas; pacote clínico M02→B-07 aberto; VPS dedicada ainda por contratar; rodada c14b1ed e reparos 2495327/112b720 commitados e publicados. Next 16.3.8 audit limpo, build12/E2E45 e probes249 locais PASS. No SHA112b720 security SUCCESS e pnpm verify/release-traceability/migrations/provision remotos PASS; live PostgreSQL 836PASS/46FAIL/103skip (10 arquivos falhos + setup). Runs encerrados e relatório de causas/próximos passos persistido; release não disparada.
+- next_action: remediar T01/G08/M07: runners próprios/checkpoint PG18.4 para suítes nativas, grants mínimos/matriz da0058 e isolamento outbox; RED→GREEN focal nos10 arquivos, depois novo SHA e quality/security verdes antes de release. Após contratação, dados/acesso VPS; Ricardo revisa IDs/versões M02→B-07.
+- blockers: causa raiz técnica — CI live genérica incompatível com fixtures/checkpoint próprios, grants faltantes da0058 e outbox residual entre testes (CI-LIVE-01–03); impacto — quality FAIL impede release same-SHA, Qdrant/restore/E2E remotos skipped; ação necessária — remediação T01 pelo ExecPlan e novo par verde; dependência — harness real com ownership/grants/isolamento, sem falsificar flags/checkpoints ou reduzir gates. Separadamente VPS não contratada, H-CONTENT clínico pendente, somativa nativa requer PRD/SPEC.
 - human_decision_required: yes — fornecer dados não secretos da VPS e segundo contato de alertas; revisar IDs/versões M02 e depois B-07. Autorizações Git/H-REMOTE e resposta AAA-001/REM-06 recebidas.
 - active_execplan: .agent/plans/2026-10-03-remediation-execution.md
 - active_action_id: PROD-UNBLOCK-20261008
-- last_update: 2026-10-08T01:31:15Z
-- evidence: docs/decisions/2026-10-08-production-unblock.md; docs/clinical/review-m02-b07-2026-10-08.md; docs/operations/homologation-vps.md.
-- head: `249532754e2909cbbd6be542950c9b2c99b0adeb` (`main` e origin/main); reparo de portabilidade/janela CI/documentação no worktree.
+- last_update: 2026-10-08T03:21:04Z
+- evidence: docs/operations/remote-ci-2026-10-08.md; docs/decisions/2026-10-08-production-unblock.md; quality https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/37719804195 (FAIL); security https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/37719804703 (SUCCESS); docs/clinical/review-m02-b07-2026-10-08.md; docs/operations/homologation-vps.md.
+- head: candidato medido `112b7201f2507e03e4eb34bf85d7e4639b48d27d` (`main` e origin/main antes do registro documental final); commit documental subsequente não possui prova remota inferida. Nenhum dispatch release/deploy/publicação clínica.
 
 ## CHECKPOINT ANTERIOR — Implementação das melhorias de prontidão para produção em 2026-10-07T13:30:00Z
 

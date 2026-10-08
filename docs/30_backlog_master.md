@@ -19,8 +19,8 @@ O backlog executável de evolução premium foi consolidado em:
   ao baseline atual;
 - `AAA-002` — `COMPLETED`: state, log, backlog operacional e manifesto de
   rastreabilidade sincronizados e verificados;
-- `AAA-001` — `WAITING_HUMAN_APPROVAL`: aprovação da barra AAA, metas de
-  SLO/RPO/RTO, capacidade, escopo do piloto e autoridade dos gates;
+- `AAA-001` — `COMPLETED` (decisão em 2026-10-08): D1–D7 aprovados por Ricardo,
+  RPO ≤1h/RTO ≤4h; operação, conteúdo e piloto ainda exigem seus gates/evidências;
 - `AAA-603` — `IN_PROGRESS`: contrato local de CI same-SHA, SBOM CycloneDX,
   manifesto SHA-256 e redaction implementados e testados; execução remota,
   retenção/ACL, assinatura, cache e inspeção do artefato continuam pendentes;
@@ -3521,8 +3521,8 @@ Nenhum item abaixo autoriza produção, piloto ou publicação clínica.
 | PROD-M04 | Artefato implantável (Dockerfiles api/migrator/worker/web) | COMPLETED (local) | `apps/*/Dockerfile`, `.dockerignore`, build local; execução remota pendente de H-REMOTE |
 | PROD-M05 | Provisionar homologação e produção | BLOCKED (dados/acesso) | VPS dedicada escolhida; provedor/região/capacidade/DNS/acesso pendentes; `docs/operations/homologation-vps.md` |
 | PROD-M06 | Backup automatizado e restore ensaiado | COMPLETED (mecanismo) / BLOCKED (medição) | `deploy/backup/backup.sh` + testes + runbook; RPO/RTO reais dependem de M05 |
-| PROD-M07 | CI remota verde no mesmo SHA | IN_PROGRESS | push/workflows autorizados explicitamente; execuções/verdes ainda pendentes; T01/T02 no backlog 61 |
-| PROD-M08 | Pipeline de release com assinatura | COMPLETED (definição) | `.github/workflows/release.yml`, `docs/operations/deploy.md`; primeira execução pendente de H-REMOTE |
+| PROD-M07 | CI remota verde no mesmo SHA | BLOCKED (CI live) | security112b720 SUCCESS; quality FAIL (836PASS/46FAIL/103skip live PG); CI-LIVE-01–03 em `docs/operations/remote-ci-2026-10-08.md`; H-REMOTE recebido |
+| PROD-M08 | Pipeline de release com assinatura | COMPLETED (definição) / BLOCKED (execução) | release autorizada após quality/security verdes same-SHA; primeiro dispatch bloqueado por M07 |
 | PROD-M09 | Corrigir `sharp` e `source-map-js` | COMPLETED | overrides no `package.json`; `pnpm audit --prod --audit-level=high` limpo |
 | PROD-M10 | Observabilidade ligada | COMPLETED (configuração) / BLOCKED (teste real) | `deploy/observability/*`, `docs/operations/alerting.md`; alerta sintético exige M05 |
 | PROD-M11 | Entrega de convite e recuperação | COMPLETED (procedimento) | `docs/runbooks/invitation-delivery.md`; provedor de e-mail é feature com PRD/SPEC |
@@ -3554,3 +3554,14 @@ Nenhum item abaixo autoriza produção, piloto ou publicação clínica.
 - H-CONTENT: abertura autorizada M02→B-07, revisão humana por item pendente;
   publicação continua bloqueada. VPS dedicada escolhida sem dados/acesso ainda.
 - Evidência: `docs/decisions/2026-10-08-production-unblock.md`.
+
+### Resultado remoto — 2026-10-08T03:21:04Z
+
+- Commits/push c14b1ed, 2495327 e 112b720 concluídos; dois defeitos de
+  portabilidade corrigidos com RED→GREEN (build limpo e CLIs com path local).
+- Último security SUCCESS; último quality passou pnpm verify e falhou no live
+  PostgreSQL. Release BLOCKED, sem dispatch; autorização humana recebida.
+- T01/G08/M07: runners/checkpoints próprios, grants0058 e isolamento outbox
+  precisam de remediação; não excluir testes nem falsificar ownership.
+- VPS ainda por contratar; revisão clínica aberta, nenhuma aprovação inferida.
+- Relatório e runs: `docs/operations/remote-ci-2026-10-08.md`.

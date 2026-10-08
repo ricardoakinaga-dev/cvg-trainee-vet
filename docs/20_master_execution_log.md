@@ -16610,3 +16610,12 @@ IN_PROGRESS — objetivo integral ativo; nenhuma sprint/phase promovida.
 
 - Três suítes de integração corrigidas PASS: **249/249**, Node 22.22.0, 490,27 s (triple-aaa 177 incluídos). Nenhuma asserção, teste ou timeout de teste modificado; caminhos relativos ao módulo real substituem os seis caminhos absolutos.
 - Orçamento do job quality ampliado de 15 para 45 min: cobertura remota sem triple-aaa já levou 334,65 s; as probes reais sozinhas levaram ~8 min localmente, antes dos gates/live PG/Qdrant/restore/build/dois E2E. Ajuste de janela operacional, sem reduzir gates/pisos. Formatação focal inicialmente apontou uma chamada cp; layout corrigido antes do commit.
+
+## 2026-10-08T03:21:04Z — PROD-UNBLOCK: execuções encerradas; release bloqueada por live PG
+
+- status: BLOCKED (release); runtime-controller explícito. Decisões humanas do escopo recebidas e artefatos publicados; nenhuma autorização faltante de Git/H-REMOTE/AAA-001/boundary REM-06 foi recriada.
+- Commit/push `112b7201f2507e03e4eb34bf85d7e4639b48d27d`: oito arquivos, +36/−15; formatação/lint/typecheck/ci-contract/documentation/traceability/secrets/diff-check e release traceability pós-commit PASS.
+- Security https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/37719804703 SUCCESS (CodeQL, OSV, audit/secrets/SBOM; dependency-review skipped no push).
+- Quality https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/37719804195 FAIL após29m24s. PASS: pnpm verify completo, release-traceability, migrations, provisionamento, artefatos de diagnóstico. LivePG:65arquivosPASS/10FAIL/3skip;836testesPASS/46FAIL/103skip,664,32s. Um setup falhou adicionalmente;47blocos de falha não significam47testes. Qdrant/restore/build/doisE2E remotos foram skipped após a falha; não promovidos.
+- Causas observadas: guards de fixtures exigem banco próprio, módulo0058 exige checkpoint/cluster-ownership e PG18.4/roles/banco específicos em esteiraPG16; grants0058 faltantes em receipts/manifests e inventárioRLS+4; outboxcapturou eventoappeal residual. Relatório `docs/operations/remote-ci-2026-10-08.md` separaCI-LIVE-01–03 e não atribuiinternal_error sem reprodução.
+- last_completed_action: commits/push/execuções reais e diagnóstico registrados; next_action: T01/G08/M07 RED→GREEN dos10arquivos em harnessgenuíno, novo quality/security same-SHA e só então release. Sem dispatchrelease/imagemGHCRdestaesteira/deploy/publicaçãoclínica/piloto. VPS“ Ainda vou contratar”; H-CONTENT revisão nominal pendente. Encerramento desta rodada não fecha prontidão para produção.

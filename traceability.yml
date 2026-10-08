@@ -28,6 +28,7 @@ artifacts:
         "docs/operations/homologation-vps.md",
         "docs/audits/production-readiness-implementation-2026-10-07.md",
         "docs/operations/deploy.md",
+        "docs/operations/remote-ci-2026-10-08.md",
       ]
     code:
       [
@@ -58,13 +59,20 @@ artifacts:
       [
         "docs/decisions/2026-10-08-production-unblock.md",
         "docs/clinical/review-m02-b07-2026-10-08.md",
+        "docs/operations/remote-ci-2026-10-08.md",
       ]
     verification:
       [
-        "Gates locais proporcionais e execuções remotas serão registrados no log após execução; nenhum sucesso remoto inferido",
+        "Local: lint/typecheck/format/ci-contract/secrets/documentation/traceability PASS; audit Next16.3.8 limpo; build12/E2E45; provasfocais249 e46 PASS",
+        "112b720: security37719804703 SUCCESS; quality37719804195 pnpmverifyPASS/livePG836PASS46FAIL103skip; releaseBLOCKED, semdispatch",
       ]
-    commit: "UNCOMMITTED_WORKTREE"
-    status: "IN_PROGRESS"
+    commit: "c14b1ed768d042e8598892b656db61c7ac68e430"
+    commits:
+      [
+        "249532754e2909cbbd6be542950c9b2c99b0adeb",
+        "112b7201f2507e03e4eb34bf85d7e4639b48d27d",
+      ]
+    status: "BLOCKED"
   - id: "EXEC-AUDIT-20261003-R53-R54-R55-R57"
     requirements:
       [
