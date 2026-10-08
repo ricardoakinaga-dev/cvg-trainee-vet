@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -28,7 +29,7 @@ function cliFailure(error: unknown) {
     throw error;
   return { code: error.code, stdout: error.stdout, stderr: error.stderr };
 }
-const root = "/home/ricardo/cvg-trainee-vet";
+const root = fileURLToPath(new URL("../../", import.meta.url));
 const VERIFIER = join(root, "scripts/verify-triple-aaa.mjs");
 const CANDIDATE_SHA = execFileSync("git", ["rev-parse", "HEAD"], {
   cwd: root,

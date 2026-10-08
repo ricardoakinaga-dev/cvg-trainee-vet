@@ -2,7 +2,7 @@
 
 ## Escolha e estado
 
-Ricardo escolheu **VPS dedicada** em 2026-10-08; ver
+Ricardo escolheu **VPS dedicada** e confirmou **“Ainda vou contratar”** em 2026-10-08; ver
 `docs/decisions/2026-10-08-production-unblock.md`. Provedor/região e dados da
 máquina aguardam informação. M05/M14/M15/M16 continuam sem evidência real.
 

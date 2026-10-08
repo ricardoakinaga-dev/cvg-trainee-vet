@@ -3,12 +3,14 @@ import { execFile } from "node:child_process";
 import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
 import { evaluateSameSha } from "../../scripts/same-sha.mjs";
 import { normalizeWorkflowRun } from "../../scripts/verify-same-sha.mjs";
 
 const HEAD = "a".repeat(40);
+const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 function run(
   workflow: string,
@@ -95,7 +97,7 @@ describe("same-sha contract", () => {
           [
             "--import",
             transport,
-            "/home/ricardo/cvg-trainee-vet/scripts/verify-same-sha.mjs",
+            join(repositoryRoot, "scripts/verify-same-sha.mjs"),
             "--require-auth",
             "--require-candidate",
             "--preflight",
@@ -176,7 +178,7 @@ describe("same-sha contract", () => {
           [
             "--import",
             transport,
-            "/home/ricardo/cvg-trainee-vet/scripts/verify-same-sha.mjs",
+            join(repositoryRoot, "scripts/verify-same-sha.mjs"),
             "--require-auth",
             "--require-candidate",
             "--candidate-run-id",

@@ -16598,3 +16598,15 @@ IN_PROGRESS — objetivo integral ativo; nenhuma sprint/phase promovida.
 
 - `tsc -b --clean && pnpm typecheck` PASS com ordem contracts primeiro; inclui web e testes raiz. Security run 37713889133 terminou SUCCESS no SHA c14b1ed (CodeQL, OSV, audit/secrets/SBOM), dependency-review skipped por não ser PR.
 - Backlog BUILD canônico, overlays, REM-06/G02/G08/G09 e checklist sincronizados com as decisões recebidas. G03/same-UID e candidate/AAA global continuam separados. Próximo passo: commit/push do reparo e novos quality/security same-SHA antes de release.
+
+## 2026-10-08 — PROD-UNBLOCK: segundo RED remoto de portabilidade
+
+- Commit/push `249532754e2909cbbd6be542950c9b2c99b0adeb` (build limpo corrigido); security run 37714283361 SUCCESS. Quality https://github.com/ricardoakinaga-dev/cvg-trainee-vet/actions/runs/37714282729 FAIL na cobertura: 3734 PASS, 16 FAIL, 212 skip e uma suíte sem coletar (triple-aaa).
+- Causa demonstrada nos logs: seis caminhos absolutos `/home/ricardo/cvg-trainee-vet` em três testes de integração impedem executar CLIs/cópia de fixtures no checkout GitHub `/home/runner/work/...`. Não é falha de git instalado: ENOENT vem de cwd inexistente. Nenhuma falha comportamental de produto identificada nesse run.
+- Correção delimitada aos três testes: derivar raiz por `fileURLToPath(new URL("../../", import.meta.url))`, preservando execução dos CLIs reais, assertions e cenários negativos. Repetir as três suítes e gates proporcionais; novo commit/push antes de release.
+- Ricardo confirmou sobre a VPS: **“Ainda vou contratar”**. Provisionamento/HTTPS/RPO/RTO/alertas ficam aguardando contratação e dados/acesso; nenhuma contratação feita pelo agente.
+
+### PROD-UNBLOCK — GREEN das suítes portáveis
+
+- Três suítes de integração corrigidas PASS: **249/249**, Node 22.22.0, 490,27 s (triple-aaa 177 incluídos). Nenhuma asserção, teste ou timeout de teste modificado; caminhos relativos ao módulo real substituem os seis caminhos absolutos.
+- Orçamento do job quality ampliado de 15 para 45 min: cobertura remota sem triple-aaa já levou 334,65 s; as probes reais sozinhas levaram ~8 min localmente, antes dos gates/live PG/Qdrant/restore/build/dois E2E. Ajuste de janela operacional, sem reduzir gates/pisos. Formatação focal inicialmente apontou uma chamada cp; layout corrigido antes do commit.

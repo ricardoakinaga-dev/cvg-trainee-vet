@@ -17,15 +17,15 @@
 - current_phase: FIX_RETEST; commit/push concluídos; reparo da primeira falha remota de build limpo.
 - current_task: PROD-UNBLOCK-20261008 (rodada PROD-IMPL-20261007).
 - status: IN_PROGRESS
-- last_completed_action: decisões registradas, pacote M02/B07 aberto, VPS dedicada escolhida; audit RED (seis advisories novos Next) → GREEN com 16.3.8, build12/E2E45/45; commit c14b1ed (46 arquivos) + release traceability PASS + push cinco commits. Security remoto c14b1ed SUCCESS, quality FAIL por contratos dist ausentes no build limpo. RED local reproduzido; tsconfig ordenado contracts primeiro, typecheck limpo GREEN.
-- next_action: commit/push do reparo mínimo de build e sincronização documental; observar quality/security no novo SHA; release manual somente após ambos success. Obter dados da VPS e decisões clínicas por item.
+- last_completed_action: decisões/commit/push c14b1ed e reparo build limpo 2495327 concluídos; security SUCCESS em ambos. Segundo quality FAIL (16 testes + uma suíte sem coleta) por seis caminhos absolutos locais em três suítes. Caminhos corrigidos via import.meta.url, 249/249 focais PASS em 490,27s; janela do job quality passa a 45min para executar todos os gates/live/E2E. Ricardo confirmou VPS ainda por contratar.
+- next_action: gates proporcionais e commit/push do reparo de portabilidade; observar quality/security no novo SHA; release manual somente após ambos success. Após contratação, obter dados/acesso da VPS; revisão clínica por item segue pendente.
 - blockers: VPS sem provedor/região/capacidade/DNS/acesso/destino externo de backup/canal; H-CONTENT aguarda revisão clínica por Ricardo; implementação somativa nativa requer PRD/SPEC complementar. Nenhum impedimento humano ao commit/push/CI autorizado.
 - human_decision_required: yes — fornecer dados não secretos da VPS e segundo contato de alertas; revisar IDs/versões M02 e depois B-07. Autorizações Git/H-REMOTE e resposta AAA-001/REM-06 recebidas.
 - active_execplan: .agent/plans/2026-10-03-remediation-execution.md
 - active_action_id: PROD-UNBLOCK-20261008
 - last_update: 2026-10-08T01:31:15Z
 - evidence: docs/decisions/2026-10-08-production-unblock.md; docs/clinical/review-m02-b07-2026-10-08.md; docs/operations/homologation-vps.md.
-- head: `c14b1ed768d042e8598892b656db61c7ac68e430` (`main` e origin/main); reparo de build/documentação no worktree.
+- head: `249532754e2909cbbd6be542950c9b2c99b0adeb` (`main` e origin/main); reparo de portabilidade/janela CI/documentação no worktree.
 
 ## CHECKPOINT ANTERIOR — Implementação das melhorias de prontidão para produção em 2026-10-07T13:30:00Z
 

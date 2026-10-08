@@ -10,6 +10,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ordinaryTestEnvironment } from "../../scripts/ci-proof-contract.mjs";
 import { prepareOrdinaryExecutionProfile } from "../../scripts/ordinary-execution-profile.mjs";
@@ -27,6 +28,7 @@ import {
 } from "../../scripts/release-evidence.mjs";
 
 const COMMIT = "a".repeat(40);
+const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 describe("R9 candidate producer integration contract", () => {
   it("R10 source runner block propagates observed ownership and fails closed through explicit IO doubles", async () => {
@@ -523,7 +525,7 @@ describe("release evidence bundle", () => {
       const directory = await writeBundle();
       try {
         const args = [
-          "/home/ricardo/cvg-trainee-vet/scripts/release-evidence.mjs",
+          join(repositoryRoot, "scripts/release-evidence.mjs"),
           "--check",
           directory,
         ];
@@ -569,12 +571,10 @@ describe("release evidence bundle", () => {
       const dir = await mkdtemp(join(tmpdir(), "cvg-r4-coverage-"));
       const exec = promisify(execFile);
       try {
-        await cp(
-          "/home/ricardo/cvg-trainee-vet/scripts",
-          join(dir, "scripts"),
-          { recursive: true },
-        );
-        await cp("/home/ricardo/cvg-trainee-vet/config", join(dir, "config"), {
+        await cp(join(repositoryRoot, "scripts"), join(dir, "scripts"), {
+          recursive: true,
+        });
+        await cp(join(repositoryRoot, "config"), join(dir, "config"), {
           recursive: true,
         });
         await mkdir(join(dir, "apps"));

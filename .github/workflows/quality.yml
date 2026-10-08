@@ -10,7 +10,9 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Full coverage includes 177 real verifier CLI probes (~8 min alone),
+    # browser coverage, live PG/Qdrant/restore and both E2E modes.
+    timeout-minutes: 45
     services:
       postgres:
         image: postgres:16
