@@ -56,10 +56,15 @@ async function withHarness(
   }
 }
 
+// Heavy native fixture suite (33-item capture with per-row answer guard
+// triggers) exceeded the 5s default on the CI PostgreSQL 16 service in the
+// 2026-10-12 quality run 38196035891; this explicit budget relaxes only wall
+// clock, never an assertion.
 describe.skipIf(
   process.env.CVG_RUN_LIVE_DB_TESTS !== "true" || liveDatabaseUrl === undefined,
 )(
   "native published form capture on actual start (synthetic technical publication only)",
+  { timeout: 60_000 },
   () => {
     it("captures all 33 immutable items atomically and replay never recaptures edited content", async () => {
       await withHarness(async (harness) => {

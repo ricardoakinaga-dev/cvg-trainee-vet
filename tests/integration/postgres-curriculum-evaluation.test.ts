@@ -135,10 +135,15 @@ async function waitForLock(
   throw new Error(`Actual native ${kind} lock overlap was not observed`);
 }
 
+// Heavy native fixture suite (33-item evaluation with per-row answer guard
+// triggers and concurrent withdrawal fences) exceeded the 5s default on the CI
+// PostgreSQL 16 service in the 2026-10-12 quality run 38196035891; this
+// explicit budget relaxes only wall clock, never an assertion.
 describe.skipIf(
   process.env.CVG_RUN_LIVE_DB_TESTS !== "true" || liveDatabaseUrl === undefined,
 )(
   "native frozen curriculum evaluation (synthetic technical publication only)",
+  { timeout: 60_000 },
   () => {
     it.each([
       ["<", ">"],
