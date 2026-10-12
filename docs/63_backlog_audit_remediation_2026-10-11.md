@@ -96,7 +96,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA01 — Publicar o SHA remediado e obter quality/security same-SHA
 
 - **Origem / prioridade / dono:** AUD-S-01; M07/T01/T02; P0; release engineering.
-- **Estado:** IN_PROGRESS — push `c5cb444..9bfd363` executado em 2026-10-12; `security` run 38196036409 SUCCESS (2m27s) e `quality` run 38196035891 com `pnpm verify` PASS e release traceability PASS, mas 4 timeouts na etapa live PG (878 PASS/4 FAIL/103 skip); falha endereçada por SA-02 no commit seguinte; aguardando `quality` verde no SHA do fix.
+- **Estado:** COMPLETED — `quality` run 38216496310 SUCCESS (50m15s) e `security` run 38216496693 SUCCESS no mesmo SHA `e178e6f404e5d475e0c32c99e8391f7c2939834d`, com `pnpm verify`, live PostgreSQL, live Qdrant, restore, build, browser E2E, E2E real, audit e artefatos de release todos verdes. `verify:same-sha` completo ainda exige o run `candidate` (SA-03/SA-04).
 - **O que:** publicar `2420ffb` + `1ae1f8d` em `origin/main` e disparar `quality`/`security`; acompanhar até verde no mesmo SHA e registrar run IDs.
 - **Onde:** `origin/main`, workflows `quality`/`security`, `docs/operations/remote-ci-2026-10-08.md`.
 - **Como:** executar `git push origin main` em sessão com permissão Git; colher URLs/IDs dos runs; não alterar código nesta task.
@@ -107,7 +107,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA02 — Remediar falhas residuais dos runs remotos
 
 - **Origem / prioridade / dono:** AUD-S-01; M07; P0; release engineering + backend.
-- **Estado:** IN_PROGRESS — RED reproduzido localmente em PostgreSQL 16 descartável (mesmo provisionamento do CI): 5 timeouts nas suítes nativas de currículo `postgres-curriculum-attempt-start.test.ts` e `postgres-curriculum-evaluation.test.ts` (33 itens com guard trigger por linha excedem o default de 5s; no runner, 4 timeouts, mesma classe). Correção aplicada: budget explícito de 60s por suíte (`describe.skipIf(...)("...", { timeout: 60_000 }, ...)`), sem alterar asserções; PG18.4 embutido 18/18 GREEN; aguardando `quality` same-SHA no push do fix.
+- **Estado:** COMPLETED — quatro remediações com RED local e evidência: (1) timeouts de 5s nas suítes nativas de currículo → budget explícito por suíte; (2) `statement_timeout=30s` do papel `cvg_app` cortando o INSERT de 33 respostas (66s de CPU em PG16; funções de RLS reavaliadas por linha) → override de teste de 120s no `live-postgres-harness.ts` via parâmetro de URL, com o provisionamento de produção mantido em 30s e `migration-governance` intacto; (3) etapa Qdrant sem `CVG_OWNED_DISPOSABLE_BINDING_DATABASE` → flag declarada em `quality.yml`/`candidate.yml` e janela do job ampliada 45→75 min; (4) E2E `visual-gauntlet` clipando `operations-rail-label` a 195px no runner → label passa a encolher/quebrar no media query de 480px. Flake ambiental único (`EACCES` em `/proc/<pid>/environ`, `staging-owned-child`) resolvido por rerun do mesmo SHA. Evidências em `.agent/artifacts/audit-20261011/sa02-*.log`; resultado final: quality/security verdes em `e178e6f`.
 - **O que:** reproduzir localmente e corrigir, com TDD, qualquer falha do run remoto (etapas PG16, Qdrant live, restore, E2E padrão/real), mantendo a remediação CI-LIVE-01…05.
 - **Onde:** conforme falha; provavelmente `tests/integration/**`, `tests/e2e/**`, `.github/workflows/quality.yml`.
 - **Como:** RED local no ambiente equivalente; correção mínima; repetir `pnpm verify` e `test:integration:live` antes de novo push.

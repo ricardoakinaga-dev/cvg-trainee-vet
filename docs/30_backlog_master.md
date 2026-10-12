@@ -3521,7 +3521,7 @@ Nenhum item abaixo autoriza produção, piloto ou publicação clínica.
 | PROD-M04 | Artefato implantável (Dockerfiles api/migrator/worker/web) | COMPLETED (local) | `apps/*/Dockerfile`, `.dockerignore`, build local; execução remota pendente de H-REMOTE |
 | PROD-M05 | Provisionar homologação e produção | BLOCKED (dados/acesso) | VPS dedicada escolhida; provedor/região/capacidade/DNS/acesso pendentes; `docs/operations/homologation-vps.md` |
 | PROD-M06 | Backup automatizado e restore ensaiado | COMPLETED (mecanismo) / BLOCKED (medição) | `deploy/backup/backup.sh` + testes + runbook; RPO/RTO reais dependem de M05 |
-| PROD-M07 | CI remota verde no mesmo SHA | IN_PROGRESS | `9bfd363`: security 38196036409 SUCCESS; quality 38196035891 com `pnpm verify` PASS remoto e 4 timeouts live (SA-02 corrigido no commit seguinte); push `c5cb444..9bfd363` |
+| PROD-M07 | CI remota verde no mesmo SHA | COMPLETED (quality/security) / candidate pendente | `e178e6f`: quality 38216496310 SUCCESS (50m15s) e security 38216496693 SUCCESS com live PG/Qdrant/restore/build/E2E/artefatos verdes; run `candidate` pendente (SA-03 do backlog 63) |
 | PROD-M08 | Pipeline de release com assinatura | COMPLETED (definição) / BLOCKED (execução) | release autorizada após quality/security verdes same-SHA; primeiro dispatch bloqueado por M07 |
 | PROD-M09 | Corrigir `sharp` e `source-map-js` | COMPLETED | overrides no `package.json`; `pnpm audit --prod --audit-level=high` limpo |
 | PROD-M10 | Observabilidade ligada | COMPLETED (configuração) / BLOCKED (teste real) | `deploy/observability/*`, `docs/operations/alerting.md`; alerta sintético exige M05 |
