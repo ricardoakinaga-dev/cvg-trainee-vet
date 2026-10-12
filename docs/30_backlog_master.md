@@ -3516,18 +3516,18 @@ Nenhum item abaixo autoriza produção, piloto ou publicação clínica.
 | Item | Título | Status | Evidência / dependência |
 |---|---|---|---|
 | PROD-M01 | Responder pacote AAA-001 (D1–D7) | COMPLETED (decisão) | `docs/decisions/2026-10-08-production-unblock.md`; evidência operacional/piloto ainda pendente |
-| PROD-M02 | Decidir REM-06 e fechar somativa nativa | READY_FOR_NEXT_STEP (PRD/SPEC) | boundary aprovado; fontes e implementação nativas continuam pendentes |
+| PROD-M02 | Decidir REM-06 e fechar somativa nativa | WAITING_HUMAN_APPROVAL (detalhamento) | proposta `docs/decisions/2026-10-11-rem06-summative-native-detail-proposal.md` com 3 perguntas; implementação pendente |
 | PROD-M03 | Publicar conteúdo clínico do piloto (H-CONTENT) | IN_PROGRESS (revisão aberta) / WAITING_HUMAN_APPROVAL (publicação) | pacote interno `docs/clinical/review-m02-b07-2026-10-08.md`; 0/153 revisados nesta rodada |
 | PROD-M04 | Artefato implantável (Dockerfiles api/migrator/worker/web) | COMPLETED (local) | `apps/*/Dockerfile`, `.dockerignore`, build local; execução remota pendente de H-REMOTE |
 | PROD-M05 | Provisionar homologação e produção | BLOCKED (dados/acesso) | VPS dedicada escolhida; provedor/região/capacidade/DNS/acesso pendentes; `docs/operations/homologation-vps.md` |
 | PROD-M06 | Backup automatizado e restore ensaiado | COMPLETED (mecanismo) / BLOCKED (medição) | `deploy/backup/backup.sh` + testes + runbook; RPO/RTO reais dependem de M05 |
-| PROD-M07 | CI remota verde no mesmo SHA | BLOCKED (CI live) | security112b720 SUCCESS; quality FAIL (836PASS/46FAIL/103skip live PG); CI-LIVE-01–03 em `docs/operations/remote-ci-2026-10-08.md`; H-REMOTE recebido |
+| PROD-M07 | CI remota verde no mesmo SHA | IN_PROGRESS | `9bfd363`: security 38196036409 SUCCESS; quality 38196035891 com `pnpm verify` PASS remoto e 4 timeouts live (SA-02 corrigido no commit seguinte); push `c5cb444..9bfd363` |
 | PROD-M08 | Pipeline de release com assinatura | COMPLETED (definição) / BLOCKED (execução) | release autorizada após quality/security verdes same-SHA; primeiro dispatch bloqueado por M07 |
 | PROD-M09 | Corrigir `sharp` e `source-map-js` | COMPLETED | overrides no `package.json`; `pnpm audit --prod --audit-level=high` limpo |
 | PROD-M10 | Observabilidade ligada | COMPLETED (configuração) / BLOCKED (teste real) | `deploy/observability/*`, `docs/operations/alerting.md`; alerta sintético exige M05 |
 | PROD-M11 | Entrega de convite e recuperação | COMPLETED (procedimento) | `docs/runbooks/invitation-delivery.md`; provedor de e-mail é feature com PRD/SPEC |
 | PROD-M12 | Fechar correções de jornada herdadas T13–T22 | IN_PROGRESS | backlog 61 (fontes sob hold de outras rodadas; não tocadas aqui) |
-| PROD-M13 | Re-congelar candidato no HEAD | READY_FOR_NEXT_STEP | exige Stryker/k6/RLS/Redis/staging locais (horas) e commit do candidato |
+| PROD-M13 | Re-congelar candidato no HEAD | BLOCKED (certificação) | pipeline `candidate` nunca verde e zero variáveis de Actions (k6/otel/audit/review/risk); SA-03 do backlog 63 |
 | PROD-M14 | Medir RPO/RTO e carga | BLOCKED | M05 |
 | PROD-M15 | Topologia HTTPS real com `TRUSTED_PROXIES` | BLOCKED | M05; `deploy/caddy/Caddyfile` preparado |
 | PROD-M16 | Aceitação manual e leitor de tela | BLOCKED | M05 + colaboradores do CVG |

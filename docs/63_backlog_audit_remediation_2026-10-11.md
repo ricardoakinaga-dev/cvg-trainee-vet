@@ -96,7 +96,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA01 — Publicar o SHA remediado e obter quality/security same-SHA
 
 - **Origem / prioridade / dono:** AUD-S-01; M07/T01/T02; P0; release engineering.
-- **Estado:** READY_FOR_NEXT_STEP — H-REMOTE vigente; a sessão anterior teve o push negado por permissão, não por autorização.
+- **Estado:** IN_PROGRESS — push `c5cb444..9bfd363` executado em 2026-10-12; `security` run 38196036409 SUCCESS (2m27s) e `quality` run 38196035891 com `pnpm verify` PASS e release traceability PASS, mas 4 timeouts na etapa live PG (878 PASS/4 FAIL/103 skip); falha endereçada por SA-02 no commit seguinte; aguardando `quality` verde no SHA do fix.
 - **O que:** publicar `2420ffb` + `1ae1f8d` em `origin/main` e disparar `quality`/`security`; acompanhar até verde no mesmo SHA e registrar run IDs.
 - **Onde:** `origin/main`, workflows `quality`/`security`, `docs/operations/remote-ci-2026-10-08.md`.
 - **Como:** executar `git push origin main` em sessão com permissão Git; colher URLs/IDs dos runs; não alterar código nesta task.
@@ -107,7 +107,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA02 — Remediar falhas residuais dos runs remotos
 
 - **Origem / prioridade / dono:** AUD-S-01; M07; P0; release engineering + backend.
-- **Estado:** BLOCKED — depende de SA-01; só aplicável se houver falha remota.
+- **Estado:** IN_PROGRESS — RED reproduzido localmente em PostgreSQL 16 descartável (mesmo provisionamento do CI): 5 timeouts nas suítes nativas de currículo `postgres-curriculum-attempt-start.test.ts` e `postgres-curriculum-evaluation.test.ts` (33 itens com guard trigger por linha excedem o default de 5s; no runner, 4 timeouts, mesma classe). Correção aplicada: budget explícito de 60s por suíte (`describe.skipIf(...)("...", { timeout: 60_000 }, ...)`), sem alterar asserções; PG18.4 embutido 18/18 GREEN; aguardando `quality` same-SHA no push do fix.
 - **O que:** reproduzir localmente e corrigir, com TDD, qualquer falha do run remoto (etapas PG16, Qdrant live, restore, E2E padrão/real), mantendo a remediação CI-LIVE-01…05.
 - **Onde:** conforme falha; provavelmente `tests/integration/**`, `tests/e2e/**`, `.github/workflows/quality.yml`.
 - **Como:** RED local no ambiente equivalente; correção mínima; repetir `pnpm verify` e `test:integration:live` antes de novo push.
@@ -118,7 +118,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA03 — Re-congelar o candidato no HEAD
 
 - **Origem / prioridade / dono:** AUD-S-06; M13/QA-02/QA-03; P0; release engineering + QA.
-- **Estado:** BLOCKED — depende de SA-01 (SA-02 quando houver).
+- **Estado:** BLOCKED — causa raiz dupla com evidência: (1) o pipeline `candidate` nunca concluiu verde (5/5 runs FAIL desde 2026-09-13) e o repositório tem **zero** variáveis de Actions (`gh api .../actions/variables` → `total_count: 0`), faltando `CVG_K6_RELEASE_URL`/`SHA256`, `CVG_OTEL_RELEASE_URL`/`SHA256` e os inputs `CVG_AAA_AUDIT_INPUT`/`CVG_AAA_REVIEW_INPUT`/`CVG_AAA_RISK_INPUT` (auditoria do candidato, revisão independente e registro de risco frescos do SHA, que não podem ser auto-emitidos); (2) staging local bloqueado pelo ambiente (portas 3100–3443 fixas no runner, 3100 ocupada por processo externo do editor; `otelcol-contrib` e `redis-server` ausentes; k6 local 0.55.0 vs 0.57.0 documentado). Requer Ricardo/certificador: contratar os valores pinados e fornecer os três artefatos de certificação.
 - **O que:** executar Stryker (authorization/critical/worker), k6, RLS/Redis/staging no HEAD; regenerar o bundle com `k6-summary.json`, `otel-spans.json` e `ratelimit-live-results.json`; atualizar identidade/digests da auditoria candidata; `verify:triple-aaa` sem fatal e `verify:aaa-candidate` sem gate vermelho.
 - **Onde:** `release-evidence/**`, `staging-evidence/**`, scripts `mutation:*`, `test:load`, `verify:*`.
 - **Como:** congelar SHA; rodar suites na ordem do harness; atualizar sumários e digests; não inventar resultado nem reaproveitar summary de outro SHA.
@@ -129,7 +129,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA04 — Fechar same-SHA com candidato e revisão independente
 
 - **Origem / prioridade / dono:** AUD-S-01; M07/G08/G10; P0; revisor independente.
-- **Estado:** BLOCKED — depende de SA-02/SA-03.
+- **Estado:** BLOCKED — depende de SA-02/SA-03; o gate de promoção exige `review.verdict === "PASS"` e `review.candidate_sha === HEAD` (verificado em `scripts/verify-aaa-candidate.mjs`), artefato que não pode ser auto-emitido pelo implementador; sem ele e sem os inputs de SA-03 o dispatch falharia fechado pela própria certificação.
 - **O que:** dispatch do workflow `candidate` e revisão independente fresh do candidato; `verify:same-sha --require-auth --require-candidate` PASS.
 - **Onde:** `.github/workflows/candidate.yml`, `staging-evidence/remote-ci-summary.json`, evidência de revisão.
 - **Como:** disparar após quality/security verdes; revisor sem contexto de implementação; registrar parecer no log.
@@ -165,7 +165,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA11 — Detalhar fontes e contratos da somativa nativa (REM-06)
 
 - **Origem / prioridade / dono:** AUD-S-04; M02/REM-06/G02/P1; P1; backend + Ricardo.
-- **Estado:** READY_FOR_NEXT_STEP (PRD/SPEC) — boundary aprovado; fontes/contratos pendentes.
+- **Estado:** WAITING_HUMAN_APPROVAL — detalhamento preparado em `docs/decisions/2026-10-11-rem06-summative-native-detail-proposal.md` (desenho A1 de evidência persistida, delta do contrato de correção humana, produtor/consumidor e 3 perguntas objetivas); SA-12/SA-13 permanecem bloqueadas até aprovação explícita.
 - **O que:** detalhar no PRD/SPEC a fonte autenticada de `criticalPercent`/`criticalItemCount`, o inventário imutável e o audit `CURRICULUM_MODULE_OBLIGATIONS_APPROVED`; registrar decisão antes de codificar.
 - **Onde:** `docs/decisions/**`, `BRIEFING/.../01.PRD` e `02.SPEC` (delta autorizado), contratos em `packages/contracts`.
 - **Como:** decompor subtasks da alternativa aprovada; nada de política pura sem fonte persistida; sem bloquear o fluxo formativo.
@@ -198,7 +198,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA14 — Fechar holdovers T13–T24/T07/T31 com crítica fresh
 
 - **Origem / prioridade / dono:** AUD-S-05; M12/M23/M25; P1; backend + web.
-- **Estado:** READY_FOR_NEXT_STEP — fontes sob hold de rodadas concorrentes devem ser liberadas na ordem do backlog 61.
+- **Estado:** BLOCKED — as tasks T13–T33 do backlog 61 estão IN_PROGRESS com trabalho local concluído e dependem de crítica fresh independente e da integração no candidato re-congelado (SA-03/SA-04); nenhuma fonte sob hold foi tocada nesta rodada.
 - **O que:** concluir as tasks T13–T22 (replay/retomada, domínio/quiz, retenção, rate limit por classe, lease, retirada, drenagem, trilha de negações), T24 e T07/T31 conforme critérios do backlog 61, cada uma com crítica fresh.
 - **Onde:** conforme backlog 61 §3; arquivos de coordenação da seção 5 do roadmap 62.
 - **Como:** uma task por vez com RED/GREEN/REFACTOR e revisor independente; não reimplementar o já fechado.
@@ -347,7 +347,7 @@ Aliases S-DOM…S-TEST como no backlog 61
 ### AUD-SYSTEM-20261011-SA40 — Node 22 nos shells e arquivamento do estado
 
 - **Origem / prioridade / dono:** AUD-S-09; M27/GO-02; P2; documentação/ambiente.
-- **Estado:** READY_FOR_NEXT_STEP — `.nvmrc` existe; shell padrão do host em Node 24.
+- **Estado:** COMPLETED — 47 checkpoints antigos movidos sem alteração para `docs/runtime-history/2026-10.md`; estado prevalente reduzido de 946 para 45 linhas; `.nvmrc` já fixa 22.22.0; `verify:documentation` e `verify:traceability` verdes após o arquivamento.
 - **O que:** padronizar Node 22.22 nos comandos documentados/shells e arquivar checkpoints antigos do runtime state em `docs/runtime-history/`, mantendo o checkpoint prevalente enxuto.
 - **Onde:** `.nvmrc`, `docs/99_runtime_state.md`, `docs/runtime-history/**`, runbooks.
 - **Como:** mover blocos históricos sem editar o conteúdo; revalidar `verify:documentation`.

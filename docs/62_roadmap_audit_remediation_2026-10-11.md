@@ -1,8 +1,9 @@
 # 62 — Roadmap de remediação da auditoria de 2026-10-11
 
-**Entrega do planejamento:** COMPLETED nesta rodada. **Execução:** READY a partir
-de SA-01, sem início automático; nenhuma correção, commit, push, deploy ou
-publicação foi iniciada para produzir este documento.
+**Entrega do planejamento:** COMPLETED. **Execução:** IN_PROGRESS desde
+2026-10-12 — SA-01 (push + runs remotos) e SA-02 (fix dos timeouts live)
+executados; SA-11 detalhada para decisão e SA-40 concluída; SA-03/SA-04/SA-14
+bloqueadas por certificação/crítica independente (ver estados no backlog 63).
 **Origem:** [auditoria de sistema de 2026-10-11](audits/system-audit-2026-10-11.md)
 (17 itens, média ponderada 84/100; achados AUD-S-01…AUD-S-10).
 **Backlog detalhado:** [63 — tasks, dependências e aceite](63_backlog_audit_remediation_2026-10-11.md).
