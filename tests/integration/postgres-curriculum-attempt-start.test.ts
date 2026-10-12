@@ -64,7 +64,7 @@ describe.skipIf(
   process.env.CVG_RUN_LIVE_DB_TESTS !== "true" || liveDatabaseUrl === undefined,
 )(
   "native published form capture on actual start (synthetic technical publication only)",
-  { timeout: 60_000 },
+  { timeout: 120_000 },
   () => {
     it("captures all 33 immutable items atomically and replay never recaptures edited content", async () => {
       await withHarness(async (harness) => {

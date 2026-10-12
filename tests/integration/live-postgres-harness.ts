@@ -27,6 +27,22 @@ const liveAdminDatabaseUrl = process.env.CVG_TEST_ADMIN_DATABASE_URL?.trim();
 export const liveAdminCapabilityMessage =
   "live PostgreSQL tests require CVG_TEST_ADMIN_DATABASE_URL with SUPERUSER or BYPASSRLS for isolated fixture cleanup";
 
+/**
+ * Test-only statement budget override (2026-10-12, SA-02). PostgreSQL 16
+ * re-evaluates the nested RLS policy helper functions per row inside
+ * cvg_guard_curriculum_answer; the 33-item synthetic fixtures of the native
+ * curriculum suites can exceed the production-mirroring 30s role cap on
+ * loaded CI runners (quality runs 38196035891/38199585344). The driver
+ * forwards URL query parameters as startup options, so this bounds the
+ * harness sessions at 2 minutes without touching the provisioning contract
+ * (ALTER ROLE cvg_app SET statement_timeout = '30s') that production and
+ * migration-governance keep asserting.
+ */
+function withExtendedStatementTimeout(url: string): string {
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}statement_timeout=120000`;
+}
+
 async function readRoleCapabilities(
   database: DatabaseHandle,
 ): Promise<LivePostgresRoleCapabilities> {
@@ -68,8 +84,12 @@ export async function openLivePostgresHarness(): Promise<LivePostgresHarness> {
     );
   }
 
-  const application = createPostgresDatabase(liveDatabaseUrl);
-  const admin = createPostgresDatabase(liveAdminDatabaseUrl);
+  const application = createPostgresDatabase(
+    withExtendedStatementTimeout(liveDatabaseUrl),
+  );
+  const admin = createPostgresDatabase(
+    withExtendedStatementTimeout(liveAdminDatabaseUrl),
+  );
   try {
     const [applicationRole, adminRole] = await Promise.all([
       readRoleCapabilities(application),

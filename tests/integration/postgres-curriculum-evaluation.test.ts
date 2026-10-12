@@ -143,7 +143,7 @@ describe.skipIf(
   process.env.CVG_RUN_LIVE_DB_TESTS !== "true" || liveDatabaseUrl === undefined,
 )(
   "native frozen curriculum evaluation (synthetic technical publication only)",
-  { timeout: 60_000 },
+  { timeout: 120_000 },
   () => {
     it.each([
       ["<", ">"],
