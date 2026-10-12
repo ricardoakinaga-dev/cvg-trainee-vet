@@ -11,7 +11,23 @@
 - current_engine: BUILD ENGINE / GAUNTLET LOOP / ORCHESTRATE / ENGINEERING FRAMEWORK / DESIGN DIRECTOR / RUNTIME CONTROLLER
 - source_of_truth: BRIEFING/09.PROJETO_CVG_TREINAMENTO
 
-## CHECKPOINT PREVALENTE — Remediação CI-LIVE-01…05 da integração PostgreSQL real em 2026-10-08T05:10:00Z
+## CHECKPOINT PREVALENTE — Auditoria de sistema com pontuação em 2026-10-11T02:10:00Z
+
+- current_engine: AUDIT ENGINE / RUNTIME CONTROLLER
+- current_phase: AUDIT; auditoria solicitada por Ricardo (ler documentação, auditar o sistema e entregar relatório 0–100 por item); nenhum arquivo de produto alterado.
+- current_task: AUDIT-SYSTEM-20261011.
+- status: WAITING_HUMAN_APPROVAL
+- last_completed_action: relatório `docs/audits/system-audit-2026-10-11.md` publicado com matriz de 17 itens (média ponderada 84/100) e veredito NÃO PRONTO para release/piloto; em seguida, plano de remediação entregue: `docs/62_roadmap_audit_remediation_2026-10-11.md` (fases A0–A3, gates GA0–GA3, metas de nota) e `docs/63_backlog_audit_remediation_2026-10-11.md` (23 tasks SA-01…SA-40 com origem, dono, dependência, teste, pronto, rollback e crosswalk para backlog 61/PROD-M). Evidências técnicas no HEAD `1ae1f8d` com Node 22.23.2: `pnpm verify` EXIT 0 (23 gates; 3.929 PASS/212 skip; cobertura 91,07/86,97/95,07/92,40); `test:integration` 779 PASS/210 skip; `test:integration:live` em PostgreSQL 18.4 descartável migrado+provisionado 882 PASS/103 skip/0 FAIL (remediação CI-LIVE-01…05 do commit `2420ffb` confirmada localmente); browser 290/290; e2e mockado 45/45 (porta 3110 em modo servidores externos porque a 3100 estava ocupada por processo do editor, não interrompido); e2e real 2/2 (browser→proxy→API→PostgreSQL, limpeza verificada); `pnpm audit` 0 vulnerabilidades. `verify:triple-aaa` FAIL (1 fatal+16 REVISE; P0=0/P1=0/P2=9; Eng 94/Sec 95/Ops 90,8; readiness NOT_VERIFIED) e `verify:aaa-candidate` FAIL (9 gates) por cadeia de evidência obsoleta (`3cd7bc3`) e same-SHA ausente.
+- next_action: selecionar a execução do plano 62/63 começando por SA-01 (publicar `2420ffb`+`1ae1f8d` e obter `quality`/`security` verdes same-SHA, registrando run IDs); na sequência SA-02/SA-03/SA-04 (re-congelar candidato e same-SHA), e em frentes paralelas SA-10 (revisão clínica 0/153), SA-11…SA-13 (somativa nativa), SA-14 (holdovers) e SA-20 (VPS, após dados de Ricardo).
+- blockers: release bloqueada por evidência de candidato obsoleta, same-SHA ausente, conteúdo clínico 0/153 e ambiente real inexistente; nenhum bloqueio técnico novo no núcleo.
+- human_decision_required: yes — H-REMOTE vigente para push/dispatch; pendentes de Ricardo os dados da VPS, o segundo contato de alertas e as revisões clínicas M02/B-07.
+- active_execplan: .agent/plans/2026-10-03-remediation-execution.md
+- active_action_id: AUDIT-SYSTEM-20261011
+- last_update: 2026-10-11T02:30:00Z
+- evidence: docs/audits/system-audit-2026-10-11.md; docs/62_roadmap_audit_remediation_2026-10-11.md; docs/63_backlog_audit_remediation_2026-10-11.md; .agent/artifacts/audit-20261011/verify-full.log, verify-triple-aaa.log, verify-aaa-candidate.log, test-integration.log, test-integration-live.log, test-browser.log, test-e2e-external.log, test-e2e-real.log
+- head: `1ae1f8d53733be2afa8bcf9fc7a1dfcfdfe0fb34` (`main` local; worktree limpo exceto artefatos de evidência não rastreados); `origin/main` em `c5cb444`; sem push/deploy/publicação/globalaccept
+
+## CHECKPOINT ANTERIOR — Remediação CI-LIVE-01…05 da integração PostgreSQL real em 2026-10-08T05:10:00Z
 
 - current_engine: BUILD ENGINE / RUNTIME CONTROLLER
 - current_phase: FIX_RETEST; os 46 testes live que falharam no run remoto `quality` 37719804195 (SHA `112b720`) foram reproduzidos em PostgreSQL 18.4 descartável e corrigidos com TDD; commit e push autorizados pelas decisões Git/H-REMOTE já registradas.
