@@ -137,6 +137,10 @@ jobs:
         run: pnpm test:integration:live
 
       - name: Run live Qdrant integration tests
+        # The same job-owned disposable PostgreSQL service backs this step:
+        # immutable/provenance fixtures require the owned-database contract.
+        env:
+          CVG_OWNED_DISPOSABLE_BINDING_DATABASE: "true"
         run: pnpm test:integration:qdrant
 
       - name: Run full live RLS scope matrix
