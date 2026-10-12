@@ -3168,6 +3168,16 @@ select:disabled {
     width: 160px;
   }
 
+  /* CI caught the uppercase rail label crossing the 195px stress viewport
+     (quality run 38207409373, visual-gauntlet): let it shrink and wrap
+     instead of staying nowrap with a fixed basis. */
+  .operations-rail-label {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
   .draft-form {
     background: rgba(247, 250, 245, 0.94);
     border-color: rgba(18, 55, 47, 0.2);
