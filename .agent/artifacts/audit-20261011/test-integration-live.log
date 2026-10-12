@@ -1,0 +1,354 @@
+The files belonging to this database system will be owned by user "ricardo".
+This user must also own the server process.
+
+
+The database cluster will be initialized with this locale configuration:
+  locale provider:   libc
+  LC_COLLATE:  pt_BR.UTF-8
+  LC_CTYPE:    pt_BR.UTF-8
+  LC_MESSAGES: en_US.utf8
+  LC_MONETARY: pt_BR.UTF-8
+  LC_NUMERIC:  pt_BR.UTF-8
+  LC_TIME:     pt_BR.UTF-8
+The default database encoding has accordingly been set to "UTF8".
+The default text search configuration will be set to "portuguese".
+
+Data page checksums are enabled.
+
+creating directory /tmp/cvg-live-pg-pIQojH/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+America/Sao_Paulo
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+Success. You can now start the database server using:
+
+    '/home/ricardo/cvg-trainee-vet/node_modules/.pnpm/@embedded-postgres+linux-x64@18.4.0-beta.17/node_modules/@embedded-postgres/linux-x64/native/bin/pg_ctl' -D /tmp/cvg-live-pg-pIQojH/data -l logfile start
+
+
+2026-10-11 22:03:04.364 -03 [3967657] LOG:  starting PostgreSQL 18.4 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit
+
+2026-10-11 22:03:04.364 -03 [3967657] LOG:  listening on IPv4 address "127.0.0.1", port 55867
+
+2026-10-11 22:03:04.365 -03 [3967657] LOG:  listening on Unix socket "/tmp/.s.PGSQL.55867"
+
+2026-10-11 22:03:04.370 -03 [3967663] LOG:  database system was shut down at 2026-10-11 22:03:04 -03
+
+2026-10-11 22:03:04.373 -03 [3967657] LOG:  database system is ready to accept connections
+
+[audit] applying migrations as superuser
+
+> cvg-trainee-vet@0.1.0 db:migrate /home/ricardo/cvg-trainee-vet
+> drizzle-kit migrate --config=drizzle.config.ts
+
+Reading config file '/home/ricardo/cvg-trainee-vet/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] applying migrations...[2K[1G[⣯] applying migrations...[2K[1G[⣟] applying migrations...[2K[1G[⡿] applying migrations...[2K[1G[✓] migrations applied successfully![audit] provisioning least-privilege roles
+[audit] running live integration suite
+
+> cvg-trainee-vet@0.1.0 test:integration:live /home/ricardo/cvg-trainee-vet
+> node scripts/run-live-integration.mjs
+
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+2026-10-11 22:08:04.469 -03 [3967661] LOG:  checkpoint starting: time
+
+2026-10-11 22:08:48.579 -03 [3967661] LOG:  checkpoint complete: wrote 440 buffers (2.7%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=44.080 s, sync=0.027 s, total=44.110 s; sync files=363, longest=0.002 s, average=0.001 s; distance=3977 kB, estimate=3977 kB; lsn=0/1B328F8, redo lsn=0/1B32868
+
+2026-10-11 22:12:01.923 -03 [4027774] ERROR:  curriculum approval provenance is inconsistent
+2026-10-11 22:12:01.923 -03 [4027774] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_blueprint_provenance() line 16 at RAISE
+2026-10-11 22:12:01.923 -03 [4027774] STATEMENT:  insert into "curriculum_blueprint_versions" ("id", "blueprint_id", "version", "scope_id", "module_id", "approval_decision_id", "approved_by", "approved_at", "manifest") values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
+2026-10-11 22:12:01.962 -03 [4027784] ERROR:  curriculum approval provenance is inconsistent
+2026-10-11 22:12:01.962 -03 [4027784] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_blueprint_provenance() line 16 at RAISE
+2026-10-11 22:12:01.962 -03 [4027784] STATEMENT:  insert into "curriculum_blueprint_versions" ("id", "blueprint_id", "version", "scope_id", "module_id", "approval_decision_id", "approved_by", "approved_at", "manifest") values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
+2026-10-11 22:12:01.995 -03 [4027801] ERROR:  curriculum approval provenance is inconsistent
+2026-10-11 22:12:01.995 -03 [4027801] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_blueprint_provenance() line 16 at RAISE
+2026-10-11 22:12:01.995 -03 [4027801] STATEMENT:  insert into "curriculum_blueprint_versions" ("id", "blueprint_id", "version", "scope_id", "module_id", "approval_decision_id", "approved_by", "approved_at", "manifest") values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
+2026-10-11 22:12:02.032 -03 [4027806] ERROR:  curriculum approval provenance is inconsistent
+2026-10-11 22:12:02.032 -03 [4027806] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_blueprint_provenance() line 16 at RAISE
+2026-10-11 22:12:02.032 -03 [4027806] STATEMENT:  insert into "curriculum_blueprint_versions" ("id", "blueprint_id", "version", "scope_id", "module_id", "approval_decision_id", "approved_by", "approved_at", "manifest") values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
+2026-10-11 22:12:02.068 -03 [4027831] ERROR:  curriculum approval provenance is inconsistent
+2026-10-11 22:12:02.068 -03 [4027831] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_blueprint_provenance() line 16 at RAISE
+2026-10-11 22:12:02.068 -03 [4027831] STATEMENT:  insert into "curriculum_blueprint_versions" ("id", "blueprint_id", "version", "scope_id", "module_id", "approval_decision_id", "approved_by", "approved_at", "manifest") values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
+2026-10-11 22:12:02.103 -03 [4027836] ERROR:  curriculum approval provenance is inconsistent
+2026-10-11 22:12:02.103 -03 [4027836] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_blueprint_provenance() line 16 at RAISE
+2026-10-11 22:12:02.103 -03 [4027836] STATEMENT:  insert into "curriculum_blueprint_versions" ("id", "blueprint_id", "version", "scope_id", "module_id", "approval_decision_id", "approved_by", "approved_at", "manifest") values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
+2026-10-11 22:12:02.134 -03 [4027838] ERROR:  curriculum approval provenance is inconsistent
+2026-10-11 22:12:02.134 -03 [4027838] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_blueprint_provenance() line 16 at RAISE
+2026-10-11 22:12:02.134 -03 [4027838] STATEMENT:  insert into "curriculum_blueprint_versions" ("id", "blueprint_id", "version", "scope_id", "module_id", "approval_decision_id", "approved_by", "approved_at", "manifest") values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
+2026-10-11 22:12:02.162 -03 [4027840] ERROR:  curriculum approval provenance is inconsistent
+2026-10-11 22:12:02.162 -03 [4027840] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_blueprint_provenance() line 16 at RAISE
+2026-10-11 22:12:02.162 -03 [4027840] STATEMENT:  insert into "curriculum_blueprint_versions" ("id", "blueprint_id", "version", "scope_id", "module_id", "approval_decision_id", "approved_by", "approved_at", "manifest") values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+
+2026-10-11 22:12:02.194 -03 [4027842] ERROR:  curriculum publication provenance is inconsistent
+2026-10-11 22:12:02.194 -03 [4027842] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_publication_provenance() line 28 at RAISE
+2026-10-11 22:12:02.194 -03 [4027842] STATEMENT:  insert into "curriculum_form_versions" ("id", "form_id", "version", "scope_id", "module_id", "blueprint_version_id", "mode", "status", "publication_decision_id", "published_by", "published_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+2026-10-11 22:12:02.224 -03 [4027844] ERROR:  curriculum publication provenance is inconsistent
+2026-10-11 22:12:02.224 -03 [4027844] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_publication_provenance() line 28 at RAISE
+2026-10-11 22:12:02.224 -03 [4027844] STATEMENT:  insert into "curriculum_form_versions" ("id", "form_id", "version", "scope_id", "module_id", "blueprint_version_id", "mode", "status", "publication_decision_id", "published_by", "published_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+2026-10-11 22:12:02.257 -03 [4027869] ERROR:  curriculum publication provenance is inconsistent
+2026-10-11 22:12:02.257 -03 [4027869] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_publication_provenance() line 28 at RAISE
+2026-10-11 22:12:02.257 -03 [4027869] STATEMENT:  insert into "curriculum_form_versions" ("id", "form_id", "version", "scope_id", "module_id", "blueprint_version_id", "mode", "status", "publication_decision_id", "published_by", "published_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+2026-10-11 22:12:02.287 -03 [4027874] ERROR:  curriculum publication provenance is inconsistent
+2026-10-11 22:12:02.287 -03 [4027874] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_form_version() line 23 at RAISE
+2026-10-11 22:12:02.287 -03 [4027874] STATEMENT:  insert into "curriculum_form_versions" ("id", "form_id", "version", "scope_id", "module_id", "blueprint_version_id", "mode", "status", "publication_decision_id", "published_by", "published_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+2026-10-11 22:12:02.314 -03 [4027878] ERROR:  curriculum publication provenance is inconsistent
+2026-10-11 22:12:02.314 -03 [4027878] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_form_version() line 23 at RAISE
+2026-10-11 22:12:02.314 -03 [4027878] STATEMENT:  insert into "curriculum_form_versions" ("id", "form_id", "version", "scope_id", "module_id", "blueprint_version_id", "mode", "status", "publication_decision_id", "published_by", "published_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+2026-10-11 22:12:02.341 -03 [4027880] ERROR:  curriculum publication provenance is inconsistent
+2026-10-11 22:12:02.341 -03 [4027880] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_form_version() line 23 at RAISE
+2026-10-11 22:12:02.341 -03 [4027880] STATEMENT:  insert into "curriculum_form_versions" ("id", "form_id", "version", "scope_id", "module_id", "blueprint_version_id", "mode", "status", "publication_decision_id", "published_by", "published_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+2026-10-11 22:12:02.368 -03 [4027882] ERROR:  curriculum publication provenance is inconsistent
+2026-10-11 22:12:02.368 -03 [4027882] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_form_version() line 23 at RAISE
+2026-10-11 22:12:02.368 -03 [4027882] STATEMENT:  insert into "curriculum_form_versions" ("id", "form_id", "version", "scope_id", "module_id", "blueprint_version_id", "mode", "status", "publication_decision_id", "published_by", "published_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+2026-10-11 22:12:02.392 -03 [4027884] ERROR:  curriculum publication provenance is inconsistent
+2026-10-11 22:12:02.392 -03 [4027884] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_form_version() line 23 at RAISE
+2026-10-11 22:12:02.392 -03 [4027884] STATEMENT:  insert into "curriculum_form_versions" ("id", "form_id", "version", "scope_id", "module_id", "blueprint_version_id", "mode", "status", "publication_decision_id", "published_by", "published_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+
+R6_ROLES {"application":{"roleName":"cvg_app","isSuperuser":false,"bypassesRls":false,"canCreateRoles":false,"canCreateDatabases":false,"canReplicate":false},"admin":{"roleName":"cvg_test_admin","isSuperuser":false,"bypassesRls":true,"canCreateRoles":true,"canCreateDatabases":false,"canReplicate":false}}
+R6_REAL_HEARTBEAT {"originalDeadline":1791767539630,"observedAt":1791767540105,"renewedDeadline":1791767540975}
+R6_DURABLE_FAILED_AND_MANUAL_RECOVERY {"exhausted":2,"maxAttempts":5}
+R6_LOST_FENCE {"staleResultDenied":true,"currentAttempt":3,"provider":"DOUBLE_NOT_REAL_QDRANT"}
+R6_INDEX_SERIALIZATION {"provider":"DOUBLE_NOT_REAL_QDRANT","finalPoints":0}
+2026-10-11 22:12:23.876 -03 [4028598] ERROR:  new row violates row-level security policy for table "attempts"
+2026-10-11 22:12:23.876 -03 [4028598] STATEMENT:  insert into "attempts" ("id", "participant_id", "activity_id", "status", "version") values ($1::uuid, $2::uuid, $3::uuid, 'EM_ANDAMENTO', 1)
+
+2026-10-11 22:12:23.944 -03 [4028602] ERROR:  new row violates row-level security policy for table "attempts"
+2026-10-11 22:12:23.944 -03 [4028602] STATEMENT:  insert into "attempts" ("id", "participant_id", "activity_id", "status", "version") values ($1::uuid, $2::uuid, $3::uuid, 'EM_ANDAMENTO', 1)
+
+2026-10-11 22:12:23.972 -03 [4028604] ERROR:  new row violates row-level security policy for table "attempts"
+2026-10-11 22:12:23.972 -03 [4028604] STATEMENT:  insert into "attempts" ("id", "participant_id", "activity_id", "status", "version") values ($1::uuid, $2::uuid, $3::uuid, 'EM_ANDAMENTO', 1)
+
+2026-10-11 22:12:25.716 -03 [4028623] ERROR:  answer item is outside its authorized frozen attempt
+2026-10-11 22:12:25.716 -03 [4028623] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_answer() line 61 at RAISE
+2026-10-11 22:12:25.716 -03 [4028623] STATEMENT:  insert into "answers" ("id", "attempt_id", "item_id", "response", "saved_at", "created_at", "updated_at") values ($1, $2, $3, $4, $5, default, default)
+
+2026-10-11 22:12:25.792 -03 [4028623] ERROR:  answer does not match its frozen public response contract
+2026-10-11 22:12:25.792 -03 [4028623] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_answer() line 64 at RAISE
+2026-10-11 22:12:25.792 -03 [4028623] STATEMENT:  insert into "answers" ("id", "attempt_id", "item_id", "response", "saved_at", "created_at", "updated_at") values ($1, $2, $3, $4, $5, default, default)
+
+2026-10-11 22:12:25.813 -03 [4028623] ERROR:  bound answers require an authorized open attempt
+2026-10-11 22:12:25.813 -03 [4028623] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_answer() line 34 at RAISE
+2026-10-11 22:12:25.813 -03 [4028623] STATEMENT:  update "answers" set "response" = $1 where "answers"."id" = $2
+
+2026-10-11 22:12:25.816 -03 [4028623] ERROR:  answer identity is immutable
+2026-10-11 22:12:25.816 -03 [4028623] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_answer() line 19 at RAISE
+2026-10-11 22:12:25.816 -03 [4028623] STATEMENT:  update "answers" set "item_id" = $1 where "answers"."id" = $2
+
+2026-10-11 22:12:26.226 -03 [4028716] ERROR:  bound attempt must capture its complete published form before commit
+2026-10-11 22:12:26.226 -03 [4028716] CONTEXT:  PL/pgSQL function cvg_require_curriculum_attempt_capture() line 35 at RAISE
+2026-10-11 22:12:26.226 -03 [4028716] STATEMENT:  commit
+
+2026-10-11 22:12:27.416 -03 [4028767] ERROR:  outbox lease fencing requires a claimed lease token
+2026-10-11 22:12:27.416 -03 [4028767] CONTEXT:  PL/pgSQL function guard_outbox_lease_transition() line 9 at RAISE
+2026-10-11 22:12:27.416 -03 [4028767] STATEMENT:  
+	            update outbox_events
+	            set status = 'PROCESSED',
+	                processed_at = statement_timestamp(),
+	                locked_until = null
+	            where id = $1
+	          
+
+2026-10-11 22:12:28.652 -03 [4028832] ERROR:  new row violates row-level security policy for table "activity_assignments"
+2026-10-11 22:12:28.652 -03 [4028832] STATEMENT:  insert into "activity_assignments" ("participant_id", "activity_id", "learning_assignment_id", "status", "assigned_at") values ($1, $2, $3, $4, default)
+
+2026-10-11 22:12:30.895 -03 [4028865] ERROR:  audit_entries is append-only
+2026-10-11 22:12:30.895 -03 [4028865] CONTEXT:  PL/pgSQL function cvg_prevent_audit_mutation() line 3 at RAISE
+2026-10-11 22:12:30.895 -03 [4028865] STATEMENT:  update "audit_entries" set "action" = $1 where "audit_entries"."id" = $2
+
+2026-10-11 22:12:32.696 -03 [4029001] ERROR:  new row violates row-level security policy for table "accounts"
+2026-10-11 22:12:32.696 -03 [4029001] STATEMENT:  insert into "accounts" ("id", "professional_email", "status", "created_at", "updated_at") values ($1, $2, $3, default, default)
+
+2026-10-11 22:12:32.699 -03 [4029004] ERROR:  new row violates row-level security policy for table "sessions"
+2026-10-11 22:12:32.699 -03 [4029004] STATEMENT:  insert into "sessions" ("id", "account_id", "token_hash", "roles", "scopes", "expires_at", "revoked_at", "created_at", "last_seen_at") values ($1, $2, $3, $4, $5, $6, default, default, $7)
+
+2026-10-11 22:12:33.378 -03 [4029083] ERROR:  permission denied for function cvg_learning_activity_in_scope
+2026-10-11 22:12:33.378 -03 [4029083] STATEMENT:  select public.cvg_learning_activity_in_scope('00000000-0000-4000-8000-000000000000'::uuid, ''::text)
+
+2026-10-11 22:12:33.381 -03 [4029083] ERROR:  permission denied for function cvg_learning_activity_for_participant
+2026-10-11 22:12:33.381 -03 [4029083] STATEMENT:  select public.cvg_learning_activity_for_participant('00000000-0000-4000-8000-000000000000'::uuid, ''::text)
+
+2026-10-11 22:12:33.383 -03 [4029083] ERROR:  permission denied for function cvg_learning_activity_item_insert_allowed
+2026-10-11 22:12:33.383 -03 [4029083] STATEMENT:  select public.cvg_learning_activity_item_insert_allowed('00000000-0000-4000-8000-000000000000'::uuid, '00000000-0000-4000-8000-000000000000'::uuid, ''::text)
+
+2026-10-11 22:12:33.384 -03 [4029083] ERROR:  permission denied for function cvg_learning_activity_content_for_participant
+2026-10-11 22:12:33.384 -03 [4029083] STATEMENT:  select public.cvg_learning_activity_content_for_participant('00000000-0000-4000-8000-000000000000'::uuid, ''::text)
+
+2026-10-11 22:12:33.386 -03 [4029083] ERROR:  permission denied for function cvg_participant_in_scope
+2026-10-11 22:12:33.386 -03 [4029083] STATEMENT:  select public.cvg_participant_in_scope('00000000-0000-4000-8000-000000000000'::uuid, '00000000-0000-4000-8000-000000000000'::uuid)
+
+2026-10-11 22:12:33.387 -03 [4029083] ERROR:  permission denied for function cvg_learning_activity_assignment_insert_allowed
+2026-10-11 22:12:33.387 -03 [4029083] STATEMENT:  select public.cvg_learning_activity_assignment_insert_allowed('00000000-0000-4000-8000-000000000000'::uuid, '00000000-0000-4000-8000-000000000000'::uuid, '00000000-0000-4000-8000-000000000000'::uuid, ''::text)
+
+2026-10-11 22:12:33.388 -03 [4029083] ERROR:  permission denied for function cvg_learning_activity_assignment_write_allowed
+2026-10-11 22:12:33.388 -03 [4029083] STATEMENT:  select public.cvg_learning_activity_assignment_write_allowed('00000000-0000-4000-8000-000000000000'::uuid, '00000000-0000-4000-8000-000000000000'::uuid, '00000000-0000-4000-8000-000000000000'::uuid, ''::text, 'ATRIBUIDO'::text)
+
+2026-10-11 22:12:33.390 -03 [4029083] ERROR:  permission denied for function cvg_learning_activity_journey_visible
+2026-10-11 22:12:33.390 -03 [4029083] STATEMENT:  select public.cvg_learning_activity_journey_visible('00000000-0000-4000-8000-000000000000'::uuid, ''::text)
+
+2026-10-11 22:12:33.393 -03 [4029083] ERROR:  permission denied for function cvg_learning_activity_scope_for_participant
+2026-10-11 22:12:33.393 -03 [4029083] STATEMENT:  select public.cvg_learning_activity_scope_for_participant('00000000-0000-4000-8000-000000000000'::uuid, ''::text)
+
+2026-10-11 22:12:33.448 -03 [4029084] ERROR:  permission denied for table knowledge_documents
+2026-10-11 22:12:33.448 -03 [4029084] STATEMENT:  
+	            select id
+	            from public.knowledge_documents
+	            limit 1
+	          
+
+2026-10-11 22:12:34.053 -03 [4029105] ERROR:  new row violates row-level security policy for table "ai_suggestions"
+2026-10-11 22:12:34.053 -03 [4029105] STATEMENT:  insert into "ai_suggestions" ("id", "content_id", "version", "status", "draft_text", "warnings", "created_at", "updated_at") values ($1, $2, $3, default, $4, $5, default, default)
+
+2026-10-11 22:12:34.058 -03 [4029106] ERROR:  insert or update on table "ai_suggestions" violates foreign key constraint "ai_suggestions_content_version_fk"
+2026-10-11 22:12:34.058 -03 [4029106] DETAIL:  Key (content_id, version)=(d669e964-f724-42b9-b622-50e2322f7013, 1) is not present in table "content_versions".
+2026-10-11 22:12:34.058 -03 [4029106] STATEMENT:  insert into "ai_suggestions" ("id", "content_id", "version", "status", "draft_text", "warnings", "created_at", "updated_at") values ($1, $2, $3, default, $4, $5, default, default)
+
+2026-10-11 22:12:36.394 -03 [4029137] ERROR:  permission denied for table authoring_draft_idempotency
+2026-10-11 22:12:36.394 -03 [4029137] STATEMENT:  update "authoring_draft_idempotency" set "fingerprint" = $1 where "authoring_draft_idempotency"."key" = $2
+
+2026-10-11 22:12:36.396 -03 [4029137] ERROR:  permission denied for table authoring_draft_idempotency
+2026-10-11 22:12:36.396 -03 [4029137] STATEMENT:  delete from "authoring_draft_idempotency" where "authoring_draft_idempotency"."key" = $1
+
+2026-10-11 22:12:36.405 -03 [4029137] ERROR:  invalid input syntax for type uuid: "not-a-uuid"
+2026-10-11 22:12:36.405 -03 [4029137] CONTEXT:  unnamed portal parameter $10 = '...'
+2026-10-11 22:12:36.405 -03 [4029137] STATEMENT:  insert into "audit_entries" ("id", "actor_kind", "principal_id", "action", "resource_type", "resource_id", "scope_id", "outcome", "reason_code", "request_id", "correlation_id", "before_hash", "after_hash", "occurred_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+
+2026-10-11 22:12:38.957 -03 [4029258] ERROR:  duplicate key value violates unique constraint "outbox_events_pkey"
+2026-10-11 22:12:38.957 -03 [4029258] DETAIL:  Key (id)=(ce85e027-cb14-44d4-a85a-d997000865f0) already exists.
+2026-10-11 22:12:38.957 -03 [4029258] STATEMENT:  insert into "outbox_events" ("id", "event_type", "aggregate_type", "aggregate_id", "occurred_at", "schema_version", "correlation_id", "payload", "status", "attempts", "available_at", "locked_until", "lease_token", "last_error_code", "processed_at", "created_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, default, default, default, default, default, default)
+
+2026-10-11 22:12:38.982 -03 [4029258] ERROR:  new row violates row-level security policy for table "learning_activities"
+2026-10-11 22:12:38.982 -03 [4029258] STATEMENT:  insert into "learning_activities" ("id", "scope_id", "slug", "module_id", "session_id", "title", "status", "created_at") values ($1, $2, $3, $4, $5, $6, $7, default)
+
+2026-10-11 22:12:47.175 -03 [4029578] ERROR:  new row violates row-level security policy for table "curriculum_runtime_states"
+2026-10-11 22:12:47.175 -03 [4029578] STATEMENT:  insert into "curriculum_runtime_states" ("id", "participant_id", "scope_id", "module_id", "version", "state", "updated_at", "created_at") values ($1, $2, $3, $4, $5, $6, $7, default) on conflict ("participant_id","scope_id","module_id") do update set "version" = "curriculum_runtime_states"."version" + 1, "state" = $8, "updated_at" = $9
+
+2026-10-11 22:13:04.678 -03 [3967661] LOG:  checkpoint starting: time
+
+2026-10-11 22:13:46.652 -03 [4036679] ERROR:  feedback history parent state does not match
+2026-10-11 22:13:46.652 -03 [4036679] CONTEXT:  PL/pgSQL function cvg_validate_feedback_ticket_history_insert() line 31 at RAISE
+2026-10-11 22:13:46.652 -03 [4036679] STATEMENT:  insert into "feedback_ticket_history" ("id", "ticket_id", "scope_id", "ticket_version", "event_type", "from_status", "to_status", "from_priority", "to_priority", "from_assignee_id", "to_assignee_id", "created_at") values (default, $1, $2, $3, $4, $5, $6, default, default, default, default, $7)
+
+2026-10-11 22:13:46.702 -03 [4036678] ERROR:  new row violates row-level security policy for table "feedback_tickets"
+2026-10-11 22:13:46.702 -03 [4036678] STATEMENT:  insert into "feedback_tickets" ("id", "participant_id", "scope_id", "type", "description", "status", "priority", "assignee_id", "version", "created_at", "updated_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) returning "id"
+
+2026-10-11 22:13:46.711 -03 [4036678] ERROR:  feedback history parent ticket scope does not match
+2026-10-11 22:13:46.711 -03 [4036678] CONTEXT:  PL/pgSQL function cvg_validate_feedback_ticket_history_insert() line 27 at RAISE
+2026-10-11 22:13:46.711 -03 [4036678] STATEMENT:  insert into "feedback_ticket_history" ("id", "ticket_id", "scope_id", "ticket_version", "event_type", "from_status", "to_status", "from_priority", "to_priority", "from_assignee_id", "to_assignee_id", "created_at") values ($1, $2, $3, $4, $5, $6, $7, default, default, default, default, default)
+
+2026-10-11 22:13:46.727 -03 [4036678] ERROR:  new row for relation "learning_assignments" violates check constraint "learning_assignments_block_reason_check"
+2026-10-11 22:13:46.727 -03 [4036678] STATEMENT:  insert into "learning_assignments" ("id", "participant_id", "scope_id", "module_id", "source_diagnostic_result_id", "available_at", "status", "version", "block_reason", "paused_from", "created_at", "updated_at") values ($1, $2, $3, $4, default, $5, $6, $7, $8, default, default, default)
+
+
+ Test Files  74 passed | 4 skipped (78)
+      Tests  882 passed | 103 skipped (985)
+   Start at  22:03:07
+   Duration  645.28s (transform 3.76s, setup 0ms, import 27.53s, tests 607.89s, environment 8ms)
+
+[audit] live integration PASS
+2026-10-11 22:13:52.454 -03 [4037054] WARNING:  PID 3967658 is not a PostgreSQL backend process
+2026-10-11 22:13:52.454 -03 [4037054] WARNING:  PID 3967659 is not a PostgreSQL backend process
+2026-10-11 22:13:52.454 -03 [4037054] WARNING:  PID 3967660 is not a PostgreSQL backend process
+2026-10-11 22:13:52.454 -03 [4037054] WARNING:  PID 3967661 is not a PostgreSQL backend process
+
+2026-10-11 22:13:52.454 -03 [4037054] WARNING:  PID 3967662 is not a PostgreSQL backend process
+2026-10-11 22:13:52.454 -03 [4037054] WARNING:  PID 3967664 is not a PostgreSQL backend process
+
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 3967658 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 3967659 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 3967660 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 3967661 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 3967662 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 3967664 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+2026-10-11 22:13:52.455 -03 [3967657] LOG:  background worker "logical replication launcher" (PID 3967667) exited with exit code 1
+
+2026-10-11 22:13:52.458 -03 [3967657] LOG:  received fast shutdown request
+
+2026-10-11 22:13:52.460 -03 [3967657] LOG:  aborting any active transactions
+
+2026-10-11 22:13:52.751 -03 [3967661] LOG:  checkpoint complete: wrote 617 buffers (3.8%), wrote 4 SLRU buffers; 1 WAL file(s) added, 0 removed, 0 recycled; write=47.784 s, sync=0.019 s, total=48.074 s; sync files=205, longest=0.001 s, average=0.001 s; distance=3807 kB, estimate=3960 kB; lsn=0/1F548F8, redo lsn=0/1EEA568
+
+2026-10-11 22:13:52.752 -03 [3967661] LOG:  shutting down
+
+2026-10-11 22:13:52.752 -03 [3967661] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-11 22:13:52.763 -03 [3967661] LOG:  checkpoint complete: wrote 113 buffers (0.7%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.006 s, total=0.012 s; sync files=85, longest=0.001 s, average=0.001 s; distance=425 kB, estimate=3607 kB; lsn=0/1F54970, redo lsn=0/1F54970
+
+2026-10-11 22:13:52.776 -03 [3967657] LOG:  database system is shut down
+

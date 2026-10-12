@@ -1,0 +1,295 @@
+The files belonging to this database system will be owned by user "ricardo".
+This user must also own the server process.
+
+
+The database cluster will be initialized with this locale configuration:
+  locale provider:   libc
+  LC_COLLATE:  pt_BR.UTF-8
+  LC_CTYPE:    pt_BR.UTF-8
+  LC_MESSAGES: en_US.utf8
+  LC_MONETARY: pt_BR.UTF-8
+  LC_NUMERIC:  pt_BR.UTF-8
+  LC_TIME:     pt_BR.UTF-8
+The default database encoding has accordingly been set to "UTF8".
+The default text search configuration will be set to "portuguese".
+
+Data page checksums are enabled.
+
+creating directory /tmp/cvg-live-pg-8imXXI/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+America/Sao_Paulo
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+Success. You can now start the database server using:
+
+    '/home/ricardo/cvg-trainee-vet/node_modules/.pnpm/@embedded-postgres+linux-x64@18.4.0-beta.17/node_modules/@embedded-postgres/linux-x64/native/bin/pg_ctl' -D /tmp/cvg-live-pg-8imXXI/data -l logfile start
+
+
+2026-10-11 23:01:22.997 -03 [4106038] LOG:  starting PostgreSQL 18.4 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit
+
+2026-10-11 23:01:22.997 -03 [4106038] LOG:  listening on IPv4 address "127.0.0.1", port 55604
+
+2026-10-11 23:01:22.999 -03 [4106038] LOG:  listening on Unix socket "/tmp/.s.PGSQL.55604"
+
+2026-10-11 23:01:23.002 -03 [4106044] LOG:  database system was shut down at 2026-10-11 23:01:22 -03
+
+2026-10-11 23:01:23.005 -03 [4106038] LOG:  database system is ready to accept connections
+
+[audit] migrating disposable database
+
+> cvg-trainee-vet@0.1.0 db:migrate /home/ricardo/cvg-trainee-vet
+> drizzle-kit migrate --config=drizzle.config.ts
+
+Reading config file '/home/ricardo/cvg-trainee-vet/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] applying migrations...[2K[1G[⣯] applying migrations...[2K[1G[⣟] applying migrations...[2K[1G[✓] migrations applied successfully![audit] provisioning roles
+[audit] rebuilding web with real API internal origin
+
+> cvg-trainee-vet@0.1.0 build /home/ricardo/cvg-trainee-vet
+> pnpm -r build
+
+Scope: 12 of 13 workspace projects
+packages/config build$ tsc -p tsconfig.json
+packages/contracts build$ tsc -p tsconfig.json
+packages/curriculum build$ tsc -p tsconfig.json
+packages/domain build$ tsc -p tsconfig.json
+packages/domain build: Done
+packages/observability build$ tsc -p tsconfig.json
+packages/config build: Done
+packages/ui build$ tsc -p tsconfig.json
+packages/curriculum build: Done
+packages/contracts build: Done
+packages/ui build: Done
+packages/observability build: Done
+apps/web build$ next build
+packages/application build$ tsc -p tsconfig.json
+apps/web build: ▲ Next.js 16.3.8 (Turbopack)
+apps/web build: ✓ Running next.config.ts took 30ms
+apps/web build:   Creating an optimized production build ...
+apps/web build: ✓ Compiled successfully in 207ms
+apps/web build:   Running TypeScript ...
+packages/application build: Done
+apps/web build:   Finished TypeScript in 1818ms ...
+apps/web build:   Collecting page data using 8 workers ...
+apps/web build:   Generating static pages using 8 workers (0/7) ...
+apps/web build:   Generating static pages using 8 workers (1/7) 
+apps/web build:   Generating static pages using 8 workers (3/7) 
+apps/web build:   Generating static pages using 8 workers (5/7) 
+apps/web build: ✓ Generating static pages using 8 workers (7/7) in 674ms
+apps/web build:   Finalizing page optimization ...
+apps/web build: Route (app)
+apps/web build: ┌ ○ /
+apps/web build: ├ ○ /_not-found
+apps/web build: ├ ○ /authoring
+apps/web build: ├ ○ /diagnostic
+apps/web build: ├ ○ /operations
+apps/web build: └ ○ /recovery
+apps/web build: ƒ Proxy (Middleware)
+apps/web build: ○  (Static)  prerendered as static content
+apps/web build: Done
+packages/persistence build$ tsc -p tsconfig.json
+packages/persistence build: Done
+packages/integrations build$ tsc -p tsconfig.json
+packages/integrations build: Done
+apps/api build$ tsc -p tsconfig.json
+apps/worker build$ tsc -p tsconfig.json
+apps/worker build: Done
+apps/api build: Done
+[audit] starting real-e2e fixture server
+real E2E fixture ready
+[audit] fixture ready (200)
+[audit] starting API
+
+> @cvg/api@0.1.0 start /home/ricardo/cvg-trainee-vet/apps/api
+> node dist/main.js
+
+[api] rate-limit backend: postgres-shared
+{"timestamp":"2026-10-12T02:01:40.129Z","level":"info","service":"api","event":"integration.initialization.succeeded","fields":{"dependency":"qdrant","attempts":1}}
+{"timestamp":"2026-10-12T02:01:40.906Z","level":"info","service":"api","event":"http.request.completed","requestId":"540a5ac4-be34-4549-9aa0-e5bcad2fc397","correlationId":"540a5ac4-be34-4549-9aa0-e5bcad2fc397","durationMs":21.894303000000036,"fields":{"method":"GET","route":"/health/ready","status":200,"outcome":"success"}}
+[audit] api ready (200)
+[audit] starting web on 3110
+
+> @cvg/web@0.1.0 start /home/ricardo/cvg-trainee-vet/apps/web
+> next start --hostname 127.0.0.1 --port 3110
+
+⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+▲ Next.js 16.3.8
+- Local:         http://127.0.0.1:3110
+- Network:       http://127.0.0.1:3110
+✓ Ready in 143ms
+✓ Running next.config.ts took 39ms
+[audit] web ready (200)
+[audit] running real E2E
+
+Running 2 tests using 1 worker
+
+{"timestamp":"2026-10-12T02:01:43.747Z","level":"info","service":"api","event":"http.request.completed","requestId":"2ae4b049-9f10-400e-a912-75845b7137da","correlationId":"2ae4b049-9f10-400e-a912-75845b7137da","durationMs":1.1702399999994668,"fields":{"method":"GET","route":"/health/dependencies","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:44.249Z","level":"info","service":"api","event":"http.request.completed","requestId":"5f8f62e4-bdc3-4ac4-82bd-97243c88e7e0","correlationId":"5f8f62e4-bdc3-4ac4-82bd-97243c88e7e0","durationMs":16.396005000000514,"fields":{"method":"GET","route":"/api/v1/session/current","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:45.440Z","level":"info","service":"api","event":"http.request.completed","requestId":"a059f734-aad1-4cd5-818e-696a3f222cf9","correlationId":"a059f734-aad1-4cd5-818e-696a3f222cf9","durationMs":28.767399999999725,"fields":{"method":"POST","route":"/api/v1/invitations/accept","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:45.472Z","level":"info","service":"api","event":"http.request.completed","requestId":"5f1cb38a-082e-43cd-bb3d-76791312e102","correlationId":"5f1cb38a-082e-43cd-bb3d-76791312e102","durationMs":23.17389699999967,"fields":{"method":"GET","route":"/api/v1/feedback","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:45.513Z","level":"info","service":"api","event":"http.request.completed","requestId":"1f54f6ae-ee05-4124-b605-21b999c24534","correlationId":"1f54f6ae-ee05-4124-b605-21b999c24534","durationMs":62.45976900000005,"fields":{"method":"GET","route":"/api/v1/learning-path","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:45.559Z","level":"info","service":"api","event":"http.request.completed","requestId":"b64c1b67-07f0-42c8-b1e9-7b727d388a22","correlationId":"b64c1b67-07f0-42c8-b1e9-7b727d388a22","durationMs":34.50160599999981,"fields":{"method":"GET","route":"/api/v1/activities/:activityId","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:45.567Z","level":"info","service":"api","event":"http.request.completed","requestId":"5e702a69-e929-4db7-b395-a3ab05db5856","correlationId":"5e702a69-e929-4db7-b395-a3ab05db5856","durationMs":43.782492000000275,"fields":{"method":"GET","route":"/api/v1/dashboard","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:45.821Z","level":"info","service":"api","event":"http.request.completed","requestId":"44167088-fbe0-48e1-aac7-efbca7b46e09","correlationId":"44167088-fbe0-48e1-aac7-efbca7b46e09","durationMs":59.4923289999997,"fields":{"method":"POST","route":"/api/v1/attempts","status":201,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:45.853Z","level":"info","service":"api","event":"http.request.completed","requestId":"9175e341-a123-4807-a254-978b1ed5fd98","correlationId":"9175e341-a123-4807-a254-978b1ed5fd98","durationMs":23.148369000000457,"fields":{"method":"GET","route":"/api/v1/activities/:activityId","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.092Z","level":"info","service":"api","event":"http.request.completed","requestId":"1f861b4d-57f0-45ee-a492-1ad8cbcd33fd","correlationId":"1f861b4d-57f0-45ee-a492-1ad8cbcd33fd","durationMs":81.72071300000061,"fields":{"method":"POST","route":"/api/v1/attempts/:attemptId/answers","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.097Z","level":"info","service":"api","event":"http.request.completed","requestId":"40d8c7f3-b836-4ae5-96b5-2ea80073751f","correlationId":"40d8c7f3-b836-4ae5-96b5-2ea80073751f","durationMs":87.97050900000067,"fields":{"method":"POST","route":"/api/v1/attempts/:attemptId/answers","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.462Z","level":"info","service":"api","event":"http.request.completed","requestId":"11d24151-2695-46c8-8d13-ff2ca56f6940","correlationId":"11d24151-2695-46c8-8d13-ff2ca56f6940","durationMs":41.2703900000015,"fields":{"method":"POST","route":"/api/v1/attempts/:attemptId/answers","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.507Z","level":"info","service":"api","event":"http.request.completed","requestId":"703bbbdc-6266-4c5c-ab66-2dd402e01190","correlationId":"703bbbdc-6266-4c5c-ab66-2dd402e01190","durationMs":29.428051000000778,"fields":{"method":"GET","route":"/api/v1/activities/:activityId","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.758Z","level":"info","service":"api","event":"http.request.completed","requestId":"01567be3-5675-4ab7-aacd-76bfdcd9d4f7","correlationId":"01567be3-5675-4ab7-aacd-76bfdcd9d4f7","durationMs":14.772179999999935,"fields":{"method":"GET","route":"/api/v1/session/current","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.787Z","level":"info","service":"api","event":"http.request.completed","requestId":"cdcc747a-020a-49af-a447-4fd8c3ecf312","correlationId":"cdcc747a-020a-49af-a447-4fd8c3ecf312","durationMs":19.05327799999941,"fields":{"method":"GET","route":"/api/v1/feedback","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.804Z","level":"info","service":"api","event":"http.request.completed","requestId":"48837f29-881f-4857-ab39-8ed4dc98df58","correlationId":"48837f29-881f-4857-ab39-8ed4dc98df58","durationMs":33.12185599999975,"fields":{"method":"GET","route":"/api/v1/learning-path","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.826Z","level":"info","service":"api","event":"http.request.completed","requestId":"3f72ef14-06da-4cc8-856d-b6931805c9c7","correlationId":"3f72ef14-06da-4cc8-856d-b6931805c9c7","durationMs":13.798805000000357,"fields":{"method":"GET","route":"/api/v1/dashboard","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:48.839Z","level":"info","service":"api","event":"http.request.completed","requestId":"1cb85d0d-e70c-440a-8d24-1eeec1099cd4","correlationId":"1cb85d0d-e70c-440a-8d24-1eeec1099cd4","durationMs":25.086460000000443,"fields":{"method":"GET","route":"/api/v1/activities/:activityId","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:48.875Z","level":"info","service":"api","event":"http.request.completed","requestId":"516cd3af-2f33-44c4-9914-6b9ec1f83f06","correlationId":"516cd3af-2f33-44c4-9914-6b9ec1f83f06","durationMs":27.273606999999174,"fields":{"method":"GET","route":"/api/v1/attempts/:attemptId","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:50.026Z","level":"info","service":"api","event":"http.request.completed","requestId":"8077a460-73bf-4cb7-b209-6aad660ffa9d","correlationId":"8077a460-73bf-4cb7-b209-6aad660ffa9d","durationMs":29.502370000000155,"fields":{"method":"POST","route":"/api/v1/attempts/:attemptId/submit","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:50.030Z","level":"info","service":"api","event":"http.request.completed","requestId":"2762cb7b-b587-4e0f-a76b-a5c5e2196733","correlationId":"2762cb7b-b587-4e0f-a76b-a5c5e2196733","durationMs":31.8569779999998,"fields":{"method":"POST","route":"/api/v1/attempts/:attemptId/submit","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:50.208Z","level":"info","service":"api","event":"http.request.completed","requestId":"a67fbcf2-3295-4e90-9a20-e592808f470e","correlationId":"a67fbcf2-3295-4e90-9a20-e592808f470e","durationMs":22.91280999999981,"fields":{"method":"POST","route":"/api/v1/attempts/:attemptId/submit","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:50.253Z","level":"info","service":"api","event":"http.request.completed","requestId":"47952a2a-8577-4a1d-a538-95b07b24cce8","correlationId":"47952a2a-8577-4a1d-a538-95b07b24cce8","durationMs":23.785196000000724,"fields":{"method":"GET","route":"/api/v1/activities/:activityId","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:50.869Z","level":"info","service":"api","event":"http.request.completed","requestId":"430adc79-bc8f-4f18-a2ce-6e14ec6990d0","correlationId":"430adc79-bc8f-4f18-a2ce-6e14ec6990d0","durationMs":8.479793000000427,"fields":{"method":"GET","route":"/api/v1/session/current","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:50.886Z","level":"info","service":"api","event":"http.request.completed","requestId":"5b2d8edb-f51b-4bb8-a488-c4449cf1ff7d","correlationId":"5b2d8edb-f51b-4bb8-a488-c4449cf1ff7d","durationMs":20.950252000000546,"fields":{"method":"GET","route":"/api/v1/learning-path","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:50.888Z","level":"info","service":"api","event":"http.request.completed","requestId":"d957dc9a-8496-474c-9ccb-02adf39962b3","correlationId":"d957dc9a-8496-474c-9ccb-02adf39962b3","durationMs":11.94873700000062,"fields":{"method":"GET","route":"/api/v1/feedback","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:50.910Z","level":"info","service":"api","event":"http.request.completed","requestId":"6e61cec5-6da0-41a0-b3d0-276660a7cac5","correlationId":"6e61cec5-6da0-41a0-b3d0-276660a7cac5","durationMs":19.546555999999327,"fields":{"method":"GET","route":"/api/v1/learning-path","status":200,"outcome":"success"}}
+  ✓  1 [chromium] › tests/e2e/real-runtime.spec.ts:241:1 › participant completes a persisted synthetic activity through the real API (7.4s)
+{"timestamp":"2026-10-12T02:01:51.483Z","level":"info","service":"api","event":"http.request.completed","requestId":"19f39722-7093-4d9a-82b4-775479c37956","correlationId":"19f39722-7093-4d9a-82b4-775479c37956","durationMs":12.176430999999866,"fields":{"method":"GET","route":"/api/v1/session/current","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:51.498Z","level":"info","service":"api","event":"http.request.completed","requestId":"d9811c51-8c56-4763-a03a-3c1b27d5984d","correlationId":"d9811c51-8c56-4763-a03a-3c1b27d5984d","durationMs":7.350728999999774,"fields":{"method":"GET","route":"/api/v1/session/current","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:51.517Z","level":"info","service":"api","event":"http.request.completed","requestId":"f5d87ac0-9978-43be-8904-72c238f16774","correlationId":"f5d87ac0-9978-43be-8904-72c238f16774","durationMs":6.3386220000011235,"fields":{"method":"GET","route":"/api/v1/dashboard","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:51.541Z","level":"info","service":"api","event":"http.request.completed","requestId":"a53bc3f0-6d94-4130-b2bf-c97a205b444d","correlationId":"a53bc3f0-6d94-4130-b2bf-c97a205b444d","durationMs":5.779961000000185,"fields":{"method":"GET","route":"/api/v1/internal/session/scopes","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:51.664Z","level":"info","service":"api","event":"http.request.completed","requestId":"b86f9302-55b8-4b7b-98ed-ded3dd573886","correlationId":"b86f9302-55b8-4b7b-98ed-ded3dd573886","durationMs":14.25199000000066,"fields":{"method":"GET","route":"/api/v1/session/current","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:51.766Z","level":"info","service":"api","event":"http.request.completed","requestId":"95f39903-90fa-4f90-87d1-e6e1b543ed7b","correlationId":"95f39903-90fa-4f90-87d1-e6e1b543ed7b","durationMs":19.395935000000463,"fields":{"method":"POST","route":"/api/v1/invitations/accept","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:51.814Z","level":"info","service":"api","event":"http.request.completed","requestId":"b543936a-049d-421c-94c2-7127f2c5e6e7","correlationId":"b543936a-049d-421c-94c2-7127f2c5e6e7","durationMs":8.749406000000818,"fields":{"method":"GET","route":"/api/v1/session/current","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:51.842Z","level":"info","service":"api","event":"http.request.completed","requestId":"199fc4c7-6df7-4d22-9713-38dd5259b77b","correlationId":"199fc4c7-6df7-4d22-9713-38dd5259b77b","durationMs":8.956561999999394,"fields":{"method":"GET","route":"/api/v1/internal/session/scopes","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:51.891Z","level":"info","service":"api","event":"http.request.completed","requestId":"1cf761a7-ce09-4d1b-9c46-93f2d8ccaeb4","correlationId":"1cf761a7-ce09-4d1b-9c46-93f2d8ccaeb4","durationMs":26.825291000001016,"fields":{"method":"GET","route":"/api/v1/dashboard","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:51.994Z","level":"info","service":"api","event":"http.request.completed","requestId":"a4930f3a-dded-4478-894d-f59f89e5d479","correlationId":"a4930f3a-dded-4478-894d-f59f89e5d479","durationMs":28.325134999999136,"fields":{"method":"GET","route":"/api/v1/dashboard","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:52.057Z","level":"info","service":"api","event":"http.request.completed","requestId":"85d0de15-1cd7-4d3f-882e-90222c116c4f","correlationId":"85d0de15-1cd7-4d3f-882e-90222c116c4f","durationMs":1.2010479999989911,"fields":{"method":"GET","route":"/health/dependencies","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:52.101Z","level":"info","service":"api","event":"http.request.completed","requestId":"dba16a16-76e8-4564-a887-2c4ba7eec0db","correlationId":"dba16a16-76e8-4564-a887-2c4ba7eec0db","durationMs":42.43177400000059,"fields":{"method":"GET","route":"/api/v1/audit","status":403,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:52.116Z","level":"info","service":"api","event":"http.request.completed","requestId":"d66167b1-e906-44dd-ba4a-20324c78779f","correlationId":"d66167b1-e906-44dd-ba4a-20324c78779f","durationMs":55.586870000001,"fields":{"method":"GET","route":"/api/v1/internal/reports/continuing-education","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:52.144Z","level":"info","service":"api","event":"http.request.completed","requestId":"9a1e0514-3304-4b20-9612-f5a84dc5545c","correlationId":"9a1e0514-3304-4b20-9612-f5a84dc5545c","durationMs":75.14165200000025,"fields":{"method":"GET","route":"/api/v1/internal/appeals/review-queue","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:52.148Z","level":"info","service":"api","event":"http.request.completed","requestId":"6ac97463-06af-4eb4-9cc7-90dd06369bef","correlationId":"6ac97463-06af-4eb4-9cc7-90dd06369bef","durationMs":79.63621700000112,"fields":{"method":"GET","route":"/api/v1/internal/feedback","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:52.169Z","level":"info","service":"api","event":"http.request.completed","requestId":"cb07a642-8401-49a9-b2f4-cb6317c5ce3e","correlationId":"cb07a642-8401-49a9-b2f4-cb6317c5ce3e","durationMs":101.27236699999958,"fields":{"method":"GET","route":"/api/v1/internal/reports/reflections","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:55.176Z","level":"info","service":"api","event":"http.request.completed","requestId":"c65796bf-febf-4add-8162-634e15f242ad","correlationId":"c65796bf-febf-4add-8162-634e15f242ad","durationMs":13.510678000000553,"fields":{"method":"GET","route":"/api/v1/internal/reports/continuing-education","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:55.209Z","level":"info","service":"api","event":"http.request.completed","requestId":"f3aa72d3-cdb6-4e91-b6ba-6c4688b95252","correlationId":"f3aa72d3-cdb6-4e91-b6ba-6c4688b95252","durationMs":13.485661000000619,"fields":{"method":"GET","route":"/api/v1/internal/reports/continuing-education","status":403,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:55.564Z","level":"info","service":"api","event":"http.request.completed","requestId":"dba78866-8404-4f60-b34d-d7d56eb66ba4","correlationId":"dba78866-8404-4f60-b34d-d7d56eb66ba4","durationMs":11.675637999998798,"fields":{"method":"GET","route":"/api/v1/session/current","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:55.607Z","level":"info","service":"api","event":"http.request.completed","requestId":"88826ab2-fd0f-4a50-b53c-b155f2068216","correlationId":"88826ab2-fd0f-4a50-b53c-b155f2068216","durationMs":37.20817899999929,"fields":{"method":"POST","route":"/api/v1/invitations/accept","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:55.646Z","level":"info","service":"api","event":"http.request.completed","requestId":"d4009650-e1be-4b33-bee3-630ffe31b2be","correlationId":"d4009650-e1be-4b33-bee3-630ffe31b2be","durationMs":17.134460999997827,"fields":{"method":"GET","route":"/api/v1/internal/session/scopes","status":403,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:55.681Z","level":"info","service":"api","event":"http.request.completed","requestId":"4663e358-12c5-4270-b2da-5f385bbcd98b","correlationId":"4663e358-12c5-4270-b2da-5f385bbcd98b","durationMs":13.882040000000416,"fields":{"method":"GET","route":"/api/v1/internal/reports/continuing-education","status":403,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:55.728Z","level":"info","service":"api","event":"http.request.completed","requestId":"03512493-5c3a-4849-a871-2d89c160080e","correlationId":"03512493-5c3a-4849-a871-2d89c160080e","durationMs":24.557003000001714,"fields":{"method":"GET","route":"/api/v1/dashboard","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:55.784Z","level":"info","service":"api","event":"http.request.completed","requestId":"2f073d7f-746c-4ec2-bdc9-d57864dac2a0","correlationId":"2f073d7f-746c-4ec2-bdc9-d57864dac2a0","durationMs":32.24161399999866,"fields":{"method":"GET","route":"/api/v1/dashboard","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:55.880Z","level":"info","service":"api","event":"http.request.completed","requestId":"d61903cf-cbe5-45a0-bbd9-606206b75c06","correlationId":"d61903cf-cbe5-45a0-bbd9-606206b75c06","durationMs":10.985681999998633,"fields":{"method":"GET","route":"/api/v1/session/current","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:55.907Z","level":"info","service":"api","event":"http.request.completed","requestId":"67854643-3137-4199-b23a-cb65880efe9e","correlationId":"67854643-3137-4199-b23a-cb65880efe9e","durationMs":16.47093500000119,"fields":{"method":"GET","route":"/api/v1/feedback","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:55.915Z","level":"info","service":"api","event":"http.request.completed","requestId":"46ed58a8-1ac8-4114-8ec2-4042b25e0b56","correlationId":"46ed58a8-1ac8-4114-8ec2-4042b25e0b56","durationMs":22.761327000000165,"fields":{"method":"GET","route":"/api/v1/learning-path","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:55.938Z","level":"info","service":"api","event":"http.request.completed","requestId":"205f3f21-2163-4e18-906a-02ebe95de880","correlationId":"205f3f21-2163-4e18-906a-02ebe95de880","durationMs":8.71414999999979,"fields":{"method":"GET","route":"/api/v1/session/current","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:55.947Z","level":"info","service":"api","event":"http.request.completed","requestId":"251a01b9-6174-4787-a167-d69c6a7d8b80","correlationId":"251a01b9-6174-4787-a167-d69c6a7d8b80","durationMs":23.545248000002175,"fields":{"method":"GET","route":"/api/v1/dashboard","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:56.460Z","level":"info","service":"api","event":"http.request.completed","requestId":"d3217072-5039-4122-ace3-df159b26f705","correlationId":"d3217072-5039-4122-ace3-df159b26f705","durationMs":13.114939999999478,"fields":{"method":"POST","route":"/api/v1/session/revoke","status":200,"outcome":"success"}}
+{"timestamp":"2026-10-12T02:01:56.942Z","level":"info","service":"api","event":"http.request.completed","requestId":"3381aa9f-4b4b-41bc-8fdb-dab78da4e9cb","correlationId":"3381aa9f-4b4b-41bc-8fdb-dab78da4e9cb","durationMs":11.20995000000039,"fields":{"method":"GET","route":"/api/v1/session/current","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:56.960Z","level":"info","service":"api","event":"http.request.completed","requestId":"d982289f-b69c-4e72-b37a-50848b9110ee","correlationId":"d982289f-b69c-4e72-b37a-50848b9110ee","durationMs":11.746850999999879,"fields":{"method":"GET","route":"/api/v1/session/current","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:56.991Z","level":"info","service":"api","event":"http.request.completed","requestId":"33328367-34f4-4a95-a26f-b99848ece361","correlationId":"33328367-34f4-4a95-a26f-b99848ece361","durationMs":12.067177999997512,"fields":{"method":"GET","route":"/api/v1/dashboard","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:57.026Z","level":"info","service":"api","event":"http.request.completed","requestId":"3f4b05bd-8811-47e4-b0f8-0adcef1c49a0","correlationId":"3f4b05bd-8811-47e4-b0f8-0adcef1c49a0","durationMs":10.046150999998645,"fields":{"method":"GET","route":"/api/v1/internal/session/scopes","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:57.060Z","level":"info","service":"api","event":"http.request.completed","requestId":"9030fbd3-120b-4678-b4d8-a51120312f75","correlationId":"9030fbd3-120b-4678-b4d8-a51120312f75","durationMs":11.495351999998093,"fields":{"method":"GET","route":"/api/v1/dashboard","status":401,"outcome":"client_error"}}
+{"timestamp":"2026-10-12T02:01:57.158Z","level":"info","service":"api","event":"http.request.completed","requestId":"b1740c4c-a103-41a3-b031-81e82d86ec26","correlationId":"b1740c4c-a103-41a3-b031-81e82d86ec26","durationMs":13.23862999999983,"fields":{"method":"GET","route":"/api/v1/session/current","status":401,"outcome":"client_error"}}
+{"fixtureCleanup":{"verified":true,"deletableEntities":{"accounts":0,"invitations":0,"sessions":0,"learning_assignments":0,"activity_assignments":0,"attempts":0,"answers":0,"attempt_idempotency":0,"answer_idempotency":0,"activity_items":0,"activities":0,"content_versions":0,"content_outbox":0,"attempt_outbox":0},"retainedAudit":{"count":13,"sha256":"568c91a2a222ffa279b570abb0e2a06faa3ca140181154b17b32a3c8bbff8646","lifecycle":"append-only until disposable cluster destruction"}}}
+  ✓  2 [chromium] › tests/e2e/real-runtime.spec.ts:592:1 › moderator uses a real invitation/session and protected staff data denies unauthorized access (6.7s)
+
+  2 passed (15.1s)
+
+To open last HTML report run:
+[36m[39m
+[36m  pnpm exec playwright show-report[39m
+[36m[39m
+[audit] real E2E PASS
+[audit] stopped api
+[audit] stopped web
+ ELIFECYCLE  Command failed.
+/home/ricardo/cvg-trainee-vet/apps/api:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @cvg/api@0.1.0 start: `node dist/main.js`
+Command failed with signal "SIGTERM"
+2026-10-11 23:02:00.114 -03 [4109215] WARNING:  PID 4106039 is not a PostgreSQL backend process
+
+2026-10-11 23:02:00.115 -03 [4109215] WARNING:  PID 4106040 is not a PostgreSQL backend process
+2026-10-11 23:02:00.115 -03 [4109215] WARNING:  PID 4106041 is not a PostgreSQL backend process
+2026-10-11 23:02:00.115 -03 [4109215] WARNING:  PID 4106042 is not a PostgreSQL backend process
+2026-10-11 23:02:00.115 -03 [4109215] WARNING:  PID 4106043 is not a PostgreSQL backend process
+2026-10-11 23:02:00.115 -03 [4109215] WARNING:  PID 4106045 is not a PostgreSQL backend process
+
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 4106039 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 4106040 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 4106041 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 4106042 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 4106043 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 4106045 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+2026-10-11 23:02:00.116 -03 [4106038] LOG:  background worker "logical replication launcher" (PID 4106048) exited with exit code 1
+
+2026-10-11 23:02:00.119 -03 [4106038] LOG:  received fast shutdown request
+
+2026-10-11 23:02:00.122 -03 [4106038] LOG:  aborting any active transactions
+
+2026-10-11 23:02:00.124 -03 [4106042] LOG:  shutting down
+
+2026-10-11 23:02:00.124 -03 [4106042] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-11 23:02:00.160 -03 [4106042] LOG:  checkpoint complete: wrote 472 buffers (2.9%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.008 s, sync=0.025 s, total=0.036 s; sync files=347, longest=0.001 s, average=0.001 s; distance=3394 kB, estimate=3394 kB; lsn=0/1AA0C08, redo lsn=0/1AA0C08
+
+2026-10-11 23:02:00.170 -03 [4106038] LOG:  database system is shut down
+

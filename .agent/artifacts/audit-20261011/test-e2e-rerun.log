@@ -1,0 +1,63 @@
+
+> cvg-trainee-vet@0.1.0 test:e2e /home/ricardo/cvg-trainee-vet
+> node scripts/build-e2e.mjs && playwright test
+
+
+> cvg-trainee-vet@0.1.0 build /home/ricardo/cvg-trainee-vet
+> pnpm -r build
+
+Scope: 12 of 13 workspace projects
+packages/config build$ tsc -p tsconfig.json
+packages/contracts build$ tsc -p tsconfig.json
+packages/curriculum build$ tsc -p tsconfig.json
+packages/domain build$ tsc -p tsconfig.json
+packages/domain build: Done
+packages/observability build$ tsc -p tsconfig.json
+packages/contracts build: Done
+packages/ui build$ tsc -p tsconfig.json
+packages/config build: Done
+packages/curriculum build: Done
+packages/ui build: Done
+packages/observability build: Done
+apps/web build$ next build
+packages/application build$ tsc -p tsconfig.json
+apps/web build: ▲ Next.js 16.3.8 (Turbopack)
+apps/web build: ✓ Running next.config.ts took 31ms
+apps/web build:   Creating an optimized production build ...
+apps/web build: ✓ Compiled successfully in 195ms
+apps/web build:   Running TypeScript ...
+packages/application build: Done
+apps/web build:   Finished TypeScript in 1769ms ...
+apps/web build:   Collecting page data using 8 workers ...
+apps/web build:   Generating static pages using 8 workers (0/7) ...
+apps/web build:   Generating static pages using 8 workers (1/7) 
+apps/web build:   Generating static pages using 8 workers (3/7) 
+apps/web build:   Generating static pages using 8 workers (5/7) 
+apps/web build: ✓ Generating static pages using 8 workers (7/7) in 684ms
+apps/web build:   Finalizing page optimization ...
+apps/web build: Route (app)
+apps/web build: ┌ ○ /
+apps/web build: ├ ○ /_not-found
+apps/web build: ├ ○ /authoring
+apps/web build: ├ ○ /diagnostic
+apps/web build: ├ ○ /operations
+apps/web build: └ ○ /recovery
+apps/web build: ƒ Proxy (Middleware)
+apps/web build: ○  (Static)  prerendered as static content
+apps/web build: Done
+packages/persistence build$ tsc -p tsconfig.json
+packages/persistence build: Done
+packages/integrations build$ tsc -p tsconfig.json
+packages/integrations build: Done
+apps/api build$ tsc -p tsconfig.json
+apps/worker build$ tsc -p tsconfig.json
+apps/worker build: Done
+apps/api build: Done
+Error: http://127.0.0.1:3103/ready is already used, make sure that nothing is running on the port/url or set reuseExistingServer:true in config.webServer.
+
+
+To open last HTML report run:
+[36m[39m
+[36m  pnpm exec playwright show-report[39m
+[36m[39m
+ ELIFECYCLE  Command failed with exit code 1.

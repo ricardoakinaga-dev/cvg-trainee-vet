@@ -1,0 +1,163 @@
+The files belonging to this database system will be owned by user "ricardo".
+This user must also own the server process.
+
+
+The database cluster will be initialized with this locale configuration:
+  locale provider:   libc
+  LC_COLLATE:  pt_BR.UTF-8
+  LC_CTYPE:    pt_BR.UTF-8
+  LC_MESSAGES: en_US.utf8
+  LC_MONETARY: pt_BR.UTF-8
+  LC_NUMERIC:  pt_BR.UTF-8
+  LC_TIME:     pt_BR.UTF-8
+The default database encoding has accordingly been set to "UTF8".
+The default text search configuration will be set to "portuguese".
+
+Data page checksums are enabled.
+
+creating directory /tmp/cvg-live-pg-GHFUot/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+America/Sao_Paulo
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+Success. You can now start the database server using:
+
+    '/home/ricardo/cvg-trainee-vet/node_modules/.pnpm/@embedded-postgres+linux-x64@18.4.0-beta.17/node_modules/@embedded-postgres/linux-x64/native/bin/pg_ctl' -D /tmp/cvg-live-pg-GHFUot/data -l logfile start
+
+
+2026-10-12 00:21:34.800 -03 [87551] LOG:  starting PostgreSQL 18.4 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit
+
+2026-10-12 00:21:34.800 -03 [87551] LOG:  listening on IPv4 address "127.0.0.1", port 55632
+
+2026-10-12 00:21:34.802 -03 [87551] LOG:  listening on Unix socket "/tmp/.s.PGSQL.55632"
+
+2026-10-12 00:21:34.805 -03 [87557] LOG:  database system was shut down at 2026-10-12 00:21:34 -03
+
+2026-10-12 00:21:34.808 -03 [87551] LOG:  database system is ready to accept connections
+
+
+> cvg-trainee-vet@0.1.0 db:migrate /home/ricardo/cvg-trainee-vet
+> drizzle-kit migrate --config=drizzle.config.ts
+
+Reading config file '/home/ricardo/cvg-trainee-vet/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] applying migrations...[2K[1G[⣯] applying migrations...[2K[1G[⣟] applying migrations...[2K[1G[✓] migrations applied successfully!
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+2026-10-12 00:21:51.753 -03 [88321] ERROR:  answer item is outside its authorized frozen attempt
+2026-10-12 00:21:51.753 -03 [88321] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_answer() line 61 at RAISE
+2026-10-12 00:21:51.753 -03 [88321] STATEMENT:  insert into "answers" ("id", "attempt_id", "item_id", "response", "saved_at", "created_at", "updated_at") values ($1, $2, $3, $4, $5, default, default)
+
+2026-10-12 00:21:51.814 -03 [88321] ERROR:  answer does not match its frozen public response contract
+2026-10-12 00:21:51.814 -03 [88321] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_answer() line 64 at RAISE
+2026-10-12 00:21:51.814 -03 [88321] STATEMENT:  insert into "answers" ("id", "attempt_id", "item_id", "response", "saved_at", "created_at", "updated_at") values ($1, $2, $3, $4, $5, default, default)
+
+2026-10-12 00:21:51.826 -03 [88321] ERROR:  bound answers require an authorized open attempt
+2026-10-12 00:21:51.826 -03 [88321] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_answer() line 34 at RAISE
+2026-10-12 00:21:51.826 -03 [88321] STATEMENT:  update "answers" set "response" = $1 where "answers"."id" = $2
+
+2026-10-12 00:21:51.829 -03 [88321] ERROR:  answer identity is immutable
+2026-10-12 00:21:51.829 -03 [88321] CONTEXT:  PL/pgSQL function cvg_guard_curriculum_answer() line 19 at RAISE
+2026-10-12 00:21:51.829 -03 [88321] STATEMENT:  update "answers" set "item_id" = $1 where "answers"."id" = $2
+
+2026-10-12 00:21:52.089 -03 [88327] ERROR:  bound attempt must capture its complete published form before commit
+2026-10-12 00:21:52.089 -03 [88327] CONTEXT:  PL/pgSQL function cvg_require_curriculum_attempt_capture() line 35 at RAISE
+2026-10-12 00:21:52.089 -03 [88327] STATEMENT:  commit
+
+
+ Test Files  2 passed (2)
+      Tests  18 passed (18)
+   Start at  00:21:36
+   Duration  15.35s (transform 1.22s, setup 0ms, import 2.47s, tests 12.64s, environment 0ms)
+
+[audit] pg18 both files PASS
+2026-10-12 00:21:52.161 -03 [88329] WARNING:  PID 87552 is not a PostgreSQL backend process
+
+2026-10-12 00:21:52.161 -03 [88329] WARNING:  PID 87553 is not a PostgreSQL backend process
+2026-10-12 00:21:52.161 -03 [88329] WARNING:  PID 87554 is not a PostgreSQL backend process
+2026-10-12 00:21:52.161 -03 [88329] WARNING:  PID 87555 is not a PostgreSQL backend process
+2026-10-12 00:21:52.161 -03 [88329] WARNING:  PID 87556 is not a PostgreSQL backend process
+2026-10-12 00:21:52.161 -03 [88329] WARNING:  PID 87558 is not a PostgreSQL backend process
+
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 87552 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 87553 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 87554 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 87555 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 87556 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+{
+  severity_local: 'WARNING',
+  severity: 'WARNING',
+  code: '01000',
+  message: 'PID 87558 is not a PostgreSQL backend process',
+  file: 'signalfuncs.c',
+  line: '74',
+  routine: 'pg_signal_backend'
+}
+2026-10-12 00:21:52.162 -03 [87551] LOG:  background worker "logical replication launcher" (PID 87561) exited with exit code 1
+
+2026-10-12 00:21:52.165 -03 [87551] LOG:  received fast shutdown request
+
+2026-10-12 00:21:52.166 -03 [87551] LOG:  aborting any active transactions
+
+2026-10-12 00:21:52.167 -03 [87555] LOG:  shutting down
+
+2026-10-12 00:21:52.168 -03 [87555] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-12 00:21:52.286 -03 [87555] LOG:  checkpoint complete: wrote 746 buffers (4.6%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.013 s, sync=0.101 s, total=0.119 s; sync files=355, longest=0.006 s, average=0.001 s; distance=5792 kB, estimate=5792 kB; lsn=0/1CF81B8, redo lsn=0/1CF81B8
+
+2026-10-12 00:21:52.295 -03 [87551] LOG:  database system is shut down
+

@@ -1,0 +1,532 @@
+
+> cvg-trainee-vet@0.1.0 verify /home/ricardo/cvg-trainee-vet
+> pnpm format:check && pnpm verify:ci-contract && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm verify:coverage-floor && pnpm verify:evidence-consistency && pnpm test:contract && pnpm test:worker && pnpm verify:migrations && pnpm verify:secrets && pnpm verify:traceability && pnpm verify:architecture && pnpm verify:routes && pnpm verify:complexity && pnpm verify:cycles && pnpm verify:dead-code && pnpm verify:security && pnpm verify:otel && pnpm verify:release-evidence && pnpm verify:documentation && pnpm verify:product-definition && pnpm verify:exposure
+
+
+> cvg-trainee-vet@0.1.0 format:check /home/ricardo/cvg-trainee-vet
+> prettier --check 'AGENTS.md' 'apps/**/*.{ts,tsx,json,mjs,css}' 'packages/**/*.{ts,json,mjs}' 'tests/**/*.{ts,tsx}' 'scripts/**/*.mjs' '.github/workflows/**/*.{yml,yaml}' '*.{json,yaml,yml,mjs,ts}'
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> cvg-trainee-vet@0.1.0 verify:ci-contract /home/ricardo/cvg-trainee-vet
+> node scripts/verify-ci-contract.mjs
+
+{"status":"PASS","nodeVersion":"22.22.0","pnpmVersion":"10.33.0","requiredEnvironmentKeys":16,"requiredWorkflowChecks":24,"requiredRuntimeChecks":1}
+
+> cvg-trainee-vet@0.1.0 lint /home/ricardo/cvg-trainee-vet
+> eslint .
+
+
+> cvg-trainee-vet@0.1.0 typecheck /home/ricardo/cvg-trainee-vet
+> tsc -b && pnpm --filter @cvg/web typecheck && pnpm typecheck:test
+
+
+> @cvg/web@0.1.0 typecheck /home/ricardo/cvg-trainee-vet/apps/web
+> tsc --noEmit
+
+
+> cvg-trainee-vet@0.1.0 typecheck:test /home/ricardo/cvg-trainee-vet
+> tsc -p tsconfig.tests.json
+
+
+> cvg-trainee-vet@0.1.0 test:coverage /home/ricardo/cvg-trainee-vet
+> node scripts/run-coverage-with-provenance.mjs
+
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+      Coverage enabled with v8
+
+21:33:24 [vite] (client) Re-optimizing dependencies because vite config has changed
+
+ Test Files  308 passed | 44 skipped (352)
+      Tests  3929 passed | 212 skipped (4141)
+   Start at  21:26:49
+   Duration  616.20s (transform 81.82s, setup 0ms, import 314.20s, tests 567.79s, environment 74ms)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   91.07 |    86.97 |   95.07 |    92.4 |                   
+ apps/api/src      |   96.88 |    95.24 |   95.65 |   97.41 |                   
+  http.ts          |   99.66 |    99.69 |     100 |   99.66 | 599               
+  ...t-security.ts |   98.03 |    93.18 |     100 |   97.95 | 51                
+  server.ts        |   91.35 |    84.49 |   92.85 |    92.9 | ...87-388,427-433 
+ ...rc/composition |   97.41 |    86.36 |    92.1 |      99 |                   
+  ...-lifecycle.ts |   97.67 |      100 |   91.66 |     100 |                   
+  ...uest-drain.ts |   94.44 |      100 |   83.33 |     100 |                   
+  ...-lifecycle.ts |     100 |    81.81 |     100 |     100 | 17,58             
+  ...-principal.ts |       0 |        0 |       0 |       0 | 8                 
+ ...tures/accounts |   79.31 |       70 |     100 |   83.33 |                   
+  ...ts.handler.ts |   79.31 |       70 |     100 |   83.33 | 35,78,85,119      
+ ...atures/appeals |   87.03 |    76.72 |     100 |   90.21 |                   
+  ...ls.handler.ts |   87.03 |    76.72 |     100 |   90.21 | ...16,339,361,410 
+ ...tures/attempts |   84.93 |    75.86 |     100 |   96.72 |                   
+  ...ts.handler.ts |   84.93 |    75.86 |     100 |   96.72 | 146,229           
+ ...features/audit |   94.44 |    61.53 |     100 |   93.75 |                   
+  audit.handler.ts |   94.44 |    61.53 |     100 |   93.75 | 79                
+ ...atures/content |   91.42 |    82.22 |     100 |   92.18 |                   
+  ...nt.handler.ts |   91.42 |    82.22 |     100 |   92.18 | ...61,292,313,340 
+ ...res/curriculum |   85.21 |     78.3 |   92.85 |   86.11 |                   
+  ...um.handler.ts |   85.21 |     78.3 |   92.85 |   86.11 | ...48,461,501,521 
+ ...es/diagnostics |    78.2 |    71.42 |     100 |   85.29 |                   
+  ...cs.handler.ts |    78.2 |    71.42 |     100 |   85.29 | ...18-228,243,285 
+ ...tures/feedback |      84 |       78 |     100 |   86.51 |                   
+  ...ck.handler.ts |      84 |       78 |     100 |   86.51 | ...51,410,417,448 
+ ...es/invitations |   90.47 |    83.33 |     100 |   94.11 |                   
+  ...ns.handler.ts |   90.47 |    83.33 |     100 |   94.11 | 68                
+ ...c/features/ops |   87.69 |    88.57 |     100 |   86.88 |                   
+  ops.handler.ts   |   87.69 |    88.57 |     100 |   86.88 | ...41,117,138,176 
+ ...atures/reports |   91.66 |       80 |     100 |    90.9 |                   
+  ...ts.handler.ts |   91.66 |       80 |     100 |    90.9 | 79,110            
+ ...atures/session |     100 |    93.75 |     100 |     100 |                   
+  ...on.handler.ts |     100 |    93.75 |     100 |     100 | 58                
+ apps/api/src/http |   97.29 |    93.68 |     100 |    98.5 |                   
+  ...tion-audit.ts |   95.65 |    89.74 |     100 |     100 | 33-39             
+  ...st-context.ts |   97.77 |    95.83 |     100 |    97.5 | 115               
+ ...pi/src/routing |   96.42 |    85.71 |     100 |     100 |                   
+  ...e-registry.ts |   96.42 |    85.71 |     100 |     100 | 659,675           
+ ...i/src/security |   95.41 |    94.57 |   88.23 |   96.21 |                   
+  ...imit-store.ts |   97.05 |    95.16 |   93.54 |   97.69 | 317,438,525       
+  redis-client.ts  |   89.71 |    89.79 |   77.77 |   91.57 | ...49,178,198,202 
+  trusted-proxy.ts |     100 |     96.1 |     100 |     100 | 58,79,86          
+ apps/web          |   91.22 |    93.75 |   81.81 |   97.72 |                   
+  proxy.ts         |   91.22 |    93.75 |   81.81 |   97.72 | 60                
+ apps/web/app      |   92.14 |    87.81 |   96.33 |   94.65 |                   
+  ...ion-client.ts |   97.27 |    98.31 |   93.54 |   98.98 | 56                
+  layout.tsx       |       0 |      100 |       0 |       0 | 5-13              
+  page.tsx         |   89.36 |    81.31 |   96.52 |   92.94 | ...1373,1701,1881 
+  ...swer-list.tsx |   93.75 |    97.22 |     100 |   92.85 | 31                
+  ...-contracts.ts |     100 |    95.45 |     100 |     100 | 123               
+  ...y-actions.tsx |     100 |     87.5 |     100 |     100 | 59                
+  ...-coherence.ts |   96.96 |    98.07 |     100 |   96.66 | 134               
+  ...ce-request.ts |     100 |      100 |   91.66 |     100 |                   
+ .../app/authoring |   82.48 |    81.53 |    77.5 |   86.46 |                   
+  ...-contracts.ts |   81.39 |     89.7 |     100 |   91.66 | 301,311,341       
+  ...t-recovery.ts |      84 |    73.68 |     100 |   95.45 | 55                
+  page.tsx         |   82.51 |    77.23 |   70.96 |   85.01 | ...1007,1052,1106 
+ ...app/diagnostic |   91.36 |    89.04 |   97.56 |   94.23 |                   
+  loading.tsx      |       0 |      100 |       0 |       0 | 2                 
+  page.tsx         |   91.78 |    89.04 |     100 |   94.68 | ...07,367,404-405 
+ ...app/operations |   89.43 |    86.38 |   98.73 |   93.72 |                   
+  ...rt-request.ts |     100 |    96.22 |     100 |     100 | 108-110           
+  page.tsx         |   88.49 |    85.89 |   98.64 |   93.18 | ...3189,3217,3487 
+ apps/worker/src   |   95.04 |    92.33 |   97.59 |   96.22 |                   
+  handlers.ts      |   91.48 |    88.33 |   95.65 |   92.13 | ...47,161,201-203 
+  lease-guard.ts   |   95.12 |     91.3 |     100 |   94.28 | 44-45             
+  lifecycle.ts     |   96.19 |    90.38 |   95.83 |   98.92 | 51                
+  loop.ts          |   97.33 |     97.1 |     100 |     100 | 139,159           
+  reconcile.ts     |   95.12 |    92.98 |     100 |   94.93 | 152,180,189,196   
+ ...pplication/src |   92.37 |    90.19 |   97.05 |   92.45 |                   
+  ...-use-cases.ts |      90 |    83.33 |      75 |      90 | 77                
+  ...-use-cases.ts |   82.14 |    77.27 |     100 |   82.14 | 61,72,88,121,153  
+  ...-use-cases.ts |   97.87 |    96.42 |     100 |   97.72 | 195               
+  ...-use-cases.ts |    97.5 |    96.72 |     100 |   97.36 | 93                
+  ...-use-cases.ts |      78 |    58.53 |     100 |   77.55 | ...00,121,124,140 
+  ...-use-cases.ts |      82 |    76.78 |     100 |   82.22 | ...05,124,163-164 
+  ...-use-cases.ts |   95.91 |    95.83 |     100 |   95.74 | 109,128           
+  ...-use-cases.ts |    90.9 |    88.88 |     100 |      90 | 64                
+  ...-use-cases.ts |   98.21 |    96.62 |     100 |   98.21 | 263               
+  audit.ts         |   91.66 |    86.36 |     100 |   91.42 | 48,58,68          
+  ...-use-cases.ts |   85.31 |     78.8 |     100 |    85.4 | ...53,460,751-754 
+  ...-use-cases.ts |   89.28 |    82.97 |     100 |   89.28 | 69,95,99          
+  ...-use-cases.ts |   86.84 |    80.64 |     100 |   86.11 | ...19,129,146,183 
+  ...-use-cases.ts |   77.77 |    80.95 |   66.66 |   77.77 | ...37,146,166-170 
+  ...-use-cases.ts |    90.9 |    80.76 |     100 |   90.24 | 122,155,160,210   
+  ...-use-cases.ts |   98.59 |    99.09 |     100 |   98.57 | 112               
+  ...-use-cases.ts |   95.89 |     87.5 |   96.66 |   95.77 | 185,265,322       
+  ...-use-cases.ts |   94.48 |    87.77 |     100 |   95.04 | ...03,468,485,671 
+  ...-use-cases.ts |   92.59 |       60 |     100 |   92.59 | 80,86             
+  errors.ts        |    90.9 |    85.71 |     100 |     100 | 56                
+  ...-use-cases.ts |      75 |    77.27 |    87.5 |   76.74 | ...07,167,176-179 
+  ...-use-cases.ts |      75 |    84.61 |   83.33 |      75 | 27,48-52,73       
+  ...-use-cases.ts |   70.58 |    66.66 |    87.5 |      70 | ...75,178,216-222 
+  ...-use-cases.ts |    87.8 |    88.33 |     100 |    87.8 | ...08,121,171,192 
+  ...-use-cases.ts |   98.46 |    97.77 |     100 |   98.43 | 275               
+  ...-authority.ts |     100 |    96.96 |     100 |     100 | 131               
+  ...-selection.ts |     100 |    96.42 |     100 |     100 | 12                
+  ...-use-cases.ts |   94.11 |    94.15 |    87.5 |   94.59 | ...36,321,580-586 
+  ...-use-cases.ts |    91.2 |    92.95 |     100 |   91.01 | ...93,312,349,404 
+  ...culum-path.ts |   98.66 |    98.46 |     100 |   98.64 | 164               
+  ...-use-cases.ts |   95.65 |    96.55 |     100 |   95.65 | 107               
+  ...-use-cases.ts |   96.92 |    95.83 |    90.9 |   96.92 | 77,167            
+  ...-use-cases.ts |   85.71 |    83.78 |     100 |   85.71 | ...,81,91,111,117 
+  session.ts       |   97.36 |    95.45 |     100 |   98.41 | 137               
+ ...ges/config/src |   98.57 |     97.8 |     100 |     100 |                   
+  env.ts           |   98.57 |     97.8 |     100 |     100 | 126,178           
+ .../contracts/src |   93.76 |    87.82 |   97.36 |   93.57 |                   
+  api.ts           |   92.85 |       75 |     100 |   92.85 | 65                
+  audit-trail.ts   |      90 |    82.35 |     100 |      90 | 71,78             
+  authoring.ts     |      95 |       90 |     100 |   94.59 | 165,173           
+  ...ic-session.ts |   91.04 |    88.63 |     100 |   90.32 | ...54,161,198-203 
+  diagnostic.ts    |   76.92 |      100 |      50 |   76.92 | 73-75             
+  ...et-history.ts |      80 |       80 |     100 |      80 | 48,58,71          
+  ...iage-queue.ts |    90.9 |      100 |      50 |    90.9 | 78                
+  ...ning-state.ts |   89.65 |     82.5 |     100 |   89.65 | ...13,216,219,305 
+  learning.ts      |   93.87 |    89.28 |     100 |   93.75 | 74,102,129        
+  reflection.ts    |   84.21 |    71.42 |     100 |   84.21 | 39,46,74          
+ ...curriculum/src |   96.28 |    91.72 |   97.71 |   96.07 |                   
+  catalog.ts       |     100 |       90 |     100 |     100 | 691-696,741,786   
+  content-seed.ts  |   94.73 |     90.9 |     100 |   94.73 | 59                
+  ...ng-runtime.ts |   94.94 |    89.86 |   96.03 |   94.67 | ...30,782,802,827 
+  ...ve-results.ts |     100 |     90.9 |     100 |     100 | 31,44             
+  projection.ts    |   87.09 |    85.36 |     100 |   85.71 | 65,78,132,146     
+  retention.ts     |   98.24 |    98.07 |     100 |   98.21 | 129               
+ ...ges/domain/src |   89.14 |     88.1 |     100 |   88.99 |                   
+  answer.ts        |   95.23 |    92.85 |     100 |   95.23 | 36                
+  appeal.ts        |   81.57 |    81.33 |     100 |   81.08 | ...74,203,208,224 
+  ...ent-policy.ts |   98.87 |    96.55 |     100 |   98.85 | 80                
+  assessment.ts    |   95.65 |    96.29 |     100 |   95.65 | 34                
+  attempt.ts       |    93.1 |    91.66 |     100 |   92.59 | 76,87             
+  content.ts       |   85.71 |    86.36 |     100 |   85.71 | 43,49,84          
+  ...ic-session.ts |   79.06 |     77.5 |     100 |   79.06 | ...8,79,84,98,101 
+  ...ning-state.ts |   87.59 |    86.66 |     100 |   87.59 | ...51,557,562,566 
+ ...tegrations/src |   91.98 |     87.5 |   92.98 |   92.67 |                   
+  ai.ts            |   90.36 |    84.36 |      96 |   90.81 | ...87,498,547,654 
+  composition.ts   |   94.44 |    78.57 |     100 |   94.11 | 176-177           
+  evals.ts         |     100 |       90 |     100 |     100 | 72                
+  faults.ts        |   80.55 |     90.9 |   71.42 |      80 | 25-26,50-51,53-55 
+  qdrant.ts        |   91.11 |    84.04 |     100 |   93.97 | ...46,355,381,391 
+  retry.ts         |     100 |    98.18 |     100 |     100 | 104,189           
+ ...ervability/src |   90.88 |    84.38 |   91.47 |   92.11 |                   
+  observability.ts |   95.56 |    85.22 |      98 |   95.86 | ...94-195,219,373 
+  operations.ts    |   93.67 |     92.2 |     100 |   94.59 | 186,228,252,258   
+  retry-policy.ts  |   89.74 |    93.18 |   66.66 |   89.47 | 49,90-91,118      
+  tracing.ts       |   83.55 |    75.75 |      80 |   86.46 | ...99,304,339,391 
+ ...ersistence/src |    89.5 |    84.25 |   94.27 |   90.78 |                   
+  ...repository.ts |   98.76 |    97.91 |     100 |   98.71 | 75                
+  ...repository.ts |   97.01 |      100 |     100 |   96.82 | 156-163           
+  ...repository.ts |   80.79 |    72.41 |    92.3 |   80.71 | ...07,321,528-532 
+  ...repository.ts |    93.4 |    86.36 |     100 |    93.1 | ...51,364,384,446 
+  ...write-port.ts |     100 |    83.33 |     100 |     100 | 66-79             
+  ...repository.ts |   88.23 |    63.33 |     100 |    89.1 | ...44,274-284,385 
+  ...repository.ts |     100 |    84.21 |     100 |     100 | 121-153           
+  ...repository.ts |   82.35 |       50 |   84.61 |   84.84 | ...49,155,188-189 
+  ...repository.ts |    87.5 |    65.21 |     100 |   86.36 | 18,24,70          
+  ...ew-history.ts |   85.71 |    84.21 |     100 |   85.71 | 28                
+  ...repository.ts |     100 |     92.3 |     100 |     100 | 59                
+  ...repository.ts |    92.3 |       85 |     100 |    92.3 | 140,146,161       
+  ...repository.ts |   90.25 |       80 |      95 |   90.72 | ...72,332-337,504 
+  ...repository.ts |   84.37 |    78.94 |     100 |   84.37 | 30,38,42,54,69    
+  ...repository.ts |   89.88 |    82.44 |     100 |   90.69 | ...67,173,176,179 
+  ...repository.ts |     100 |    92.02 |     100 |     100 | ...32-436,567-570 
+  ...ation-hold.ts |      75 |       50 |     100 |     100 | 8                 
+  ...repository.ts |    42.1 |    40.31 |   41.17 |   42.56 | ...51,707,721-751 
+  ...repository.ts |    82.6 |    71.42 |      90 |   84.44 | ...94,100,125,236 
+  ...repository.ts |   92.04 |    84.21 |   95.65 |   95.18 | 63,84,106,138     
+  ...repository.ts |     100 |    76.38 |     100 |     100 | 92,134-163,351    
+  ...ivity-read.ts |   86.66 |    88.46 |     100 |   89.74 | 41,107,127,162    
+  ...swer-write.ts |     100 |    97.56 |     100 |     100 | 89                
+  ...pt-capture.ts |   81.25 |    77.27 |      80 |   89.28 | 17,57,137         
+  ...-item-read.ts |   88.88 |    89.74 |     100 |   91.17 | 18,21,63          
+  ...mpt-schema.ts |   58.62 |      100 |   47.82 |   58.62 | ...14,227-235,251 
+  ...repository.ts |   95.45 |    93.75 |     100 |     100 | 92,148            
+  ...provenance.ts |     100 |    94.59 |     100 |     100 | 190-191           
+  ...repository.ts |   98.11 |      100 |   94.11 |   98.11 | 97                
+  ...repository.ts |   96.12 |     92.5 |     100 |   97.87 | 65,331-332        
+  database.ts      |    83.6 |       75 |      80 |      85 | ...65,206,212-213 
+  ...repository.ts |   95.65 |    89.65 |     100 |   95.58 | 65,68,80          
+  ...repository.ts |   83.28 |     74.5 |   97.01 |   83.11 | ...1168,1186,1232 
+  ...repository.ts |   82.35 |     83.6 |     100 |   84.78 | ...92,101,105,137 
+  ...repository.ts |   80.95 |       50 |   85.71 |   88.88 | 37,70             
+  ...repository.ts |   88.23 |    69.69 |     100 |   89.58 | 45,52,55,58,210   
+  ...repository.ts |   90.81 |    85.71 |   93.33 |   91.57 | ...73,171,285,317 
+  ...repository.ts |   98.66 |    95.45 |     100 |   98.59 | 197               
+  ...repository.ts |   96.87 |    89.09 |     100 |     100 | ...28,132-133,180 
+  ...repository.ts |   87.86 |    80.25 |   96.55 |   88.25 | ...1083,1214-1226 
+  ...-publisher.ts |   83.45 |    72.54 |     100 |   95.57 | ...94,196,309,341 
+  ...on-binding.ts |   91.48 |    88.88 |     100 |    91.3 | 52,56,77,138      
+  ...n-evidence.ts |   86.88 |    67.14 |   88.88 |   91.42 | ...10,256,378,454 
+  ...on-trigger.ts |   79.46 |    72.61 |     100 |   91.48 | ...75,183,355,395 
+  ...completion.ts |   89.09 |       84 |     100 |   88.99 | ...55,361,402,440 
+  ...nalization.ts |     100 |     97.8 |     100 |     100 | 160,166           
+  ...ade-policy.ts |   98.46 |    96.34 |     100 |   98.27 | 340               
+  ...ipt-reader.ts |   95.23 |    90.47 |     100 |   95.23 | 74                
+  ...repository.ts |   82.22 |    82.08 |   85.71 |    83.9 | 200-236           
+  ...repository.ts |       0 |        0 |       0 |       0 | 22-120            
+  ...repository.ts |   88.88 |    81.48 |     100 |   88.23 | 59,73,87,95       
+  ...repository.ts |   93.24 |    91.66 |   85.71 |   95.77 | 68,96,182         
+  ...ty-context.ts |   97.56 |    97.22 |     100 |   97.43 | 190               
+  ...repository.ts |   98.93 |    98.11 |     100 |   98.85 | 305               
+ .../src/authoring |   88.88 |       75 |     100 |   88.88 |                   
+  commit-review.ts |   88.88 |       75 |     100 |   88.88 | 57,93             
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 91.07% ( 12515/13742 )
+Branches     : 86.97% ( 10902/12535 )
+Functions    : 95.07% ( 2838/2985 )
+Lines        : 92.4% ( 11868/12844 )
+================================================================================
+coverage measurement: NOT_VERIFIED
+
+> cvg-trainee-vet@0.1.0 verify:coverage-floor /home/ricardo/cvg-trainee-vet
+> node scripts/verify-coverage-floor.mjs
+
+ok: production coverage inventory = 239 included, 291 excluded
+ok: coverage statements = 91.07% (floor 90%)
+ok: coverage branches = 86.97% (floor 85%)
+ok: coverage functions = 95.07% (floor 90%)
+ok: coverage lines = 92.40% (floor 90%)
+
+> cvg-trainee-vet@0.1.0 verify:evidence-consistency /home/ricardo/cvg-trainee-vet
+> node scripts/verify-evidence-consistency.mjs
+
+ok: coverage summary totals trace to the raw report
+ok: coverage percentages are bounded
+skip: mutation summary not generated in this stage (current candidate mutation run id is required)
+ok: audit JSON exists
+ok: scorecard mirrors audit aggregates
+ok: scorecard mirrors audit P0/P1
+ok: strict validator rejects a bogus HEAD
+
+evidence-consistency: PASS
+
+> cvg-trainee-vet@0.1.0 test:contract /home/ricardo/cvg-trainee-vet
+> vitest run --project unit packages/contracts/src
+
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+
+ Test Files  31 passed (31)
+      Tests  124 passed (124)
+   Start at  21:37:09
+   Duration  1.78s (transform 6.61s, setup 0ms, import 12.66s, tests 1.07s, environment 5ms)
+
+
+> cvg-trainee-vet@0.1.0 test:worker /home/ricardo/cvg-trainee-vet
+> vitest run --project unit apps/worker/src
+
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+
+ Test Files  13 passed (13)
+      Tests  148 passed (148)
+   Start at  21:37:12
+   Duration  4.40s (transform 7.59s, setup 0ms, import 10.55s, tests 6.16s, environment 3ms)
+
+
+> cvg-trainee-vet@0.1.0 verify:migrations /home/ricardo/cvg-trainee-vet
+> node scripts/verify-migrations.mjs
+
+{"status":"PASS","migrationCount":59,"lastIndex":58,"latestTag":"0058_module_obligations"}
+
+> cvg-trainee-vet@0.1.0 verify:secrets /home/ricardo/cvg-trainee-vet
+> node scripts/verify-secrets.mjs
+
+secret scan: reviewed synthetic literal "s***n" in apps/worker/src/main.test.ts (worker lease token double, not a credential)
+secret scan: reviewed synthetic literal "S***L" in tests/integration/ci-claim-admission.test.ts (claim-admission placeholder, name declares non-credential)
+secret scan: reviewed synthetic literal "d***n" in tests/integration/staging-owned-child.test.ts (lifecycle log discriminator, not a token value)
+secret scan: clean
+
+> cvg-trainee-vet@0.1.0 verify:traceability /home/ricardo/cvg-trainee-vet
+> node scripts/verify-traceability.mjs
+
+traceability manifest: structurally valid with current artifact evidence
+
+> cvg-trainee-vet@0.1.0 verify:architecture /home/ricardo/cvg-trainee-vet
+> vitest run tests/integration/architecture-boundaries.test.ts
+
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  21:37:19
+   Duration  270ms (transform 27ms, setup 0ms, import 41ms, tests 82ms, environment 0ms)
+
+
+> cvg-trainee-vet@0.1.0 verify:routes /home/ricardo/cvg-trainee-vet
+> node scripts/verify-routes.mjs
+
+routes gate: 58 registry entries, 58 dispatch routes
+routes gate: registry and dispatch are bidirectionally consistent
+
+> cvg-trainee-vet@0.1.0 verify:complexity /home/ricardo/cvg-trainee-vet
+> node scripts/verify-complexity.mjs
+
+warn: apps/api/src/features/audit/audit.handler.ts#handleAuditTrail: 104 lines exceeds function warning budget 80
+warn: apps/api/src/features/curriculum/curriculum.handler.ts: 551 lines exceeds warning budget 500
+warn: apps/api/src/features/ops/ops.handler.ts#handleOperationalRoutes: 109 lines exceeds function warning budget 80
+warn: apps/api/src/http-boundary/curriculum.http.test.ts: 1044 lines exceeds warning budget 800
+warn: apps/api/src/http-boundary/fixtures.ts: 661 lines exceeds warning budget 500
+warn: apps/api/src/main.ts: 587 lines exceeds warning budget 500
+warn: apps/api/src/routing/route-registry.ts: 687 lines exceeds warning budget 500
+warn: apps/api/src/security/rate-limit-store.ts: 538 lines exceeds warning budget 500
+warn: apps/api/src/security/redis-client.ts#createRespScriptClient: 99 lines exceeds function warning budget 80
+warn: apps/api/src/server.test.ts: 1136 lines exceeds warning budget 800
+warn: apps/api/src/server.ts: 564 lines exceeds warning budget 500
+warn: apps/web/app/operations/operations-report-request.ts#useOperationsReport: 81 lines exceeds function warning budget 80
+warn: apps/web/app/operations/page.tsx#isDiagnosticProfile: 122 lines exceeds function warning budget 80
+warn: apps/web/app/operations/page.tsx#isStaffDashboard: 83 lines exceeds function warning budget 80
+warn: apps/web/app/operations/page.tsx#isContinuingEducationReport: 98 lines exceeds function warning budget 80
+warn: apps/web/app/operations/page.tsx#isAuditTrail: 112 lines exceeds function warning budget 80
+warn: apps/web/tests/authoring.browser.test.tsx: 1415 lines exceeds warning budget 800
+warn: apps/web/tests/diagnostic.browser.test.tsx: 917 lines exceeds warning budget 800
+warn: apps/web/tests/operations.browser.test.tsx: 1911 lines exceeds warning budget 800
+warn: apps/web/tests/participant-access.browser.test.tsx: 1760 lines exceeds warning budget 800
+warn: apps/web/tests/participant-content.browser.test.tsx: 818 lines exceeds warning budget 800
+warn: apps/web/tests/participant-resilience.browser.test.tsx: 1924 lines exceeds warning budget 800
+warn: apps/worker/src/lifecycle.ts#createWorkerInitialization: 142 lines exceeds function warning budget 80
+warn: apps/worker/src/loop.ts#processOutboxOnce: 135 lines exceeds function warning budget 80
+warn: apps/worker/src/main.test.ts: 1261 lines exceeds warning budget 800
+warn: apps/worker/src/reconcile.test.ts: 829 lines exceeds warning budget 800
+warn: apps/worker/src/reconcile.ts#reconcileVectorIndex: 102 lines exceeds function warning budget 80
+warn: packages/application/src/account-recovery-use-cases.ts#issueAccountRecovery: 83 lines exceeds function warning budget 80
+warn: packages/application/src/answer-use-cases.ts#saveAnswer: 114 lines exceeds function warning budget 80
+warn: packages/application/src/appeal-recalculation-use-cases.ts#recalculateAppealResult: 81 lines exceeds function warning budget 80
+warn: packages/application/src/audit-trail-use-cases.ts#getAuditTrail: 100 lines exceeds function warning budget 80
+warn: packages/application/src/authoring-use-cases.ts: 800 lines exceeds warning budget 500
+warn: packages/application/src/authoring-use-cases.ts#normalizeDraftInput: 117 lines exceeds function warning budget 80
+warn: packages/application/src/authoring-use-cases.ts#reviewAuthoringContent: 139 lines exceeds function warning budget 80
+warn: packages/application/src/authorization.ts#canAccess: 96 lines exceeds function warning budget 80
+warn: packages/application/src/content-use-cases.ts#advanceContent: 121 lines exceeds function warning budget 80
+warn: packages/application/src/correction-use-cases.ts#correctOpenResponse: 135 lines exceeds function warning budget 80
+warn: packages/application/src/curriculum-runtime-use-cases.ts#evaluateAndPersistCurriculumModule: 83 lines exceeds function warning budget 80
+warn: packages/application/src/curriculum-runtime-use-cases.ts#assertAttemptEvaluationBinding: 115 lines exceeds function warning budget 80
+warn: packages/application/src/diagnostic-session-use-cases.ts: 675 lines exceeds warning budget 500
+warn: packages/application/src/diagnostic-session-use-cases.ts#createB07DiagnosticSessionCatalog: 86 lines exceeds function warning budget 80
+warn: packages/application/src/diagnostic-session-use-cases.ts#saveDiagnosticSessionAnswer: 83 lines exceeds function warning budget 80
+warn: packages/application/src/feedback-triage-metadata-use-cases.ts#updateFeedbackTriageMetadata: 84 lines exceeds function warning budget 80
+warn: packages/application/src/invitation-use-cases.ts#createInvitation: 105 lines exceeds function warning budget 80
+warn: packages/application/src/journey-authorization.test.ts: 847 lines exceeds warning budget 800
+warn: packages/application/src/journey-use-cases.ts: 628 lines exceeds warning budget 500
+warn: packages/application/src/journey-use-cases.ts#getParticipantLearningJourney: 113 lines exceeds function warning budget 80
+warn: packages/application/src/participant-curriculum-path.ts#buildScopePath: 119 lines exceeds function warning budget 80
+warn: packages/config/src/env.ts#loadRuntimeConfig: 105 lines exceeds function warning budget 80
+warn: packages/curriculum/src/learning-runtime.ts#evaluateDiagnosticAttempt: 95 lines exceeds function warning budget 80
+warn: packages/curriculum/src/learning-runtime.ts#preflightCurriculumDrafts: 117 lines exceeds function warning budget 80
+warn: packages/curriculum/src/retention.ts#verifyRetentionForm: 89 lines exceeds function warning budget 80
+warn: packages/domain/src/assessment-policy.ts#evaluateSummativeAssessment: 117 lines exceeds function warning budget 80
+warn: packages/domain/src/learning-state.ts: 572 lines exceeds warning budget 500
+warn: packages/integrations/src/ai.ts: 657 lines exceeds warning budget 500
+warn: packages/observability/src/observability.ts: 555 lines exceeds warning budget 500
+warn: packages/observability/src/observability.ts#createMetrics: 122 lines exceeds function warning budget 80
+warn: packages/persistence/src/activity-repository.ts: 565 lines exceeds warning budget 500
+warn: packages/persistence/src/activity-repository.ts#reflectionRowsToState: 97 lines exceeds function warning budget 80
+warn: packages/persistence/src/activity-repository.ts#createActivityReadRepository: 143 lines exceeds function warning budget 80
+warn: packages/persistence/src/adaptive-assignment-repository.ts#findMappedActivities: 118 lines exceeds function warning budget 80
+warn: packages/persistence/src/adaptive-assignment-repository.ts#materializeCurriculumAssignmentsInTransaction: 134 lines exceeds function warning budget 80
+warn: packages/persistence/src/answer-attempt-write-port.ts#createAnswerAttemptWritePort: 81 lines exceeds function warning budget 80
+warn: packages/persistence/src/appeal-decision-impact-repository.ts#createAppealDecisionImpactRepository: 111 lines exceeds function warning budget 80
+warn: packages/persistence/src/appeal-review-transition-repository.ts#createAppealReviewTransitionRepository: 107 lines exceeds function warning budget 80
+warn: packages/persistence/src/attempt-repository.ts: 626 lines exceeds warning budget 500
+warn: packages/persistence/src/audit-trail-repository.ts#decodeAuditTrailCursor: 89 lines exceeds function warning budget 80
+warn: packages/persistence/src/audit-trail-repository.ts#createAuditTrailRepository: 100 lines exceeds function warning budget 80
+warn: packages/persistence/src/authoring-repository.test.ts: 938 lines exceeds warning budget 800
+warn: packages/persistence/src/authoring-repository.ts: 654 lines exceeds warning budget 500
+warn: packages/persistence/src/authoring-repository.ts#parseItem: 115 lines exceeds function warning budget 80
+warn: packages/persistence/src/authoring/commit-review.ts#createAuthoringReviewCommitter: 94 lines exceeds function warning budget 80
+warn: packages/persistence/src/content-repository.ts: 756 lines exceeds warning budget 500
+warn: packages/persistence/src/content-repository.ts#createContentRepository: 132 lines exceeds function warning budget 80
+warn: packages/persistence/src/content-repository.ts#createContentIndexSourceRepository: 100 lines exceeds function warning budget 80
+warn: packages/persistence/src/content-review-queue-repository.ts#createContentReviewQueueRepository: 102 lines exceeds function warning budget 80
+warn: packages/persistence/src/correction-repository.ts#createCorrectionOperations: 118 lines exceeds function warning budget 80
+warn: packages/persistence/src/curriculum-attempt-activity-read.ts#readCapturedParticipantActivity: 91 lines exceeds function warning budget 80
+warn: packages/persistence/src/curriculum-attempt-capture-validation.test.ts: 1318 lines exceeds warning budget 800
+warn: packages/persistence/src/curriculum-attempt-capture-validation.ts: 505 lines exceeds warning budget 500
+warn: packages/persistence/src/curriculum-attempt-capture.ts#capture: 101 lines exceeds function warning budget 80
+warn: packages/persistence/src/curriculum-evaluation-mapping.test.ts: 1535 lines exceeds warning budget 800
+warn: packages/persistence/src/curriculum-evaluation-mapping.ts: 653 lines exceeds warning budget 500
+warn: packages/persistence/src/curriculum-evaluation-mapping.ts#assertServerIdentity: 86 lines exceeds function warning budget 80
+warn: packages/persistence/src/curriculum-evaluation-repository.ts#readEvaluationAttempt: 130 lines exceeds function warning budget 80
+warn: packages/persistence/src/dashboard-repository.ts: 570 lines exceeds warning budget 500
+warn: packages/persistence/src/database.ts#createPostgresDatabase: 148 lines exceeds function warning budget 80
+warn: packages/persistence/src/feedback-triage-metadata-repository.ts#createFeedbackTriageMetadataRepository: 115 lines exceeds function warning budget 80
+warn: packages/persistence/src/feedback-triage-queue-repository.ts#decodeFeedbackTriageQueueCursor: 91 lines exceeds function warning budget 80
+warn: packages/persistence/src/feedback-triage-queue-repository.ts#createFeedbackTriageQueueRepository: 132 lines exceeds function warning budget 80
+warn: packages/persistence/src/invitation-repository.ts#createInvitationUseCaseDependencies: 125 lines exceeds function warning budget 80
+warn: packages/persistence/src/learning-state-repository.ts#appealStateToRow: 84 lines exceeds function warning budget 80
+warn: packages/persistence/src/learning-state-repository.ts#appealRowToState: 83 lines exceeds function warning budget 80
+warn: packages/persistence/src/module-obligation-assignment-publisher.ts#assembleInventory: 92 lines exceeds function warning budget 80
+warn: packages/persistence/src/module-obligation-binding.ts#bindModuleObligationIn: 90 lines exceeds function warning budget 80
+warn: packages/persistence/src/module-obligation-completion-evidence.ts#readIdentity: 104 lines exceeds function warning budget 80
+warn: packages/persistence/src/module-obligation-completion-evidence.ts#readCaptureSources: 122 lines exceeds function warning budget 80
+warn: packages/persistence/src/module-obligation-completion-trigger.ts#assembleBound: 133 lines exceeds function warning budget 80
+warn: packages/persistence/src/module-obligation-completion-trigger.ts#assemble: 95 lines exceeds function warning budget 80
+warn: packages/persistence/src/module-obligation-completion.ts: 591 lines exceeds warning budget 500
+warn: packages/persistence/src/module-obligation-validation.test.ts: 945 lines exceeds warning budget 800
+warn: packages/persistence/src/module-obligation-validation.ts: 621 lines exceeds warning budget 500
+warn: packages/persistence/src/outbox-repository.ts#createOutboxRepository: 116 lines exceeds function warning budget 80
+warn: packages/persistence/src/participant-attempt-read-repository.ts#createParticipantAttemptReadRepository: 108 lines exceeds function warning budget 80
+warn: packages/persistence/src/rate-limit-repository.ts#createPostgresRateLimiter: 82 lines exceeds function warning budget 80
+warn: packages/persistence/src/reflection-management-repository.ts#reflectionManagementRowsToInstances: 115 lines exceeds function warning budget 80
+warn: packages/persistence/src/reflection-management-repository.ts#createReflectionManagementReadRepository: 117 lines exceeds function warning budget 80
+warn: packages/persistence/src/session-repository.ts#createSessionRepository: 101 lines exceeds function warning budget 80
+warn: packages/persistence/src/test-support/module-obligation-fixture.ts#nativeCapture: 109 lines exceeds function warning budget 80
+warn: packages/persistence/src/test-support/module-obligation-fixture.ts#approvedModuleFixture: 91 lines exceeds function warning budget 80
+warn: packages/persistence/src/test-support/table-routed-fake-database.ts#createTableRoutedFakeDatabase: 147 lines exceeds function warning budget 80
+warn: tests/e2e/operations-dashboard.spec.ts: 1159 lines exceeds warning budget 800
+warn: tests/e2e/participant-access.spec.ts: 1840 lines exceeds warning budget 800
+warn: tests/e2e/real-runtime.spec.ts: 824 lines exceeds warning budget 800
+warn: tests/e2e/visual-gauntlet.spec.ts: 1795 lines exceeds warning budget 800
+warn: tests/integration/ci-proof-contract.test.ts: 966 lines exceeds warning budget 800
+warn: tests/integration/migration-governance.test.ts: 1088 lines exceeds warning budget 800
+warn: tests/integration/mutation-harness-candidate.test.ts: 924 lines exceeds warning budget 800
+warn: tests/integration/postgres-learning-state.test.ts: 1090 lines exceeds warning budget 800
+warn: tests/integration/postgres-module-obligations.test.ts: 934 lines exceeds warning budget 800
+warn: tests/integration/postgres-security-isolation.test.ts: 1127 lines exceeds warning budget 800
+warn: tests/integration/release-evidence.test.ts: 904 lines exceeds warning budget 800
+warn: tests/integration/triple-aaa-verifier.test.ts: 1803 lines exceeds warning budget 800
+complexity gate: budgets hold (500/800 prod, 800/2000 test, 10 ratcheted exceptions)
+
+> cvg-trainee-vet@0.1.0 verify:cycles /home/ricardo/cvg-trainee-vet
+> node scripts/verify-cycles.mjs
+
+cycles gate: no import cycles across workspace sources
+
+> cvg-trainee-vet@0.1.0 verify:dead-code /home/ricardo/cvg-trainee-vet
+> node scripts/verify-dead-code.mjs
+
+dead-code gate: every workspace dependency is imported
+
+> cvg-trainee-vet@0.1.0 verify:security /home/ricardo/cvg-trainee-vet
+> vitest run --project unit apps/api/src/security apps/api/src/routing apps/api/src/http
+
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+
+ Test Files  29 passed | 1 skipped (30)
+      Tests  291 passed | 2 skipped (293)
+   Start at  21:37:23
+   Duration  3.39s (transform 15.67s, setup 0ms, import 33.00s, tests 1.82s, environment 4ms)
+
+
+> cvg-trainee-vet@0.1.0 verify:otel /home/ricardo/cvg-trainee-vet
+> vitest run --project unit packages/observability/src/tracing.test.ts
+
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  21:37:27
+   Duration  445ms (transform 58ms, setup 0ms, import 98ms, tests 212ms, environment 0ms)
+
+
+> cvg-trainee-vet@0.1.0 verify:release-evidence /home/ricardo/cvg-trainee-vet
+> node scripts/release-evidence.mjs --self-test
+
+release evidence written to /tmp/cvg-evidence-uvLUiT at 1ae1f8d53733be2afa8bcf9fc7a1dfcfdfe0fb34
+release evidence self-test: generate + validate PASS
+
+> cvg-trainee-vet@0.1.0 verify:documentation /home/ricardo/cvg-trainee-vet
+> node scripts/verify-documentation.mjs
+
+documentation gate: canonical files, evidence, roadmap, backlog and traceability are consistent
+
+> cvg-trainee-vet@0.1.0 verify:product-definition /home/ricardo/cvg-trainee-vet
+> node scripts/verify-product-definition.mjs
+
+product definition gate: Discovery → PRD → SPEC chain and coverage matrix are consistent
+
+> cvg-trainee-vet@0.1.0 verify:exposure /home/ricardo/cvg-trainee-vet
+> node scripts/verify-public-boundary.mjs
+
+public boundary: forbidden fields registered

@@ -1,0 +1,13 @@
+
+> cvg-trainee-vet@0.1.0 test:integration /home/ricardo/cvg-trainee-vet
+> vitest run --project integration
+
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+
+ Test Files  39 passed | 43 skipped (82)
+      Tests  779 passed | 210 skipped (989)
+   Start at  21:39:11
+   Duration  662.90s (transform 4.47s, setup 0ms, import 32.43s, tests 619.29s, environment 9ms)
+

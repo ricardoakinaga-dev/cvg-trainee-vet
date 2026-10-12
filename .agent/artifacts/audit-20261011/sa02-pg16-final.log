@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+
+ Test Files  2 passed (2)
+      Tests  18 passed (18)
+   Start at  01:13:24
+   Duration  234.99s (transform 1.48s, setup 0ms, import 3.03s, tests 231.70s, environment 0ms)
+

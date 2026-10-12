@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 13 skipped (14)
+   Start at  00:16:18
+   Duration  26.81s (transform 1.28s, setup 0ms, import 2.11s, tests 24.57s, environment 0ms)
+
+EXIT=0

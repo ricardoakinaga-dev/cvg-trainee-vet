@@ -1,0 +1,84 @@
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies a MULTIPLE catalog starting with < whose alternate selection ordering violates the plain response contract 868ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies a MULTIPLE catalog starting with > whose alternate selection ordering violates the plain response contract 876ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies a synthetic FORMATIVE choice-only publication before creating an unevaluable attempt 768ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > captures and persists offered valid SINGLE responses containing individual angle characters 4449ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > captures and persists offered valid MULTIPLE responses containing individual angle characters 4404ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies capture of an unanswerable published SINGLE key before creating any attempt 838ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies capture of an unanswerable published MULTIPLE key before creating any attempt 783ms
+ × |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > evaluates all persisted frozen answers and saves the exact immutable anchor despite current content drift 30018ms
+   → Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies foreign identity and stale attempt or form versions without writing runtime 2653ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies withdrawn published form without saving or falling back to the current draft 2504ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies a withdrawn captured content version without partial runtime save 2715ms
+ × |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > holds the published-form fence through runtime save and serializes a concurrent withdrawal 30007ms
+   → Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+stdout | tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+[api] rate-limit backend: postgres-shared
+
+stdout | tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+{"timestamp":"2026-10-12T03:15:41.544Z","level":"info","service":"api","event":"integration.initialization.succeeded","fields":{"dependency":"qdrant","attempts":1}}
+
+stdout | tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+{"timestamp":"2026-10-12T03:15:41.604Z","level":"info","service":"api","event":"http.request.completed","requestId":"667ed261-b1ac-40d5-b8ee-0155a7ce240d","correlationId":"667ed261-b1ac-40d5-b8ee-0155a7ce240d","durationMs":40.9685759999993,"fields":{"method":"POST","route":"/api/v1/invitations/accept","status":200,"outcome":"success"}}
+
+stdout | tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+{"timestamp":"2026-10-12T03:15:41.625Z","level":"info","service":"api","event":"http.request.completed","requestId":"135d794d-b331-47e9-a472-9e925a73d5be","correlationId":"135d794d-b331-47e9-a472-9e925a73d5be","durationMs":15.03707299999951,"fields":{"method":"GET","route":"/api/v1/session/current","status":200,"outcome":"success"}}
+
+stdout | tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+{"timestamp":"2026-10-12T03:15:41.641Z","level":"info","service":"api","event":"http.request.completed","requestId":"078db7f2-0170-47b9-833d-31df9cd082c4","correlationId":"078db7f2-0170-47b9-833d-31df9cd082c4","durationMs":13.036201999988407,"fields":{"method":"POST","route":"/api/v1/internal/curriculum/modules/:moduleId/evaluate","status":401,"outcome":"client_error"}}
+
+stdout | tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+{"timestamp":"2026-10-12T03:15:41.984Z","level":"info","service":"api","event":"http.request.completed","requestId":"0cd3dd4a-f23b-4208-83c0-156be761a6d0","correlationId":"0cd3dd4a-f23b-4208-83c0-156be761a6d0","durationMs":339.9867280000035,"fields":{"method":"POST","route":"/api/v1/internal/curriculum/modules/:moduleId/evaluate","status":200,"outcome":"success"}}
+
+stdout | tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+{"timestamp":"2026-10-12T03:15:42.008Z","level":"info","service":"api","event":"http.request.completed","requestId":"920973c8-f9cc-4440-bb8d-2ece3a6575f0","correlationId":"920973c8-f9cc-4440-bb8d-2ece3a6575f0","durationMs":19.82457600001362,"fields":{"method":"POST","route":"/api/v1/internal/curriculum/modules/:moduleId/evaluate","status":403,"outcome":"client_error"}}
+
+stdout | tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+{"proof":"native-main-scoped-http-evaluation","actualInvitationAccept":200,"actualSessionCurrent":200,"anonymousDenied":401,"nativeEvaluation":200,"foreignScopeDenied":403,"publicPrivateFieldsAbsent":true}
+
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization 25972ms
+ ✓ |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > denies an explicitly unbound legacy attempt rather than borrowing the current form 139ms
+ ✓ |integration| tests/integration/postgres-curriculum-attempt-start.test.ts > native published form capture on actual start (synthetic technical publication only) > captures all 33 immutable items atomically and replay never recaptures edited content 10288ms
+ ✓ |integration| tests/integration/postgres-curriculum-attempt-start.test.ts > native published form capture on actual start (synthetic technical publication only) > rejects a self-consistent one-item subset and rolls back attempt and idempotency 160ms
+ ✓ |integration| tests/integration/postgres-curriculum-attempt-start.test.ts > native published form capture on actual start (synthetic technical publication only) > rejects an explicitly withdrawn form without saving any attempt 173ms
+ ✓ |integration| tests/integration/postgres-curriculum-attempt-start.test.ts > native published form capture on actual start (synthetic technical publication only) > never exposes private keys to ordinary participant database context 171ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > evaluates all persisted frozen answers and saves the exact immutable anchor despite current content drift
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/postgres-curriculum-evaluation.test.ts:272:5
+    270|       },
+    271|     );
+    272|     it("evaluates all persisted frozen answers and saves the exact imm…
+       |     ^
+    273|       await withHarness(async (harness) => {
+    274|         const f = await submittedFixture(harness, true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > holds the published-form fence through runtime save and serializes a concurrent withdrawal
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/postgres-curriculum-evaluation.test.ts:392:5
+    390|     });
+    391|
+    392|     it("holds the published-form fence through runtime save and serial…
+       |     ^
+    393|       await withHarness(async (harness) => {
+    394|         const f = await submittedFixture(harness, true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 16 passed (18)
+   Start at  00:13:47
+   Duration  125.67s (transform 4.52s, setup 0ms, import 7.46s, tests 117.80s, environment 0ms)
+

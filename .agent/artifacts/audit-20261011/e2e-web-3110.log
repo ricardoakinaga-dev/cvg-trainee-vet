@@ -1,0 +1,10 @@
+
+> @cvg/web@0.1.0 start /home/ricardo/cvg-trainee-vet/apps/web
+> next start --hostname 127.0.0.1 --port 3110
+
+▲ Next.js 16.3.8
+- Local:         http://127.0.0.1:3110
+- Network:       http://127.0.0.1:3110
+✓ Ready in 144ms
+✓ Running next.config.ts took 32ms
+ ELIFECYCLE  Command failed.

@@ -1,0 +1,84 @@
+
+ RUN  v4.1.11 /home/ricardo/cvg-trainee-vet
+
+ ❯ |integration| tests/integration/postgres-curriculum-evaluation.test.ts (14 tests | 4 failed) 39485ms
+     × captures and persists offered valid SINGLE responses containing individual angle characters 5004ms
+     × evaluates all persisted frozen answers and saves the exact immutable anchor despite current content drift 5001ms
+     × holds the published-form fence through runtime save and serializes a concurrent withdrawal 5008ms
+     × serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization 5005ms
+ ❯ |integration| tests/integration/postgres-curriculum-attempt-start.test.ts (4 tests | 1 failed) 7146ms
+     × captures all 33 immutable items atomically and replay never recaptures edited content 5029ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |integration| tests/integration/postgres-curriculum-attempt-start.test.ts > native published form capture on actual start (synthetic technical publication only) > captures all 33 immutable items atomically and replay never recaptures edited content
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/postgres-curriculum-attempt-start.test.ts:64:5
+     62|   "native published form capture on actual start (synthetic technical …
+     63|   () => {
+     64|     it("captures all 33 immutable items atomically and replay never re…
+       |     ^
+     65|       await withHarness(async (harness) => {
+     66|         const f = await provision(harness);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > captures and persists offered valid SINGLE responses containing individual angle characters
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/postgres-curriculum-evaluation.test.ts:200:45
+    198|       });
+    199|     });
+    200|     it.each(["SINGLE", "MULTIPLE"] as const)(
+       |                                             ^
+    201|       "captures and persists offered valid %s responses containing ind…
+    202|       async (selectionMode) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > evaluates all persisted frozen answers and saves the exact immutable anchor despite current content drift
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/postgres-curriculum-evaluation.test.ts:272:5
+    270|       },
+    271|     );
+    272|     it("evaluates all persisted frozen answers and saves the exact imm…
+       |     ^
+    273|       await withHarness(async (harness) => {
+    274|         const f = await submittedFixture(harness, true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > holds the published-form fence through runtime save and serializes a concurrent withdrawal
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/postgres-curriculum-evaluation.test.ts:392:5
+    390|     });
+    391|
+    392|     it("holds the published-form fence through runtime save and serial…
+       |     ^
+    393|       await withHarness(async (harness) => {
+    394|         const f = await submittedFixture(harness, true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |integration| tests/integration/postgres-curriculum-evaluation.test.ts > native frozen curriculum evaluation (synthetic technical publication only) > serves native evaluation through actual main, issued moderator cookie and scoped HTTP authorization
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/postgres-curriculum-evaluation.test.ts:460:5
+    458|     });
+    459|
+    460|     it("serves native evaluation through actual main, issued moderator…
+       |     ^
+    461|       await withHarness(async (harness) => {
+    462|         const f = await submittedFixture(harness, true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 13 passed (18)
+   Start at  00:12:34
+   Duration  50.52s (transform 1.40s, setup 0ms, import 3.38s, tests 46.63s, environment 0ms)
+
